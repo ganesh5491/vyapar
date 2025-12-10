@@ -13,6 +13,8 @@ const INVOICES_FILE = path.join(DATA_DIR, "invoices.json");
 const VENDORS_FILE = path.join(DATA_DIR, "vendors.json");
 const DELIVERY_CHALLANS_FILE = path.join(DATA_DIR, "deliveryChallans.json");
 const EXPENSES_FILE = path.join(DATA_DIR, "expenses.json");
+const DASHBOARD_FILE = path.join(DATA_DIR, "dashboard.json");
+const REPORTS_FILE = path.join(DATA_DIR, "reports.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -169,6 +171,45 @@ function writeExpensesData(data: any) {
 
 function generateExpenseNumber(num: number): string {
   return `EXP-${String(num).padStart(5, '0')}`;
+}
+
+function readDashboardData() {
+  ensureDataDir();
+  if (!fs.existsSync(DASHBOARD_FILE)) {
+    const defaultData = {
+      summary: { totalReceivables: { totalUnpaid: 0, current: 0, overdue: 0 }, totalPayables: { totalUnpaid: 0, current: 0, overdue: 0 } },
+      cashFlow: [],
+      incomeExpense: [],
+      topExpenses: []
+    };
+    fs.writeFileSync(DASHBOARD_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(DASHBOARD_FILE, "utf-8"));
+}
+
+function writeDashboardData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(DASHBOARD_FILE, JSON.stringify(data, null, 2));
+}
+
+function readReportsData() {
+  ensureDataDir();
+  if (!fs.existsSync(REPORTS_FILE)) {
+    const defaultData = {
+      profitAndLoss: { totalIncome: 0, totalExpenses: 0, netProfit: 0, monthlyData: [] },
+      salesByCustomer: [],
+      expenseBreakdown: []
+    };
+    fs.writeFileSync(REPORTS_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(REPORTS_FILE, "utf-8"));
+}
+
+function writeReportsData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(REPORTS_FILE, JSON.stringify(data, null, 2));
 }
 
 export async function registerRoutes(
@@ -1979,6 +2020,136 @@ export async function registerRoutes(
       res.status(201).json({ success: true, data: newExpenses, message: `${newExpenses.length} expenses imported successfully` });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to import expenses" });
+    }
+  });
+
+  // Dashboard API
+  app.get("/api/dashboard", (req: Request, res: Response) => {
+    try {
+      const data = readDashboardData();
+      res.json({ success: true, data });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch dashboard data" });
+    }
+  });
+
+  app.get("/api/dashboard/summary", (req: Request, res: Response) => {
+    try {
+      const data = readDashboardData();
+      res.json({ success: true, data: data.summary });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch summary" });
+    }
+  });
+
+  app.get("/api/dashboard/cash-flow", (req: Request, res: Response) => {
+    try {
+      const data = readDashboardData();
+      res.json({ success: true, data: data.cashFlow });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch cash flow" });
+    }
+  });
+
+  app.get("/api/dashboard/income-expense", (req: Request, res: Response) => {
+    try {
+      const data = readDashboardData();
+      res.json({ success: true, data: data.incomeExpense });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch income expense" });
+    }
+  });
+
+  app.get("/api/dashboard/top-expenses", (req: Request, res: Response) => {
+    try {
+      const data = readDashboardData();
+      res.json({ success: true, data: data.topExpenses });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch top expenses" });
+    }
+  });
+
+  app.put("/api/dashboard", (req: Request, res: Response) => {
+    try {
+      const data = req.body;
+      writeDashboardData(data);
+      res.json({ success: true, data });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update dashboard data" });
+    }
+  });
+
+  // Reports API
+  app.get("/api/reports", (req: Request, res: Response) => {
+    try {
+      const data = readReportsData();
+      res.json({ success: true, data });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch reports data" });
+    }
+  });
+
+  app.get("/api/reports/profit-loss", (req: Request, res: Response) => {
+    try {
+      const data = readReportsData();
+      res.json({ success: true, data: data.profitAndLoss });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch profit and loss" });
+    }
+  });
+
+  app.get("/api/reports/sales-by-customer", (req: Request, res: Response) => {
+    try {
+      const data = readReportsData();
+      res.json({ success: true, data: data.salesByCustomer });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch sales by customer" });
+    }
+  });
+
+  app.get("/api/reports/expense-breakdown", (req: Request, res: Response) => {
+    try {
+      const data = readReportsData();
+      res.json({ success: true, data: data.expenseBreakdown });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch expense breakdown" });
+    }
+  });
+
+  app.get("/api/reports/tax-summary", (req: Request, res: Response) => {
+    try {
+      const data = readReportsData();
+      res.json({ success: true, data: data.taxSummary });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch tax summary" });
+    }
+  });
+
+  app.get("/api/reports/receivables-aging", (req: Request, res: Response) => {
+    try {
+      const data = readReportsData();
+      res.json({ success: true, data: data.receivablesAging });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch receivables aging" });
+    }
+  });
+
+  app.get("/api/reports/payables-aging", (req: Request, res: Response) => {
+    try {
+      const data = readReportsData();
+      res.json({ success: true, data: data.payablesAging });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch payables aging" });
+    }
+  });
+
+  app.put("/api/reports", (req: Request, res: Response) => {
+    try {
+      const data = req.body;
+      writeReportsData(data);
+      res.json({ success: true, data });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update reports data" });
     }
   });
 
