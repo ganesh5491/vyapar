@@ -1,0 +1,244 @@
+{
+  "invoices": [
+    {
+      "id": "1765350742018",
+      "invoiceNumber": "INV-00003",
+      "referenceNumber": "",
+      "date": "2025-12-10",
+      "dueDate": "2026-01-09",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "billingAddress": {
+        "street": "Pune\nPune\nMaharashtra\nIndia\n411057",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 1440,
+      "shippingCharges": 0,
+      "cgst": 129.6,
+      "sgst": 129.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1699.2,
+      "amountPaid": 0,
+      "balanceDue": 1699.2,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-10T07:12:22.018Z",
+      "updatedAt": "2025-12-10T07:12:22.018Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-10T07:12:22.018Z",
+          "action": "created",
+          "description": "Invoice created for ₹1,699.2",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765347745147",
+      "invoiceNumber": "INV-00001",
+      "referenceNumber": "",
+      "date": "2025-12-10",
+      "dueDate": "2026-01-09",
+      "customerId": "2",
+      "customerName": "AABHA CONTRACEPTIVES PRIVATE LIMITED",
+      "billingAddress": {
+        "street": "Plot No G- 2 Katfal Baramati, Maharashtra Industrial Development Corporation Area, Baramati\nPune\nMaharashtra 413133\nIndia\n413133",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 1440,
+      "shippingCharges": 0,
+      "cgst": 129.6,
+      "sgst": 129.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1699.2,
+      "amountPaid": 0,
+      "balanceDue": 1699.2,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-10T06:22:25.147Z",
+      "updatedAt": "2025-12-10T06:22:25.147Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-10T06:22:25.147Z",
+          "action": "created",
+          "description": "Invoice created for ₹1,699.2",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765349952937",
+      "invoiceNumber": "INV-00002",
+      "referenceNumber": "DC-00001",
+      "date": "2025-12-10",
+      "dueDate": "2026-01-09",
+      "customerId": "2",
+      "customerName": "A SQUARE ARCHITECTS",
+      "billingAddress": {
+        "street": "Bopkhel",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411031"
+      },
+      "shippingAddress": {
+        "street": "Bopkhel",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411031"
+      },
+      "salesperson": "",
+      "placeOfSupply": "Maharashtra (27)",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Cloud Server",
+          "description": "",
+          "hsnSac": "998315",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "GST18",
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "amountPaid": 0,
+      "balanceDue": 0,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": "delivery_challan",
+      "sourceId": "1",
+      "sourceNumber": "DC-00001",
+      "createdAt": "2025-12-10T06:59:12.937Z",
+      "updatedAt": "2025-12-10T06:59:12.937Z",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-10T06:59:12.937Z",
+          "action": "created",
+          "description": "Invoice INV-00002 created from delivery challan DC-00001",
+          "user": "Admin User"
+        }
+      ]
+    }
+  ],
+  "nextInvoiceNumber": 4
+}

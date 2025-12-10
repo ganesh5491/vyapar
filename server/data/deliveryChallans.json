@@ -1,0 +1,76 @@
+{
+  "deliveryChallans": [
+    {
+      "id": "1",
+      "challanNumber": "DC-00001",
+      "referenceNumber": "",
+      "date": "2025-12-10",
+      "customerId": "2",
+      "customerName": "A SQUARE ARCHITECTS",
+      "challanType": "supply_on_approval",
+      "billingAddress": {
+        "street": "Bopkhel",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411031"
+      },
+      "shippingAddress": {
+        "street": "Bopkhel",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411031"
+      },
+      "placeOfSupply": "Maharashtra (27)",
+      "gstin": "27BBZPR1986D1ZV",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Cloud Server",
+          "description": "",
+          "hsnSac": "998315",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "GST18",
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "DRAFT",
+      "invoiceStatus": "INVOICED",
+      "invoiceId": "1765349952937",
+      "createdAt": "2025-12-18T10:00:00.000Z",
+      "updatedAt": "2025-12-10T06:59:12.937Z",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T10:00:00.000Z",
+          "action": "created",
+          "description": "Delivery challan DC-00001 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-10T06:59:12.937Z",
+          "action": "converted",
+          "description": "Converted to invoice INV-00002",
+          "user": "Admin User"
+        }
+      ]
+    }
+  ],
+  "nextChallanNumber": 2
+}

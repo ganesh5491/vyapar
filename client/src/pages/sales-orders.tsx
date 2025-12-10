@@ -1,0 +1,1025 @@
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  MoreHorizontal, 
+  Pencil, 
+  Trash2, 
+  ChevronDown,
+  X,
+  Send,
+  FileText,
+  Receipt,
+  Package,
+  Truck,
+  CreditCard,
+  Calendar,
+  MapPin,
+  Building2,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Printer
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+
+interface SalesOrderListItem {
+  id: string;
+  date: string;
+  salesOrderNumber: string;
+  referenceNumber: string;
+  customerName: string;
+  orderStatus: string;
+  invoiceStatus: string;
+  paymentStatus: string;
+  total: number;
+  expectedShipmentDate: string;
+}
+
+interface SalesOrderItem {
+  id: string;
+  itemId: string;
+  name: string;
+  description: string;
+  hsnSac: string;
+  quantity: number;
+  unit: string;
+  rate: number;
+  discount: number;
+  discountType: string;
+  tax: number;
+  taxName: string;
+  amount: number;
+  ordered: number;
+  invoicedQty: number;
+  invoiceStatus: string;
+}
+
+interface SalesOrderInvoice {
+  id: string;
+  invoiceNumber: string;
+  date: string;
+  dueDate: string;
+  status: string;
+  amount: number;
+  balanceDue: number;
+}
+
+interface SalesOrderDetail {
+  id: string;
+  salesOrderNumber: string;
+  referenceNumber: string;
+  date: string;
+  expectedShipmentDate: string;
+  customerId: string;
+  customerName: string;
+  billingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+  };
+  shippingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+  };
+  paymentTerms: string;
+  deliveryMethod: string;
+  salesperson: string;
+  placeOfSupply: string;
+  items: SalesOrderItem[];
+  subTotal: number;
+  shippingCharges: number;
+  cgst: number;
+  sgst: number;
+  igst: number;
+  adjustment: number;
+  total: number;
+  customerNotes: string;
+  termsAndConditions: string;
+  orderStatus: string;
+  invoiceStatus: string;
+  paymentStatus: string;
+  shipmentStatus: string;
+  invoices?: SalesOrderInvoice[];
+  createdAt?: string;
+  createdBy?: string;
+}
+
+const formatCurrency = (amount: number) => {
+  return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const formatAddress = (address: any) => {
+  if (!address) return ['-'];
+  const parts = [address.street, address.city, address.state, address.country, address.pincode].filter(Boolean);
+  return parts.length > 0 ? parts : ['-'];
+};
+
+const getStatusBadgeStyles = (status: string) => {
+  const statusLower = status?.toLowerCase() || '';
+  if (statusLower === 'confirmed' || statusLower === 'closed' || statusLower === 'invoiced' || statusLower === 'paid' || statusLower === 'shipped' || statusLower === 'delivered') {
+    return 'bg-green-100 text-green-700 border-green-200';
+  }
+  if (statusLower === 'draft' || statusLower === 'pending' || statusLower === 'not invoiced' || statusLower === 'unpaid') {
+    return 'bg-amber-100 text-amber-700 border-amber-200';
+  }
+  if (statusLower === 'cancelled' || statusLower === 'void') {
+    return 'bg-red-100 text-red-700 border-red-200';
+  }
+  return 'bg-slate-100 text-slate-600 border-slate-200';
+};
+
+interface SalesOrderDetailPanelProps {
+  order: SalesOrderDetail;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onConvertToInvoice: () => void;
+}
+
+function SalesOrderPdfPreview({ order }: { order: SalesOrderDetail }) {
+  return (
+    <div id="pdf-content" className="bg-white p-8 text-black min-h-full" style={{ fontFamily: 'Arial, sans-serif' }}>
+      <div className="max-w-3xl mx-auto">
+        <div className="flex justify-between items-start mb-8 border-b-2 border-blue-600 pb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-blue-600">SALES ORDER</h1>
+            <p className="text-sm text-gray-600 mt-1">{order.salesOrderNumber}</p>
+          </div>
+          <div className="text-right">
+            <p className="font-semibold text-lg">Your Company Name</p>
+            <p className="text-sm text-gray-600">123 Business Street</p>
+            <p className="text-sm text-gray-600">Mumbai, Maharashtra 400001</p>
+            <p className="text-sm text-gray-600">GSTIN: 27XXXXX1234X1ZX</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-8 mb-8">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Bill To</h3>
+            <p className="font-semibold">{order.customerName}</p>
+            <div className="text-sm text-gray-600">
+              {formatAddress(order.billingAddress).map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Ship To</h3>
+            <p className="font-semibold">{order.customerName}</p>
+            <div className="text-sm text-gray-600">
+              {formatAddress(order.shippingAddress).map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-4 mb-8 bg-gray-50 p-4 rounded-md">
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Order Date</p>
+            <p className="font-medium">{formatDate(order.date)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Expected Shipment</p>
+            <p className="font-medium">{formatDate(order.expectedShipmentDate)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Payment Terms</p>
+            <p className="font-medium">{order.paymentTerms}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Place of Supply</p>
+            <p className="font-medium">{order.placeOfSupply || '-'}</p>
+          </div>
+        </div>
+
+        <table className="w-full mb-8 text-sm">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="px-3 py-2 text-left font-semibold">#</th>
+              <th className="px-3 py-2 text-left font-semibold">Item & Description</th>
+              <th className="px-3 py-2 text-left font-semibold">HSN/SAC</th>
+              <th className="px-3 py-2 text-right font-semibold">Qty</th>
+              <th className="px-3 py-2 text-right font-semibold">Rate</th>
+              <th className="px-3 py-2 text-right font-semibold">Tax</th>
+              <th className="px-3 py-2 text-right font-semibold">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {order.items.map((item, index) => (
+              <tr key={item.id} className="border-b border-gray-200">
+                <td className="px-3 py-2">{index + 1}</td>
+                <td className="px-3 py-2">
+                  <p className="font-medium">{item.name}</p>
+                  {item.description && <p className="text-gray-600 text-xs">{item.description}</p>}
+                </td>
+                <td className="px-3 py-2">{item.hsnSac || '-'}</td>
+                <td className="px-3 py-2 text-right">{item.ordered} {item.unit}</td>
+                <td className="px-3 py-2 text-right">{formatCurrency(item.rate)}</td>
+                <td className="px-3 py-2 text-right">{item.taxName || `${item.tax}%`}</td>
+                <td className="px-3 py-2 text-right font-medium">{formatCurrency(item.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="flex justify-end mb-8">
+          <div className="w-72">
+            <div className="flex justify-between py-2 border-b border-gray-200">
+              <span className="text-gray-600">Sub Total</span>
+              <span className="font-medium">{formatCurrency(order.subTotal)}</span>
+            </div>
+            {order.shippingCharges > 0 && (
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="text-gray-600">Shipping Charges</span>
+                <span className="font-medium">{formatCurrency(order.shippingCharges)}</span>
+              </div>
+            )}
+            {order.cgst > 0 && (
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="text-gray-600">CGST</span>
+                <span className="font-medium">{formatCurrency(order.cgst)}</span>
+              </div>
+            )}
+            {order.sgst > 0 && (
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="text-gray-600">SGST</span>
+                <span className="font-medium">{formatCurrency(order.sgst)}</span>
+              </div>
+            )}
+            {order.igst > 0 && (
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="text-gray-600">IGST</span>
+                <span className="font-medium">{formatCurrency(order.igst)}</span>
+              </div>
+            )}
+            <div className="flex justify-between py-3 text-lg font-bold bg-blue-50 px-3 rounded-md mt-2">
+              <span>Total</span>
+              <span>{formatCurrency(order.total)}</span>
+            </div>
+          </div>
+        </div>
+
+        {order.customerNotes && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Customer Notes</h3>
+            <p className="text-sm text-gray-600">{order.customerNotes}</p>
+          </div>
+        )}
+
+        {order.termsAndConditions && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Terms & Conditions</h3>
+            <p className="text-sm text-gray-600">{order.termsAndConditions}</p>
+          </div>
+        )}
+
+        <div className="mt-12 pt-8 border-t border-gray-300 text-center text-sm text-gray-500">
+          <p>Thank you for your business!</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SalesOrderDetailPanel({ order, onClose, onEdit, onDelete, onConvertToInvoice }: SalesOrderDetailPanelProps) {
+  const [activeTab, setActiveTab] = useState("details");
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+
+  const handlePrint = () => {
+    const printContent = document.getElementById('pdf-content');
+    if (printContent) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>${order.salesOrderNumber} - Sales Order</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { padding: 8px 12px; text-align: left; }
+                th { background-color: #f3f4f6; }
+                .text-right { text-align: right; }
+                .font-medium { font-weight: 500; }
+                .font-semibold { font-weight: 600; }
+                .font-bold { font-weight: 700; }
+                .text-sm { font-size: 14px; }
+                .text-xs { font-size: 12px; }
+                .text-lg { font-size: 18px; }
+                .text-2xl { font-size: 24px; }
+                .text-gray-500 { color: #6b7280; }
+                .text-gray-600 { color: #4b5563; }
+                .text-blue-600 { color: #2563eb; }
+                .mb-2 { margin-bottom: 8px; }
+                .mb-6 { margin-bottom: 24px; }
+                .mb-8 { margin-bottom: 32px; }
+                .mt-2 { margin-top: 8px; }
+                .mt-12 { margin-top: 48px; }
+                .pt-8 { padding-top: 32px; }
+                .py-2 { padding-top: 8px; padding-bottom: 8px; }
+                .py-3 { padding-top: 12px; padding-bottom: 12px; }
+                .px-3 { padding-left: 12px; padding-right: 12px; }
+                .p-4 { padding: 16px; }
+                .rounded-md { border-radius: 6px; }
+                .border-b { border-bottom: 1px solid #e5e7eb; }
+                .border-b-2 { border-bottom: 2px solid #2563eb; }
+                .border-t { border-top: 1px solid #d1d5db; }
+                .bg-gray-50 { background-color: #f9fafb; }
+                .bg-gray-100 { background-color: #f3f4f6; }
+                .bg-blue-50 { background-color: #eff6ff; }
+                .grid { display: grid; }
+                .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+                .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+                .gap-4 { gap: 16px; }
+                .gap-8 { gap: 32px; }
+                .flex { display: flex; }
+                .justify-between { justify-content: space-between; }
+                .justify-end { justify-content: flex-end; }
+                .items-start { align-items: flex-start; }
+                .text-center { text-align: center; }
+                .uppercase { text-transform: uppercase; }
+                .w-72 { width: 288px; }
+                .max-w-3xl { max-width: 768px; margin: 0 auto; }
+                @media print {
+                  body { padding: 0; }
+                }
+              </style>
+            </head>
+            <body>
+              ${printContent.innerHTML}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    } else {
+      setShowPdfPreview(true);
+      setTimeout(() => {
+        handlePrint();
+      }, 100);
+    }
+  };
+
+  return (
+    <div className="h-full flex flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white" data-testid="text-order-number">{order.salesOrderNumber}</h2>
+          <p className="text-sm text-slate-500">{order.customerName}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant={showPdfPreview ? "default" : "ghost"} 
+            size="icon" 
+            onClick={() => setShowPdfPreview(!showPdfPreview)}
+            data-testid="button-pdf-view"
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onClose} data-testid="button-close-panel">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-200 dark:border-slate-700 overflow-x-auto flex-wrap">
+        <Button variant="ghost" size="sm" className="gap-1.5" onClick={onEdit} data-testid="button-edit-order">
+          <Pencil className="h-3.5 w-3.5" />
+          Edit
+        </Button>
+        <Button variant="ghost" size="sm" className="gap-1.5" data-testid="button-send-email">
+          <Send className="h-3.5 w-3.5" />
+          Send Email
+        </Button>
+        <Button variant="ghost" size="sm" className="gap-1.5" onClick={handlePrint} data-testid="button-print">
+          <Printer className="h-3.5 w-3.5" />
+          PDF/Print
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-1.5" data-testid="button-convert-invoice">
+              <Receipt className="h-3.5 w-3.5" />
+              Convert to Invoice
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuItem onClick={onConvertToInvoice} data-testid="menu-item-invoice-all">
+              <Receipt className="mr-2 h-4 w-4" /> Invoice All Items
+            </DropdownMenuItem>
+            <DropdownMenuItem data-testid="menu-item-invoice-selected">
+              <Package className="mr-2 h-4 w-4" /> Invoice Selected Items
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" data-testid="button-more-options">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem data-testid="menu-item-clone">
+              <FileText className="mr-2 h-4 w-4" /> Clone
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive" data-testid="menu-item-delete">
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {showPdfPreview ? (
+        <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-800">
+          <SalesOrderPdfPreview order={order} />
+        </div>
+      ) : (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex items-center px-6 border-b border-slate-200 dark:border-slate-700">
+          <TabsList className="h-auto p-0 bg-transparent">
+            <TabsTrigger 
+              value="details" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
+              data-testid="tab-details"
+            >
+              Order Details
+            </TabsTrigger>
+            <TabsTrigger 
+              value="invoices" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
+              data-testid="tab-invoices"
+            >
+              Invoices ({order.invoices?.length || 0})
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="details" className="flex-1 overflow-auto p-6 mt-0">
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-md p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="h-4 w-4 text-slate-500" />
+                  <span className="text-xs text-slate-500 uppercase">Order Status</span>
+                </div>
+                <Badge className={getStatusBadgeStyles(order.orderStatus)}>
+                  {order.orderStatus}
+                </Badge>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-md p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Receipt className="h-4 w-4 text-slate-500" />
+                  <span className="text-xs text-slate-500 uppercase">Invoice Status</span>
+                </div>
+                <Badge className={getStatusBadgeStyles(order.invoiceStatus)}>
+                  {order.invoiceStatus}
+                </Badge>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-md p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CreditCard className="h-4 w-4 text-slate-500" />
+                  <span className="text-xs text-slate-500 uppercase">Payment Status</span>
+                </div>
+                <Badge className={getStatusBadgeStyles(order.paymentStatus)}>
+                  {order.paymentStatus}
+                </Badge>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-md p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Truck className="h-4 w-4 text-slate-500" />
+                  <span className="text-xs text-slate-500 uppercase">Shipment</span>
+                </div>
+                <Badge className={getStatusBadgeStyles(order.shipmentStatus)}>
+                  {order.shipmentStatus}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+              <div className="grid grid-cols-2 gap-8">
+                <div>
+                  <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-slate-500" /> Billing Address
+                  </h4>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    {formatAddress(order.billingAddress).map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-slate-500" /> Shipping Address
+                  </h4>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    {formatAddress(order.shippingAddress).map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+              <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-4">Items</h4>
+              <div className="border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Items & Description</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Ordered</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase">Status</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Rate</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Discount</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                    {order.items.map((item) => (
+                      <tr key={item.id} data-testid={`row-item-${item.id}`}>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-slate-900 dark:text-white">{item.name}</div>
+                          {item.description && <div className="text-xs text-slate-500">{item.description}</div>}
+                          {item.hsnSac && <div className="text-xs text-slate-400">HSN/SAC: {item.hsnSac}</div>}
+                        </td>
+                        <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{item.ordered} {item.unit}</td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge variant="outline" className={getStatusBadgeStyles(item.invoiceStatus)}>
+                            {item.invoiceStatus}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{formatCurrency(item.rate)}</td>
+                        <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">
+                          {item.discount > 0 ? (item.discountType === 'percentage' ? `${item.discount}%` : formatCurrency(item.discount)) : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white">{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+              <div className="flex justify-end">
+                <div className="w-72 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Sub Total</span>
+                    <span className="text-slate-900 dark:text-white">{formatCurrency(order.subTotal)}</span>
+                  </div>
+                  {order.shippingCharges > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Shipping Charges</span>
+                      <span className="text-slate-900 dark:text-white">{formatCurrency(order.shippingCharges)}</span>
+                    </div>
+                  )}
+                  {order.cgst > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">CGST (9%)</span>
+                      <span className="text-slate-900 dark:text-white">{formatCurrency(order.cgst)}</span>
+                    </div>
+                  )}
+                  {order.sgst > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">SGST (9%)</span>
+                      <span className="text-slate-900 dark:text-white">{formatCurrency(order.sgst)}</span>
+                    </div>
+                  )}
+                  {order.igst > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">IGST (18%)</span>
+                      <span className="text-slate-900 dark:text-white">{formatCurrency(order.igst)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm font-semibold pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-900 dark:text-white">Total</span>
+                    <span className="text-slate-900 dark:text-white">{formatCurrency(order.total)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {order.customerNotes && (
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">Customer Notes</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{order.customerNotes}</p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="invoices" className="flex-1 overflow-auto p-6 mt-0">
+          {order.invoices && order.invoices.length > 0 ? (
+            <div className="space-y-4">
+              {order.invoices.map((invoice) => (
+                <div key={invoice.id} className="border border-slate-200 dark:border-slate-700 rounded-md p-4" data-testid={`card-invoice-${invoice.id}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-slate-900 dark:text-white">{invoice.invoiceNumber}</p>
+                      <p className="text-sm text-slate-500">{formatDate(invoice.date)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-slate-900 dark:text-white">{formatCurrency(invoice.amount)}</p>
+                      <Badge className={getStatusBadgeStyles(invoice.status)}>{invoice.status}</Badge>
+                    </div>
+                  </div>
+                  {invoice.balanceDue > 0 && (
+                    <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between text-sm">
+                      <span className="text-slate-500">Balance Due</span>
+                      <span className="text-amber-600 font-medium">{formatCurrency(invoice.balanceDue)}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-500">
+              <Receipt className="h-8 w-8 mx-auto mb-2 text-slate-300" />
+              <p className="text-sm">No invoices yet</p>
+              <p className="text-xs text-slate-400">Convert this order to an invoice to get started</p>
+            </div>
+          )}
+        </TabsContent>
+        </Tabs>
+      )}
+
+      <div className="border-t border-slate-200 dark:border-slate-700 p-4 flex items-center justify-between">
+        <Button variant="ghost" size="icon" data-testid="button-prev-order">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" data-testid="button-next-order">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default function SalesOrdersPage() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [salesOrders, setSalesOrders] = useState<SalesOrderListItem[]>([]);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<SalesOrderDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSalesOrders();
+  }, []);
+
+  const fetchSalesOrders = async () => {
+    try {
+      const response = await fetch('/api/sales-orders');
+      if (response.ok) {
+        const data = await response.json();
+        setSalesOrders(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch sales orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchOrderDetail = async (id: string) => {
+    try {
+      const response = await fetch(`/api/sales-orders/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedOrder(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch order detail:', error);
+    }
+  };
+
+  const handleOrderClick = (order: SalesOrderListItem) => {
+    fetchOrderDetail(order.id);
+  };
+
+  const handleClosePanel = () => {
+    setSelectedOrder(null);
+  };
+
+  const handleEditOrder = () => {
+    if (selectedOrder) {
+      setLocation(`/sales-orders/${selectedOrder.id}/edit`);
+    }
+  };
+
+  const toggleSelectOrder = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedOrders.includes(id)) {
+      setSelectedOrders(selectedOrders.filter(i => i !== id));
+    } else {
+      setSelectedOrders([...selectedOrders, id]);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    if (selectedOrder) {
+      setOrderToDelete(selectedOrder.id);
+      setDeleteDialogOpen(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!orderToDelete) return;
+    try {
+      const response = await fetch(`/api/sales-orders/${orderToDelete}`, { method: 'DELETE' });
+      if (response.ok) {
+        toast({ title: "Sales order deleted successfully" });
+        handleClosePanel();
+        fetchSalesOrders();
+      }
+    } catch (error) {
+      toast({ title: "Failed to delete sales order", variant: "destructive" });
+    } finally {
+      setDeleteDialogOpen(false);
+      setOrderToDelete(null);
+    }
+  };
+
+  const handleConvertToInvoice = async () => {
+    if (!selectedOrder) return;
+    try {
+      const response = await fetch(`/api/sales-orders/${selectedOrder.id}/convert-to-invoice`, { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        toast({ title: `Invoice ${data.data.invoiceNumber} created successfully` });
+        fetchOrderDetail(selectedOrder.id);
+        fetchSalesOrders();
+      }
+    } catch (error) {
+      toast({ title: "Failed to convert to invoice", variant: "destructive" });
+    }
+  };
+
+  const filteredOrders = salesOrders.filter(order => 
+    order.salesOrderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.referenceNumber && order.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  return (
+    <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300">
+      <div className={`flex-1 flex flex-col overflow-hidden ${selectedOrder ? 'max-w-md' : ''}`}>
+        <div className="flex items-center justify-between p-4 gap-4">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">All Sales Orders</h1>
+            <ChevronDown className="h-4 w-4 text-slate-500" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setLocation("/sales-orders/create")} 
+              className="bg-blue-600 hover:bg-blue-700 gap-1.5"
+              data-testid="button-new-order"
+            >
+              <Plus className="h-4 w-4" /> New
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" data-testid="button-menu">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Sort</DropdownMenuItem>
+                <DropdownMenuItem>Import Sales Orders</DropdownMenuItem>
+                <DropdownMenuItem>Export Sales Orders</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Preferences</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {!selectedOrder && (
+          <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search sales orders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+                data-testid="input-search"
+              />
+            </div>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Filter className="h-4 w-4" />
+              Filter
+            </Button>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-auto border-t border-slate-200 dark:border-slate-700">
+          {loading ? (
+            <div className="p-8 text-center text-slate-500">Loading sales orders...</div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">
+              <Package className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+              <p className="font-medium">No sales orders found</p>
+              <p className="text-sm text-slate-400 mt-1">Create your first sales order to get started</p>
+              <Button 
+                onClick={() => setLocation("/sales-orders/create")} 
+                className="mt-4 bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Create Sales Order
+              </Button>
+            </div>
+          ) : selectedOrder ? (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {filteredOrders.map((order) => (
+                <div 
+                  key={order.id} 
+                  className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
+                    selectedOrder?.id === order.id ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-l-blue-600' : ''
+                  }`}
+                  onClick={() => handleOrderClick(order)}
+                  data-testid={`card-order-${order.id}`}
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        checked={selectedOrders.includes(order.id)}
+                        onClick={(e) => toggleSelectOrder(order.id, e)}
+                      />
+                      <span className="font-medium text-slate-900 dark:text-white truncate">{order.customerName}</span>
+                    </div>
+                    <span className="font-semibold text-slate-900 dark:text-white">{formatCurrency(order.total)}</span>
+                  </div>
+                  <div className="ml-6 flex items-center gap-2 text-sm flex-wrap">
+                    <span className="text-slate-500">{order.salesOrderNumber}</span>
+                    <span className="text-slate-300">|</span>
+                    <span className="text-slate-500">{formatDate(order.date)}</span>
+                  </div>
+                  <div className="ml-6 mt-2 flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className={getStatusBadgeStyles(order.orderStatus)}>
+                      {order.orderStatus}
+                    </Badge>
+                    <Badge variant="outline" className={getStatusBadgeStyles(order.invoiceStatus)}>
+                      {order.invoiceStatus}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
+                <tr>
+                  <th className="w-12 px-4 py-3">
+                    <Checkbox />
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Sales Order#</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Reference#</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Customer Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Invoiced</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Payment</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Amount</th>
+                  <th className="w-10 px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredOrders.map((order) => (
+                  <tr 
+                    key={order.id} 
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                    onClick={() => handleOrderClick(order)}
+                    data-testid={`row-order-${order.id}`}
+                  >
+                    <td className="px-4 py-3">
+                      <Checkbox 
+                        checked={selectedOrders.includes(order.id)}
+                        onClick={(e) => toggleSelectOrder(order.id, e)}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{formatDate(order.date)}</td>
+                    <td className="px-4 py-3">
+                      <span className="text-blue-600 font-medium">{order.salesOrderNumber}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{order.referenceNumber || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white font-medium">{order.customerName}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className={getStatusBadgeStyles(order.orderStatus)}>
+                        {order.orderStatus}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className={getStatusBadgeStyles(order.invoiceStatus)}>
+                        {order.invoiceStatus}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className={getStatusBadgeStyles(order.paymentStatus)}>
+                        {order.paymentStatus}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-900 dark:text-white">{formatCurrency(order.total)}</td>
+                    <td className="px-4 py-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/sales-orders/${order.id}/edit`); }}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Receipt className="mr-2 h-4 w-4" /> Convert to Invoice
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      {selectedOrder && (
+        <div className="w-[600px] flex-shrink-0">
+          <SalesOrderDetailPanel
+            order={selectedOrder}
+            onClose={handleClosePanel}
+            onEdit={handleEditOrder}
+            onDelete={handleDeleteClick}
+            onConvertToInvoice={handleConvertToInvoice}
+          />
+        </div>
+      )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Sales Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this sales order? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

@@ -1,0 +1,373 @@
+{
+  "quotes": [
+    {
+      "id": "1765280697873",
+      "quoteNumber": "QT-000005",
+      "referenceNumber": "",
+      "date": "2025-12-09",
+      "expiryDate": "",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "DRAFT",
+      "emailRecipients": [],
+      "createdAt": "2025-12-09T11:44:57.873Z",
+      "updatedAt": "2025-12-09T11:44:57.873Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-09T11:44:57.873Z",
+          "action": "created",
+          "description": "Quote created for ₹0",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "quoteNumber": "QT-000004",
+      "referenceNumber": "",
+      "date": "2025-11-13",
+      "expiryDate": "2025-12-13",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED",
+      "billingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "salesperson": "",
+      "projectName": "",
+      "subject": "Mouse",
+      "placeOfSupply": "Maharashtra",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "4",
+          "name": "Mouse",
+          "description": "Dell 450",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 540,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 540
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 15000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 15000
+        }
+      ],
+      "subTotal": 15540,
+      "shippingCharges": 178,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 1398.6,
+      "sgst": 1398.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 18515.2,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "ACCEPTED",
+      "emailRecipients": [
+        "rohan@cybaemtech.com"
+      ],
+      "createdAt": "2025-11-13T15:15:00.000Z",
+      "updatedAt": "2025-11-13T15:17:00.000Z",
+      "createdBy": "Rohan Bhosale",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-11-13T15:15:00.000Z",
+          "action": "created",
+          "description": "Quote created for ₹18,515.20",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-11-13T15:16:00.000Z",
+          "action": "emailed",
+          "description": "Quote emailed to rohan@cybaemtech.com",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-11-13T15:17:00.000Z",
+          "action": "accepted",
+          "description": "Quote marked as accepted",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-11-13T15:18:00.000Z",
+          "action": "converted",
+          "description": "Quote converted to Sales Order SO-00001",
+          "link": "/sales-orders/1",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-09-12T11:00:00.000Z",
+          "action": "updated",
+          "description": "Template has been updated",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-09-12T11:01:00.000Z",
+          "action": "converted",
+          "description": "Quote converted to Sales Order SO-00002",
+          "link": "/sales-orders/2",
+          "user": "Rohan Bhosale"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "quoteNumber": "QT-000003",
+      "referenceNumber": "",
+      "date": "2025-10-08",
+      "expiryDate": "2025-11-08",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "Maharashtra",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Antivirus",
+          "description": "",
+          "quantity": 43,
+          "unit": "",
+          "rate": 700,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 30100
+        }
+      ],
+      "subTotal": 30100,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 30100,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "SENT",
+      "emailRecipients": [],
+      "createdAt": "2025-10-08T10:00:00.000Z",
+      "updatedAt": "2025-10-08T10:00:00.000Z",
+      "createdBy": "Rohan Bhosale",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-10-08T10:00:00.000Z",
+          "action": "created",
+          "description": "Quote created for ₹30,100.00",
+          "user": "Rohan Bhosale"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "quoteNumber": "QT-000002",
+      "referenceNumber": "",
+      "date": "2025-10-08",
+      "expiryDate": "2025-11-08",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [],
+      "subTotal": 16284,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 16284,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "DRAFT",
+      "emailRecipients": [],
+      "createdAt": "2025-10-08T09:00:00.000Z",
+      "updatedAt": "2025-10-08T09:00:00.000Z",
+      "createdBy": "Rohan Bhosale",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-10-08T09:00:00.000Z",
+          "action": "created",
+          "description": "Quote created for ₹16,284.00",
+          "user": "Rohan Bhosale"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "quoteNumber": "QT-000001",
+      "referenceNumber": "",
+      "date": "2025-04-24",
+      "expiryDate": "2025-05-24",
+      "customerId": "4",
+      "customerName": "Saturo Technologies Private Limited",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [],
+      "subTotal": 566400,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 566400,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "DRAFT",
+      "emailRecipients": [],
+      "createdAt": "2025-04-24T10:00:00.000Z",
+      "updatedAt": "2025-04-24T10:00:00.000Z",
+      "createdBy": "Rohan Bhosale",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-04-24T10:00:00.000Z",
+          "action": "created",
+          "description": "Quote created for ₹5,66,400.00",
+          "user": "Rohan Bhosale"
+        }
+      ]
+    }
+  ],
+  "nextQuoteNumber": 6
+}

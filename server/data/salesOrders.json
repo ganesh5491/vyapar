@@ -1,0 +1,376 @@
+{
+  "salesOrders": [
+    {
+      "id": "1765300911055",
+      "salesOrderNumber": "SO-00003",
+      "referenceNumber": "",
+      "date": "2025-12-09",
+      "expectedShipmentDate": "2025-12-11",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Net 15",
+      "deliveryMethod": "Standard Delivery",
+      "salesperson": "rohan",
+      "placeOfSupply": "maharashtra",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "hsnSac": "998315",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 555,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 555,
+          "ordered": 1,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        }
+      ],
+      "subTotal": 555,
+      "shippingCharges": 49.94,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 604.94,
+      "customerNotes": "Looking forward to your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [
+        {
+          "id": "INV-000007",
+          "invoiceNumber": "INV-000007",
+          "date": "2025-12-09",
+          "dueDate": "2025-12-09",
+          "status": "DRAFT",
+          "amount": 604.94,
+          "balanceDue": 604.94
+        }
+      ],
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-09T17:21:51.055Z",
+      "updatedAt": "2025-12-09T17:22:31.638Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-09T17:21:51.055Z",
+          "action": "created",
+          "description": "Sales Order created for ₹604.94",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-09T17:22:31.638Z",
+          "action": "invoiced",
+          "description": "Invoice INV-000007 created",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "salesOrderNumber": "SO-00001",
+      "referenceNumber": "QT-000004",
+      "date": "2025-11-13",
+      "expectedShipmentDate": "",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED",
+      "billingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "Standard Delivery",
+      "salesperson": "",
+      "placeOfSupply": "maharashtra (27)",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "4",
+          "name": "Mouse",
+          "description": "Dell 450",
+          "hsnSac": "84716060",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 500,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 500,
+          "ordered": 1,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "hsnSac": "998315",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 13500,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 13500,
+          "ordered": 1,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        }
+      ],
+      "subTotal": 14000,
+      "shippingCharges": 178,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 2520,
+      "adjustment": 0,
+      "total": 16698,
+      "customerNotes": "Thanks for your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [
+        {
+          "id": "INV-000006",
+          "invoiceNumber": "INV-000006",
+          "date": "2025-12-09",
+          "dueDate": "2025-12-09",
+          "status": "DRAFT",
+          "amount": 16698,
+          "balanceDue": 16698
+        },
+        {
+          "id": "INV-000008",
+          "invoiceNumber": "INV-000008",
+          "date": "2025-12-10",
+          "dueDate": "2025-12-10",
+          "status": "DRAFT",
+          "amount": 16698,
+          "balanceDue": 16698
+        },
+        {
+          "id": "INV-00009",
+          "invoiceNumber": "INV-00009",
+          "date": "2025-12-10",
+          "dueDate": "2025-12-10",
+          "status": "DRAFT",
+          "amount": 16698,
+          "balanceDue": 16698
+        }
+      ],
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-11-13T15:18:00.000Z",
+      "updatedAt": "2025-12-10T04:52:26.935Z",
+      "createdBy": "Rohan Bhosale",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-11-13T15:18:00.000Z",
+          "action": "created",
+          "description": "Sales Order created from Quote QT-000004",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-09T17:19:47.382Z",
+          "action": "invoiced",
+          "description": "Invoice INV-000006 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-09T17:20:28.476Z",
+          "action": "updated",
+          "description": "Sales Order has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-10T04:07:59.293Z",
+          "action": "invoiced",
+          "description": "Invoice INV-000008 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-10T04:52:26.935Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00009 created",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "salesOrderNumber": "SO-00002",
+      "referenceNumber": "QT-000004",
+      "date": "2025-09-12",
+      "expectedShipmentDate": "",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED",
+      "billingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "",
+      "salesperson": "",
+      "placeOfSupply": "Maharashtra (27)",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "4",
+          "name": "Mouse",
+          "description": "Dell 450",
+          "hsnSac": "84716060",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 540,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 540,
+          "ordered": 1,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "hsnSac": "998315",
+          "quantity": 1,
+          "unit": "",
+          "rate": 15000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 15000,
+          "ordered": 1,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        }
+      ],
+      "subTotal": 15540,
+      "shippingCharges": 178,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 1398.6,
+      "sgst": 1398.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 18515.2,
+      "customerNotes": "Thanks for your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [
+        {
+          "id": "INV-000004",
+          "invoiceNumber": "INV-000004",
+          "date": "2025-09-12",
+          "dueDate": "2025-09-12",
+          "status": "DRAFT",
+          "amount": 16698,
+          "balanceDue": 16698
+        },
+        {
+          "id": "INV-000005",
+          "invoiceNumber": "INV-000005",
+          "date": "2025-12-09",
+          "dueDate": "2025-12-09",
+          "status": "DRAFT",
+          "amount": 18515.2,
+          "balanceDue": 18515.2
+        }
+      ],
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-09-12T11:01:00.000Z",
+      "updatedAt": "2025-12-09T16:41:52.394Z",
+      "createdBy": "Rohan Bhosale",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-09-12T11:01:00.000Z",
+          "action": "created",
+          "description": "Sales Order created from Quote QT-000004",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-09-12T11:02:00.000Z",
+          "action": "invoiced",
+          "description": "Invoice INV-000004 created",
+          "user": "Rohan Bhosale"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-09T16:41:52.394Z",
+          "action": "invoiced",
+          "description": "Invoice INV-000005 created",
+          "user": "Admin User"
+        }
+      ]
+    }
+  ],
+  "nextSalesOrderNumber": 4,
+  "nextInvoiceNumber": 10
+}

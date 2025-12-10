@@ -1,0 +1,1593 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Receipt,
+  Upload,
+  Download,
+  Settings,
+  RefreshCw,
+  ChevronDown,
+  X,
+  Calendar,
+  Inbox,
+  FileText,
+  Tag,
+  Car
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { format } from "date-fns";
+import ExpenseDetailPanel from "@/modules/expenses/components/ExpenseDetailPanel";
+
+interface Expense {
+  id: string;
+  expenseNumber: string;
+  date: string;
+  expenseAccount: string;
+  amount: number;
+  currency: string;
+  paidThrough: string;
+  expenseType: string;
+  sac: string;
+  vendorId: string;
+  vendorName: string;
+  gstTreatment: string;
+  sourceOfSupply: string;
+  destinationOfSupply: string;
+  reverseCharge: boolean;
+  tax: string;
+  taxAmount: number;
+  amountIs: string;
+  invoiceNumber: string;
+  notes: string;
+  customerId: string;
+  customerName: string;
+  reportingTags: string[];
+  isBillable: boolean;
+  status: string;
+  attachments: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface MileageSettings {
+  associateEmployeesToExpenses: boolean;
+  defaultMileageCategory: string;
+  defaultUnit: string;
+  mileageRates: Array<{
+    id: string;
+    startDate: string;
+    rate: number;
+    currency: string;
+  }>;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
+interface Customer {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
+const INDIAN_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
+  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
+  "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Delhi", "Jammu and Kashmir", "Ladakh", "Puducherry", "Chandigarh",
+  "Dadra and Nagar Haveli", "Daman and Diu", "Lakshadweep", "Andaman and Nicobar"
+];
+
+const EXPENSE_ACCOUNTS = [
+  "Advertising And Marketing",
+  "Automobile Expense",
+  "Bad Debt",
+  "Bank Fees and Charges",
+  "Consultant Expense",
+  "Credit Card Charges",
+  "Depreciation Expense",
+  "IT and Internet Expenses",
+  "Janitorial Expense",
+  "Lodging",
+  "Meals and Entertainment",
+  "Office Supplies",
+  "Other Expenses",
+  "Postage",
+  "Printing and Stationery",
+  "Rent Expense",
+  "Repairs and Maintenance",
+  "Salaries and Employee Wages",
+  "Telephone Expense",
+  "Transportation Expense",
+  "Travel Expense",
+  "Fuel/Mileage Expense"
+];
+
+const TAX_OPTIONS = [
+  { value: "gst_5", label: "GST 5%", rate: 5 },
+  { value: "gst_12", label: "GST 12%", rate: 12 },
+  { value: "gst_18", label: "GST 18%", rate: 18 },
+  { value: "gst_28", label: "GST 28%", rate: 28 },
+  { value: "igst_5", label: "IGST 5%", rate: 5 },
+  { value: "igst_12", label: "IGST 12%", rate: 12 },
+  { value: "igst_18", label: "IGST 18%", rate: 18 },
+  { value: "igst_28", label: "IGST 28%", rate: 28 },
+  { value: "exempt", label: "Exempt", rate: 0 },
+  { value: "none", label: "None", rate: 0 },
+];
+
+const GST_TREATMENTS = [
+  "Registered Business - Regular",
+  "Registered Business - Composition",
+  "Unregistered Business",
+  "Consumer",
+  "Overseas",
+  "Special Economic Zone",
+  "Deemed Export"
+];
+
+const PAID_THROUGH_ACCOUNTS = [
+  "Petty Cash",
+  "Undeposited Funds",
+  "Cash on Hand",
+  "Bank Account"
+];
+
+export default function Expenses() {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("all-expenses");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("createdTime");
+  const [showRecordExpense, setShowRecordExpense] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showMileageSettings, setShowMileageSettings] = useState(false);
+  const [expenseTab, setExpenseTab] = useState("record-expense");
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+
+  const [expenseForm, setExpenseForm] = useState({
+    date: format(new Date(), 'yyyy-MM-dd'),
+    expenseAccount: "",
+    amount: "",
+    currency: "INR",
+    paidThrough: "",
+    expenseType: "services",
+    sac: "",
+    vendorId: "",
+    vendorName: "",
+    gstTreatment: "",
+    sourceOfSupply: "",
+    destinationOfSupply: "[MH] - Maharashtra",
+    reverseCharge: false,
+    tax: "",
+    amountIs: "tax_exclusive",
+    invoiceNumber: "",
+    notes: "",
+    customerId: "",
+    customerName: "",
+    reportingTags: [] as string[],
+  });
+
+  const [mileageForm, setMileageForm] = useState({
+    date: format(new Date(), 'yyyy-MM-dd'),
+    employee: "",
+    calculationMethod: "distance_travelled",
+    distance: "",
+    unit: "km",
+    startOdometer: "",
+    endOdometer: "",
+    amount: "",
+    currency: "INR",
+    paidThrough: "",
+    vendorId: "",
+    vendorName: "",
+    invoiceNumber: "",
+    notes: "",
+    customerId: "",
+    customerName: "",
+    reportingTags: [] as string[],
+  });
+
+  const [mileageSettingsForm, setMileageSettingsForm] = useState({
+    associateEmployeesToExpenses: false,
+    defaultMileageCategory: "Fuel/Mileage Expense",
+    defaultUnit: "km",
+    newRateDate: "",
+    newRateValue: "",
+  });
+
+  const { data: expensesData, isLoading } = useQuery<{ success: boolean; data: Expense[] }>({
+    queryKey: ['/api/expenses'],
+  });
+
+  const { data: vendorsData } = useQuery<{ success: boolean; data: Vendor[] }>({
+    queryKey: ['/api/vendors'],
+  });
+
+  const { data: customersData } = useQuery<{ success: boolean; data: Customer[] }>({
+    queryKey: ['/api/customers'],
+  });
+
+  const { data: mileageSettingsData } = useQuery<{ success: boolean; data: MileageSettings }>({
+    queryKey: ['/api/mileage-settings'],
+  });
+
+  const createExpenseMutation = useMutation({
+    mutationFn: async (expense: any) => {
+      return apiRequest('POST', '/api/expenses', expense);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/expenses'] });
+      setShowRecordExpense(false);
+      resetExpenseForm();
+      toast({ title: "Expense recorded successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to record expense", variant: "destructive" });
+    },
+  });
+
+  const createMileageMutation = useMutation({
+    mutationFn: async (mileage: any) => {
+      return apiRequest('POST', '/api/mileage', mileage);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/mileage'] });
+      setShowRecordExpense(false);
+      resetMileageForm();
+      toast({ title: "Mileage recorded successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to record mileage", variant: "destructive" });
+    },
+  });
+
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest('DELETE', `/api/expenses/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/expenses'] });
+      toast({ title: "Expense deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete expense", variant: "destructive" });
+    },
+  });
+
+  const updateMileageSettingsMutation = useMutation({
+    mutationFn: async (settings: any) => {
+      return apiRequest('PUT', '/api/mileage-settings', settings);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/mileage-settings'] });
+      toast({ title: "Mileage settings updated" });
+    },
+  });
+
+  const addMileageRateMutation = useMutation({
+    mutationFn: async (rate: any) => {
+      return apiRequest('POST', '/api/mileage-settings/rates', rate);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/mileage-settings'] });
+      setMileageSettingsForm(prev => ({ ...prev, newRateDate: "", newRateValue: "" }));
+      toast({ title: "Mileage rate added" });
+    },
+  });
+
+  const resetExpenseForm = () => {
+    setExpenseForm({
+      date: format(new Date(), 'yyyy-MM-dd'),
+      expenseAccount: "",
+      amount: "",
+      currency: "INR",
+      paidThrough: "",
+      expenseType: "services",
+      sac: "",
+      vendorId: "",
+      vendorName: "",
+      gstTreatment: "",
+      sourceOfSupply: "",
+      destinationOfSupply: "[MH] - Maharashtra",
+      reverseCharge: false,
+      tax: "",
+      amountIs: "tax_exclusive",
+      invoiceNumber: "",
+      notes: "",
+      customerId: "",
+      customerName: "",
+      reportingTags: [],
+    });
+  };
+
+  const resetMileageForm = () => {
+    setMileageForm({
+      date: format(new Date(), 'yyyy-MM-dd'),
+      employee: "",
+      calculationMethod: "distance_travelled",
+      distance: "",
+      unit: "km",
+      startOdometer: "",
+      endOdometer: "",
+      amount: "",
+      currency: "INR",
+      paidThrough: "",
+      vendorId: "",
+      vendorName: "",
+      invoiceNumber: "",
+      notes: "",
+      customerId: "",
+      customerName: "",
+      reportingTags: [],
+    });
+  };
+
+  const handleSubmitExpense = () => {
+    if (!expenseForm.expenseAccount || !expenseForm.amount) {
+      toast({ title: "Please fill in required fields", variant: "destructive" });
+      return;
+    }
+    createExpenseMutation.mutate({
+      ...expenseForm,
+      amount: parseFloat(expenseForm.amount) || 0,
+    });
+  };
+
+  const handleSubmitMileage = () => {
+    if (!mileageForm.amount) {
+      toast({ title: "Please fill in required fields", variant: "destructive" });
+      return;
+    }
+    createMileageMutation.mutate({
+      ...mileageForm,
+      distance: parseFloat(mileageForm.distance) || 0,
+      amount: parseFloat(mileageForm.amount) || 0,
+      startOdometer: parseFloat(mileageForm.startOdometer) || 0,
+      endOdometer: parseFloat(mileageForm.endOdometer) || 0,
+    });
+  };
+
+  const handleSaveAndNew = () => {
+    if (expenseTab === "record-expense") {
+      if (!expenseForm.expenseAccount || !expenseForm.amount) {
+        toast({ title: "Please fill in required fields", variant: "destructive" });
+        return;
+      }
+      createExpenseMutation.mutate({
+        ...expenseForm,
+        amount: parseFloat(expenseForm.amount) || 0,
+      }, {
+        onSuccess: () => {
+          resetExpenseForm();
+        }
+      });
+    } else {
+      if (!mileageForm.amount) {
+        toast({ title: "Please fill in required fields", variant: "destructive" });
+        return;
+      }
+      createMileageMutation.mutate({
+        ...mileageForm,
+        distance: parseFloat(mileageForm.distance) || 0,
+        amount: parseFloat(mileageForm.amount) || 0,
+        startOdometer: parseFloat(mileageForm.startOdometer) || 0,
+        endOdometer: parseFloat(mileageForm.endOdometer) || 0,
+      }, {
+        onSuccess: () => {
+          resetMileageForm();
+        }
+      });
+    }
+  };
+
+  const expenses = expensesData?.data || [];
+  const vendors = vendorsData?.data || [];
+  const customers = customersData?.data || [];
+  const mileageSettings = mileageSettingsData?.data;
+
+  const sortedExpenses = [...expenses].sort((a, b) => {
+    let aVal: any = a[sortBy as keyof Expense];
+    let bVal: any = b[sortBy as keyof Expense];
+    if (sortBy === 'amount') {
+      aVal = parseFloat(String(aVal)) || 0;
+      bVal = parseFloat(String(bVal)) || 0;
+    }
+    if (aVal > bVal) return -1;
+    if (aVal < bVal) return 1;
+    return 0;
+  });
+
+  const filteredExpenses = sortedExpenses.filter(expense =>
+    expense.expenseNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    expense.vendorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    expense.expenseAccount?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const handleExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+  };
+
+  const handleClosePanel = () => {
+    setSelectedExpense(null);
+  };
+
+  const handleEditExpense = () => {
+    if (selectedExpense) {
+      // Navigate to edit page or open edit dialog
+      toast({ title: "Edit functionality coming soon" });
+    }
+  };
+
+  const handleDeleteExpense = () => {
+    if (selectedExpense) {
+      deleteExpenseMutation.mutate(selectedExpense.id);
+      setSelectedExpense(null);
+    }
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300">
+      <div className={`flex-1 flex flex-col overflow-hidden ${selectedExpense ? 'border-r border-slate-200' : ''}`}>
+        <div className="max-w-7xl mx-auto w-full space-y-4 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <TabsList className="bg-transparent gap-6 p-0">
+                  <TabsTrigger
+                    value="receipts-inbox"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-1 pb-2"
+                    data-testid="tab-receipts-inbox"
+                  >
+                    Receipts Inbox
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="all-expenses"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-1 pb-2 flex items-center gap-1"
+                    data-testid="tab-all-expenses"
+                  >
+                    All Expenses <ChevronDown className="h-4 w-4" />
+                  </TabsTrigger>
+                </TabsList>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+                    onClick={() => setShowRecordExpense(true)}
+                    data-testid="button-new-expense"
+                  >
+                    <Plus className="h-4 w-4" /> New
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" data-testid="button-more-options">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem data-testid="sort-by-label" className="font-semibold text-muted-foreground text-xs">
+                        Sort by
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('createdTime')} data-testid="sort-created-time">
+                        Created Time {sortBy === 'createdTime' && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('date')} data-testid="sort-date">
+                        Date {sortBy === 'date' && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('expenseAccount')} data-testid="sort-expense-account">
+                        Expense Account {sortBy === 'expenseAccount' && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('vendorName')} data-testid="sort-vendor-name">
+                        Vendor Name {sortBy === 'vendorName' && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('paidThrough')} data-testid="sort-paid-through">
+                        Paid Through {sortBy === 'paidThrough' && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('customerName')} data-testid="sort-customer-name">
+                        Customer Name {sortBy === 'customerName' && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('amount')} data-testid="sort-amount">
+                        Amount {sortBy === 'amount' && '✓'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setShowImportDialog(true)} data-testid="menu-import">
+                        <Upload className="h-4 w-4 mr-2" /> Import Expenses
+                      </DropdownMenuItem>
+                      <DropdownMenuItem data-testid="menu-export">
+                        <Download className="h-4 w-4 mr-2" /> Export
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem data-testid="menu-preferences">
+                        <Settings className="h-4 w-4 mr-2" /> Preferences
+                      </DropdownMenuItem>
+                      <DropdownMenuItem data-testid="menu-custom-fields">
+                        <FileText className="h-4 w-4 mr-2" /> Manage Custom Fields
+                      </DropdownMenuItem>
+                      <DropdownMenuItem data-testid="menu-refresh">
+                        <RefreshCw className="h-4 w-4 mr-2" /> Refresh List
+                      </DropdownMenuItem>
+                      <DropdownMenuItem data-testid="menu-reset-columns">
+                        Reset Column Width
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              <TabsContent value="receipts-inbox" className="mt-6">
+                <Card className="border-dashed">
+                  <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                      <Inbox className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2" data-testid="text-receipts-empty">No receipts in inbox</h3>
+                    <p className="text-muted-foreground mb-4 max-w-sm">
+                      Upload receipts and documents here to automatically extract expense information.
+                    </p>
+                    <Button className="gap-2" data-testid="button-upload-receipt">
+                      <Upload className="h-4 w-4" /> Upload Receipt
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="all-expenses" className="mt-6">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  </div>
+                ) : expenses.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                      <div className="h-24 w-24 rounded-lg bg-slate-100 flex items-center justify-center mb-6">
+                        <Receipt className="h-12 w-12 text-slate-400" />
+                      </div>
+                      <h2 className="text-xl font-semibold mb-2" data-testid="text-expenses-empty-title">Time To Manage Your Expenses!</h2>
+                      <p className="text-muted-foreground mb-6 max-w-md">
+                        Create and manage expenses that are part of your organization's operating costs.
+                      </p>
+                      <div className="flex flex-col gap-3">
+                        <Button
+                          className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+                          onClick={() => setShowRecordExpense(true)}
+                          data-testid="button-record-expense-empty"
+                        >
+                          RECORD EXPENSE
+                        </Button>
+                        <Button
+                          variant="link"
+                          className="text-indigo-600"
+                          onClick={() => setShowImportDialog(true)}
+                          data-testid="button-import-expenses"
+                        >
+                          Import Expenses
+                        </Button>
+                      </div>
+
+                      <div className="mt-12 w-full max-w-2xl">
+                        <h3 className="text-lg font-semibold mb-6" data-testid="text-lifecycle-title">Life cycle of an Expense</h3>
+                        <div className="flex items-center justify-center gap-4 flex-wrap">
+                          <div className="flex items-center gap-2 px-4 py-2 border rounded-full">
+                            <Receipt className="h-4 w-4 text-indigo-600" />
+                            <span className="text-sm">BILLABLE</span>
+                          </div>
+                          <div className="text-muted-foreground">...</div>
+                          <div className="flex items-center gap-2 px-4 py-2 border rounded-full">
+                            <FileText className="h-4 w-4 text-green-600" />
+                            <span className="text-sm">CONVERT TO INVOICE</span>
+                          </div>
+                          <div className="text-muted-foreground">...</div>
+                          <div className="flex items-center gap-2 px-4 py-2 border rounded-full">
+                            <Tag className="h-4 w-4 text-amber-600" />
+                            <span className="text-sm">GET REIMBURSED</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search expenses..."
+                          className="pl-9"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          data-testid="input-search-expenses"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-slate-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">
+                              <Checkbox data-testid="checkbox-select-all" />
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Date</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Expense Account</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Vendor Name</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Paid Through</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Customer Name</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Amount</th>
+                            <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {filteredExpenses.map((expense) => (
+                            <tr
+                              key={expense.id}
+                              className={`hover:bg-slate-50 cursor-pointer transition-colors ${selectedExpense?.id === expense.id ? 'bg-blue-50' : ''
+                                }`}
+                              onClick={() => handleExpenseClick(expense)}
+                              data-testid={`row-expense-${expense.id}`}
+                            >
+                              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                <Checkbox data-testid={`checkbox-expense-${expense.id}`} />
+                              </td>
+                              <td className="px-4 py-3 text-sm">{expense.date}</td>
+                              <td className="px-4 py-3 text-sm">{expense.expenseAccount}</td>
+                              <td className="px-4 py-3 text-sm">{expense.vendorName || '-'}</td>
+                              <td className="px-4 py-3 text-sm">{expense.paidThrough || '-'}</td>
+                              <td className="px-4 py-3 text-sm">{expense.customerName || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-right font-medium">
+                                {formatCurrency(expense.amount)}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" data-testid={`button-expense-actions-${expense.id}`}>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem data-testid={`action-edit-${expense.id}`}>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem data-testid={`action-clone-${expense.id}`}>Clone</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className="text-destructive"
+                                      onClick={() => deleteExpenseMutation.mutate(expense.id)}
+                                      data-testid={`action-delete-${expense.id}`}
+                                    >
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+
+        {selectedExpense && (
+          <div className="w-[600px] flex-shrink-0 overflow-hidden">
+            <ExpenseDetailPanel
+              expense={selectedExpense}
+              onClose={handleClosePanel}
+              onEdit={handleEditExpense}
+              onDelete={handleDeleteExpense}
+            />
+          </div>
+        )}
+      </div>
+
+      <Dialog open={showRecordExpense} onOpenChange={setShowRecordExpense}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <Tabs value={expenseTab} onValueChange={setExpenseTab}>
+                <TabsList>
+                  <TabsTrigger value="record-expense" data-testid="tab-record-expense">Record Expense</TabsTrigger>
+                  <TabsTrigger value="record-mileage" data-testid="tab-record-mileage">Record Mileage</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </DialogHeader>
+
+          {expenseTab === "record-expense" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Date*</Label>
+                    <Input
+                      type="date"
+                      value={expenseForm.date}
+                      onChange={(e) => setExpenseForm(prev => ({ ...prev, date: e.target.value }))}
+                      data-testid="input-expense-date"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Expense Account*</Label>
+                    <Select
+                      value={expenseForm.expenseAccount}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, expenseAccount: value }))}
+                    >
+                      <SelectTrigger data-testid="select-expense-account">
+                        <SelectValue placeholder="Select an account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EXPENSE_ACCOUNTS.map(account => (
+                          <SelectItem key={account} value={account}>{account}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <button className="text-indigo-600 text-sm" data-testid="button-itemize">Itemize</button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Amount*</Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={expenseForm.currency}
+                        onValueChange={(value) => setExpenseForm(prev => ({ ...prev, currency: value }))}
+                      >
+                        <SelectTrigger className="w-20" data-testid="select-currency">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="INR">INR</SelectItem>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={expenseForm.amount}
+                        onChange={(e) => setExpenseForm(prev => ({ ...prev, amount: e.target.value }))}
+                        data-testid="input-expense-amount"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Paid Through*</Label>
+                    <Select
+                      value={expenseForm.paidThrough}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, paidThrough: value }))}
+                    >
+                      <SelectTrigger data-testid="select-paid-through">
+                        <SelectValue placeholder="Select an account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PAID_THROUGH_ACCOUNTS.map(account => (
+                          <SelectItem key={account} value={account}>{account}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-red-500">Expense Type*</Label>
+                  <RadioGroup
+                    value={expenseForm.expenseType}
+                    onValueChange={(value) => setExpenseForm(prev => ({ ...prev, expenseType: value }))}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="goods" id="goods" data-testid="radio-goods" />
+                      <Label htmlFor="goods">Goods</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="services" id="services" data-testid="radio-services" />
+                      <Label htmlFor="services">Services</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>SAC</Label>
+                    <Input
+                      value={expenseForm.sac}
+                      onChange={(e) => setExpenseForm(prev => ({ ...prev, sac: e.target.value }))}
+                      data-testid="input-sac"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vendor</Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={expenseForm.vendorId}
+                        onValueChange={(value) => {
+                          const vendor = vendors.find(v => v.id === value);
+                          setExpenseForm(prev => ({
+                            ...prev,
+                            vendorId: value,
+                            vendorName: vendor?.displayName || vendor?.name || ''
+                          }));
+                        }}
+                      >
+                        <SelectTrigger className="flex-1" data-testid="select-vendor">
+                          <SelectValue placeholder="Select a vendor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {vendors.map(vendor => (
+                            <SelectItem key={vendor.id} value={vendor.id}>
+                              {vendor.displayName || vendor.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button variant="outline" size="icon" data-testid="button-add-vendor">
+                        <Search className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-red-500">GST Treatment*</Label>
+                    <Select
+                      value={expenseForm.gstTreatment}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, gstTreatment: value }))}
+                    >
+                      <SelectTrigger data-testid="select-gst-treatment">
+                        <SelectValue placeholder="Select GST Treatment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GST_TREATMENTS.map(treatment => (
+                          <SelectItem key={treatment} value={treatment}>{treatment}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Source of Supply*</Label>
+                    <Select
+                      value={expenseForm.sourceOfSupply}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, sourceOfSupply: value }))}
+                    >
+                      <SelectTrigger data-testid="select-source-supply">
+                        <SelectValue placeholder="State/Province" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map(state => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Destination of Supply*</Label>
+                    <Select
+                      value={expenseForm.destinationOfSupply}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, destinationOfSupply: value }))}
+                    >
+                      <SelectTrigger data-testid="select-destination-supply">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map(state => (
+                          <SelectItem key={state} value={`[${state.substring(0, 2).toUpperCase()}] - ${state}`}>
+                            [{state.substring(0, 2).toUpperCase()}] - {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Reverse Charge</Label>
+                    <div className="flex items-center gap-2 h-10">
+                      <Checkbox
+                        checked={expenseForm.reverseCharge}
+                        onCheckedChange={(checked) => setExpenseForm(prev => ({
+                          ...prev,
+                          reverseCharge: checked as boolean
+                        }))}
+                        data-testid="checkbox-reverse-charge"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        This transaction is applicable for reverse charge
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Tax</Label>
+                    <Select
+                      value={expenseForm.tax}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, tax: value }))}
+                    >
+                      <SelectTrigger data-testid="select-tax">
+                        <SelectValue placeholder="Select a Tax" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TAX_OPTIONS.map(tax => (
+                          <SelectItem key={tax.value} value={tax.value}>{tax.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Amount Is</Label>
+                    <RadioGroup
+                      value={expenseForm.amountIs}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, amountIs: value }))}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="tax_inclusive" id="tax_inclusive" data-testid="radio-tax-inclusive" />
+                        <Label htmlFor="tax_inclusive">Tax Inclusive</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="tax_exclusive" id="tax_exclusive" data-testid="radio-tax-exclusive" />
+                        <Label htmlFor="tax_exclusive">Tax Exclusive</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Invoice#*</Label>
+                    <Input
+                      value={expenseForm.invoiceNumber}
+                      onChange={(e) => setExpenseForm(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                      data-testid="input-invoice-number"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Notes</Label>
+                  <Textarea
+                    placeholder="Max. 500 characters"
+                    value={expenseForm.notes}
+                    onChange={(e) => setExpenseForm(prev => ({ ...prev, notes: e.target.value }))}
+                    maxLength={500}
+                    data-testid="textarea-notes"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Customer Name</Label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={expenseForm.customerId}
+                      onValueChange={(value) => {
+                        const customer = customers.find(c => c.id === value);
+                        setExpenseForm(prev => ({
+                          ...prev,
+                          customerId: value,
+                          customerName: customer?.displayName || customer?.name || ''
+                        }));
+                      }}
+                    >
+                      <SelectTrigger className="flex-1" data-testid="select-customer">
+                        <SelectValue placeholder="Select or add a customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map(customer => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.displayName || customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="icon" data-testid="button-add-customer">
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Reporting Tags</Label>
+                  <button className="text-indigo-600 text-sm flex items-center gap-1" data-testid="button-associate-tags">
+                    <Tag className="h-4 w-4" /> Associate Tags
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                  <div className="h-16 w-16 mx-auto mb-4 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <Upload className="h-8 w-8 text-slate-400" />
+                  </div>
+                  <p className="font-medium mb-1">Drag or Drop your Receipts</p>
+                  <p className="text-xs text-muted-foreground mb-4">Maximum file size allowed is 10MB</p>
+                  <Button variant="outline" className="gap-2" data-testid="button-upload-files">
+                    <Upload className="h-4 w-4" /> Upload your Files
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Date*</Label>
+                    <Input
+                      type="date"
+                      value={mileageForm.date}
+                      onChange={(e) => setMileageForm(prev => ({ ...prev, date: e.target.value }))}
+                      data-testid="input-mileage-date"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Employee</Label>
+                    <Input
+                      value={mileageForm.employee}
+                      onChange={(e) => setMileageForm(prev => ({ ...prev, employee: e.target.value }))}
+                      data-testid="input-employee"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-indigo-600">Calculate mileage using*</Label>
+                  <RadioGroup
+                    value={mileageForm.calculationMethod}
+                    onValueChange={(value) => setMileageForm(prev => ({ ...prev, calculationMethod: value }))}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="distance_travelled" id="distance_travelled" data-testid="radio-distance" />
+                      <Label htmlFor="distance_travelled">Distance travelled</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="odometer_reading" id="odometer_reading" data-testid="radio-odometer" />
+                      <Label htmlFor="odometer_reading">Odometer reading</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {mileageForm.calculationMethod === "distance_travelled" ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-red-500">Distance*</Label>
+                      <Input
+                        type="number"
+                        value={mileageForm.distance}
+                        onChange={(e) => setMileageForm(prev => ({ ...prev, distance: e.target.value }))}
+                        data-testid="input-distance"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Unit</Label>
+                      <RadioGroup
+                        value={mileageForm.unit}
+                        onValueChange={(value) => setMileageForm(prev => ({ ...prev, unit: value }))}
+                        className="flex gap-4 h-10 items-center"
+                      >
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="km" id="km" data-testid="radio-km" />
+                          <Label htmlFor="km">Km</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="mile" id="mile" data-testid="radio-mile" />
+                          <Label htmlFor="mile">Mile</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-red-500">Start Odometer*</Label>
+                      <Input
+                        type="number"
+                        value={mileageForm.startOdometer}
+                        onChange={(e) => setMileageForm(prev => ({ ...prev, startOdometer: e.target.value }))}
+                        data-testid="input-start-odometer"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-red-500">End Odometer*</Label>
+                      <Input
+                        type="number"
+                        value={mileageForm.endOdometer}
+                        onChange={(e) => setMileageForm(prev => ({ ...prev, endOdometer: e.target.value }))}
+                        data-testid="input-end-odometer"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Amount*</Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={mileageForm.currency}
+                        onValueChange={(value) => setMileageForm(prev => ({ ...prev, currency: value }))}
+                      >
+                        <SelectTrigger className="w-20" data-testid="select-mileage-currency">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="INR">INR</SelectItem>
+                          <SelectItem value="USD">USD</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={mileageForm.amount}
+                        onChange={(e) => setMileageForm(prev => ({ ...prev, amount: e.target.value }))}
+                        data-testid="input-mileage-amount"
+                      />
+                    </div>
+                    <button
+                      className="text-indigo-600 text-sm flex items-center gap-1"
+                      onClick={() => setShowMileageSettings(true)}
+                      data-testid="button-add-mileage-rate"
+                    >
+                      <Plus className="h-3 w-3" /> Add Mileage Rate
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-red-500">Paid Through*</Label>
+                    <Select
+                      value={mileageForm.paidThrough}
+                      onValueChange={(value) => setMileageForm(prev => ({ ...prev, paidThrough: value }))}
+                    >
+                      <SelectTrigger data-testid="select-mileage-paid-through">
+                        <SelectValue placeholder="Select an account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PAID_THROUGH_ACCOUNTS.map(account => (
+                          <SelectItem key={account} value={account}>{account}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Vendor</Label>
+                    <Select
+                      value={mileageForm.vendorId}
+                      onValueChange={(value) => {
+                        const vendor = vendors.find(v => v.id === value);
+                        setMileageForm(prev => ({
+                          ...prev,
+                          vendorId: value,
+                          vendorName: vendor?.displayName || vendor?.name || ''
+                        }));
+                      }}
+                    >
+                      <SelectTrigger data-testid="select-mileage-vendor">
+                        <SelectValue placeholder="Select a vendor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vendors.map(vendor => (
+                          <SelectItem key={vendor.id} value={vendor.id}>
+                            {vendor.displayName || vendor.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Invoice#</Label>
+                    <Input
+                      value={mileageForm.invoiceNumber}
+                      onChange={(e) => setMileageForm(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                      data-testid="input-mileage-invoice"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Notes</Label>
+                  <Textarea
+                    placeholder="Max. 500 characters"
+                    value={mileageForm.notes}
+                    onChange={(e) => setMileageForm(prev => ({ ...prev, notes: e.target.value }))}
+                    maxLength={500}
+                    data-testid="textarea-mileage-notes"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Customer Name</Label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={mileageForm.customerId}
+                      onValueChange={(value) => {
+                        const customer = customers.find(c => c.id === value);
+                        setMileageForm(prev => ({
+                          ...prev,
+                          customerId: value,
+                          customerName: customer?.displayName || customer?.name || ''
+                        }));
+                      }}
+                    >
+                      <SelectTrigger className="flex-1" data-testid="select-mileage-customer">
+                        <SelectValue placeholder="Select or add a customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map(customer => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.displayName || customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="icon" data-testid="button-add-mileage-customer">
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Reporting Tags</Label>
+                  <button className="text-indigo-600 text-sm flex items-center gap-1" data-testid="button-mileage-associate-tags">
+                    <Tag className="h-4 w-4" /> Associate Tags
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                  <div className="h-16 w-16 mx-auto mb-4 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <Upload className="h-8 w-8 text-slate-400" />
+                  </div>
+                  <p className="font-medium mb-1">Drag or Drop your Receipts</p>
+                  <p className="text-xs text-muted-foreground mb-4">Maximum file size allowed is 10MB</p>
+                  <Button variant="outline" className="gap-2" data-testid="button-upload-mileage-files">
+                    <Upload className="h-4 w-4" /> Upload your Files
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 pt-4 border-t">
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={expenseTab === "record-expense" ? handleSubmitExpense : handleSubmitMileage}
+              disabled={createExpenseMutation.isPending || createMileageMutation.isPending}
+              data-testid="button-save-expense"
+            >
+              Save (Alt+S)
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSaveAndNew}
+              disabled={createExpenseMutation.isPending || createMileageMutation.isPending}
+              data-testid="button-save-and-new"
+            >
+              Save and New (Alt+N)
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setShowRecordExpense(false)}
+              data-testid="button-cancel-expense"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showMileageSettings} onOpenChange={setShowMileageSettings}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle data-testid="dialog-title-mileage-settings">Set your mileage preferences</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={mileageSettingsForm.associateEmployeesToExpenses}
+                onCheckedChange={(checked) => setMileageSettingsForm(prev => ({
+                  ...prev,
+                  associateEmployeesToExpenses: checked as boolean
+                }))}
+                data-testid="checkbox-associate-employees"
+              />
+              <Label>Associate employees to expenses</Label>
+            </div>
+
+            <div className="space-y-4 border-t pt-4">
+              <h4 className="font-medium">Mileage Preference</h4>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Default Mileage Category</Label>
+                  <Select
+                    value={mileageSettingsForm.defaultMileageCategory}
+                    onValueChange={(value) => setMileageSettingsForm(prev => ({
+                      ...prev,
+                      defaultMileageCategory: value
+                    }))}
+                  >
+                    <SelectTrigger data-testid="select-default-mileage-category">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXPENSE_ACCOUNTS.map(account => (
+                        <SelectItem key={account} value={account}>{account}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Default Unit</Label>
+                  <RadioGroup
+                    value={mileageSettingsForm.defaultUnit}
+                    onValueChange={(value) => setMileageSettingsForm(prev => ({
+                      ...prev,
+                      defaultUnit: value
+                    }))}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="km" id="default_km" data-testid="radio-default-km" />
+                      <Label htmlFor="default_km">Km</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="mile" id="default_mile" data-testid="radio-default-mile" />
+                      <Label htmlFor="default_mile">Mile</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 border-t pt-4">
+              <h4 className="font-medium">MILEAGE RATES</h4>
+              <p className="text-sm text-muted-foreground">
+                Any mileage expense recorded on or after the start date will have the corresponding mileage rate.
+                You can create a default rate (created without specifying a date), which will be applicable for
+                mileage expenses recorded before the initial start date.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>START DATE</Label>
+                  <Input
+                    type="date"
+                    placeholder="dd/MM/yyyy"
+                    value={mileageSettingsForm.newRateDate}
+                    onChange={(e) => setMileageSettingsForm(prev => ({
+                      ...prev,
+                      newRateDate: e.target.value
+                    }))}
+                    data-testid="input-rate-start-date"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>MILEAGE RATE</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={mileageSettingsForm.newRateValue}
+                      onChange={(e) => setMileageSettingsForm(prev => ({
+                        ...prev,
+                        newRateValue: e.target.value
+                      }))}
+                      data-testid="input-mileage-rate-value"
+                    />
+                    <span className="flex items-center text-sm text-muted-foreground">INR</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className="text-indigo-600 text-sm flex items-center gap-1"
+                onClick={() => {
+                  if (mileageSettingsForm.newRateValue) {
+                    addMileageRateMutation.mutate({
+                      startDate: mileageSettingsForm.newRateDate,
+                      rate: parseFloat(mileageSettingsForm.newRateValue),
+                      currency: 'INR'
+                    });
+                  }
+                }}
+                data-testid="button-add-rate"
+              >
+                <Plus className="h-3 w-3" /> Add Mileage Rate
+              </button>
+
+              {mileageSettings?.mileageRates && mileageSettings.mileageRates.length > 0 && (
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-500">Start Date</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-500">Rate</th>
+                        <th className="px-3 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mileageSettings.mileageRates.map((rate) => (
+                        <tr key={rate.id}>
+                          <td className="px-3 py-2 text-sm">{rate.startDate || 'Default'}</td>
+                          <td className="px-3 py-2 text-sm">{rate.rate} {rate.currency}</td>
+                          <td className="px-3 py-2 text-right">
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-4 border-t">
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={() => {
+                updateMileageSettingsMutation.mutate({
+                  associateEmployeesToExpenses: mileageSettingsForm.associateEmployeesToExpenses,
+                  defaultMileageCategory: mileageSettingsForm.defaultMileageCategory,
+                  defaultUnit: mileageSettingsForm.defaultUnit,
+                });
+                setShowMileageSettings(false);
+              }}
+              data-testid="button-save-mileage-settings"
+            >
+              Save
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setShowMileageSettings(false)}
+              data-testid="button-cancel-mileage-settings"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl" data-testid="dialog-title-import">Expenses - Select File</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex items-center justify-center gap-8 py-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm">1</div>
+              <span className="font-medium">Configure</span>
+            </div>
+            <div className="h-px w-12 bg-slate-200"></div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-sm">2</div>
+              <span>Map Fields</span>
+            </div>
+            <div className="h-px w-12 bg-slate-200"></div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-sm">3</div>
+              <span>Preview</span>
+            </div>
+          </div>
+
+          <div className="border-2 border-dashed rounded-lg p-12 text-center">
+            <div className="h-12 w-12 mx-auto mb-4 flex items-center justify-center">
+              <Download className="h-8 w-8 text-slate-400" />
+            </div>
+            <p className="font-medium mb-4">Drag and drop file to import</p>
+            <Button className="bg-indigo-600 hover:bg-indigo-700" data-testid="button-choose-file">
+              Choose File
+            </Button>
+            <p className="text-xs text-muted-foreground mt-4">
+              Maximum File Size: 25 MB - File Format: CSV or TSV or XLS
+            </p>
+          </div>
+
+          <p className="text-sm text-center text-muted-foreground">
+            Download a <a href="#" className="text-indigo-600">sample csv file</a> or <a href="#" className="text-indigo-600">sample xls file</a> and compare it to your import file to ensure you have the file perfect for the import.
+          </p>
+
+          <div className="space-y-2">
+            <Label>Character Encoding</Label>
+            <Select defaultValue="utf-8">
+              <SelectTrigger data-testid="select-encoding">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="utf-8">UTF-8 (Unicode)</SelectItem>
+                <SelectItem value="ascii">ASCII</SelectItem>
+                <SelectItem value="iso-8859-1">ISO-8859-1</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <h4 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Page Tips
+            </h4>
+            <ul className="text-sm text-amber-700 space-y-1 list-disc pl-5">
+              <li>Import data with the details of GST Treatment by referring these <a href="#" className="text-indigo-600">accepted formats</a>.</li>
+              <li>You can download the <a href="#" className="text-indigo-600">sample xls file</a> to get detailed information about the data fields used while importing.</li>
+              <li>If you have files in other formats, you can convert it to an accepted file format using any online/offline converter.</li>
+              <li>You can configure your import settings and save them for future too!</li>
+            </ul>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <Button
+              variant="ghost"
+              onClick={() => setShowImportDialog(false)}
+              data-testid="button-cancel-import"
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700"
+              data-testid="button-next-import"
+            >
+              Next
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

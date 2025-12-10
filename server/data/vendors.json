@@ -1,0 +1,61 @@
+{
+  "vendors": [
+    {
+      "id": "1",
+      "salutation": "Mr.",
+      "firstName": "Nilraj",
+      "lastName": "Bhilare",
+      "companyName": "RMD Sinhgad School of Computer Studies, Pune (Sinhgad Institutes)",
+      "displayName": "Nilraj Bhilare",
+      "email": "bhilarenilraj@gmail.com",
+      "workPhone": "09373533564",
+      "mobile": "",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "[AP] - Andhra Pradesh",
+      "pan": "DKLDKLD",
+      "msmeRegistered": false,
+      "currency": "INR",
+      "openingBalance": 400,
+      "paymentTerms": "Due on Receipt",
+      "tds": "",
+      "billingAddress": {
+        "attention": "",
+        "countryRegion": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "phone": "",
+        "faxNumber": ""
+      },
+      "shippingAddress": {
+        "attention": "",
+        "countryRegion": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "phone": "",
+        "faxNumber": ""
+      },
+      "bankDetails": {
+        "accountHolderName": "",
+        "bankName": "",
+        "accountNumber": "",
+        "ifscCode": "",
+        "swiftCode": "",
+        "branchName": ""
+      },
+      "remarks": "",
+      "contactPersons": [],
+      "status": "active",
+      "payables": 0,
+      "unusedCredits": 0,
+      "createdAt": "2025-12-10T12:04:16.268Z",
+      "updatedAt": "2025-12-10T12:04:16.269Z"
+    }
+  ],
+  "nextVendorId": 2
+}

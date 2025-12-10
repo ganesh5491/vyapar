@@ -1,0 +1,42 @@
+# Baniya Accounting Application
+
+## Overview
+A full-stack accounting application designed for comprehensive financial management, including invoices, customers, products, vendors, and expenses. It aims to provide an enterprise-grade solution for businesses, leveraging a modern tech stack and modular architecture to ensure scalability and maintainability.
+
+## User Preferences
+I want iterative development. Ask before making major changes. I prefer detailed explanations. Do not make changes to the folder `Z`. Do not make changes to the file `Y`.
+
+## System Architecture
+
+### UI/UX Decisions
+- **Framework**: React 19 with TypeScript
+- **Build Tool**: Vite 7
+- **UI Components**: Radix UI components with Tailwind CSS for a modern and consistent design.
+- **Routing**: Wouter with lazy loading for efficient navigation.
+- **State Management**: Zustand for global state and TanStack Query for server state.
+- **Forms**: React Hook Form with Zod validation for robust form handling.
+
+### Technical Implementations
+- **Backend Server**: Express 4
+- **Database**: PostgreSQL (Neon) managed with Drizzle ORM.
+- **API Versioning**: All API routes are prefixed with `/api/v1`.
+- **Authentication**: JWT-based authentication (prepared for implementation).
+- **Validation**: Zod schemas used for both frontend and backend validation.
+- **Deployment**: Designed for stateless web application deployment with `npm run build` and `npm start`.
+
+### Feature Specifications
+- **Core Modules**: Dashboard, Invoice, Customer, Product & Services, Estimates, Vendor, Expense, Purchase Order, Bill, Payment, Time Tracking, Banking, Filing & Compliance, Accountant Collaboration, Document Management, Reports, and Settings.
+- **Frontend Structure**: Enterprise modular structure (`client/src/modules/`) where each feature is a module with its own components, pages, hooks, API, types, and services. Global elements like API client, config, constants, layouts, routes, and shared utilities are managed centrally.
+- **Backend Structure**: Clean Architecture / Modular Monolith (`server/src/modules/`) with each module containing its own controller, service, model, routes, validators, and repository. Middleware for authentication, error handling, logging, and validation is centrally managed.
+
+### System Design Choices
+- **Development Mode**: Express server with Vite middleware for Hot Module Replacement (HMR).
+- **Production Mode**: Express serves pre-built static files from `dist/public`.
+- **API Pattern**: All modules expose their functionalities through versioned API endpoints, following a consistent `/{module}/{resource}` pattern.
+- **Module Architecture**: Frontend modules export pages, types, API functions, services, and hooks. Backend modules adhere to Clean Architecture principles with distinct layers for controllers, services, repositories, models, and validators.
+
+## External Dependencies
+- **Database**: PostgreSQL (via Neon)
+- **ORM**: Drizzle ORM
+- **Frontend Libraries**: React, Vite, Radix UI, Tailwind CSS, Wouter, Zustand, TanStack Query, React Hook Form, Zod.
+- **Backend Libraries**: Express, Zod.

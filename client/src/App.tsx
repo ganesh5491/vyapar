@@ -1,0 +1,110 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppProvider } from "@/lib/store";
+import NotFound from "@/pages/not-found";
+import AppShell from "@/components/layout/AppShell";
+import Dashboard from "@/pages/dashboard";
+import Invoices from "@/pages/invoices";
+import InvoiceCreate from "@/pages/invoice-create";
+import InvoiceImport from "@/pages/invoice-import";
+import Customers from "@/pages/customers";
+import CustomerCreate from "@/pages/customer-create";
+import CustomerEdit from "@/pages/customer-edit";
+import Products from "@/pages/products";
+import ProductCreate from "@/pages/products-create";
+import ProductEdit from "@/pages/products-edit";
+import ItemsPage from "@/modules/items/pages/ItemsPage";
+import ItemCreatePage from "@/modules/items/pages/ItemCreatePage";
+import ItemDetailPage from "@/modules/items/pages/ItemDetailPage";
+import QuotesPage from "@/modules/sales/pages/QuotesPage";
+import QuoteCreatePage from "@/modules/sales/pages/QuoteCreatePage";
+import SalesOrdersPage from "@/pages/sales-orders";
+import SalesOrderCreatePage from "@/pages/sales-order-create";
+import SalesOrderEditPage from "@/pages/sales-order-edit";
+import InvoiceEdit from "@/pages/invoice-edit";
+import Reports from "@/pages/reports";
+import Settings from "@/pages/settings";
+import Support from "@/pages/support";
+import Vendors from "@/pages/vendors";
+import VendorCreate from "@/pages/vendor-create";
+import VendorEdit from "@/pages/vendor-edit";
+import Expenses from "@/pages/expenses";
+import PurchaseOrders from "@/pages/purchase-orders";
+import Bills from "@/pages/bills";
+import PaymentsMade from "@/pages/payments-made";
+import VendorCredits from "@/pages/vendor-credits";
+import TimeTracking from "@/pages/time-tracking";
+import Banking from "@/pages/banking";
+import FilingCompliance from "@/pages/filing-compliance";
+import Accountant from "@/pages/accountant";
+import Documents from "@/pages/documents";
+import DeliveryChallans from "@/pages/delivery-challans";
+import DeliveryChallanCreate from "@/pages/delivery-challan-create";
+import DeliveryChallanEdit from "@/pages/delivery-challan-edit";
+
+function Router() {
+  return (
+    <AppShell>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/invoices" component={Invoices} />
+        <Route path="/invoices/new" component={InvoiceCreate} />
+        <Route path="/invoices/import" component={InvoiceImport} />
+        <Route path="/invoices/:id/edit" component={InvoiceEdit} />
+        <Route path="/estimates" component={QuotesPage} />
+        <Route path="/quotes" component={QuotesPage} />
+        <Route path="/quotes/create" component={QuoteCreatePage} />
+        <Route path="/sales-orders" component={SalesOrdersPage} />
+        <Route path="/sales-orders/create" component={SalesOrderCreatePage} />
+        <Route path="/sales-orders/:id/edit" component={SalesOrderEditPage} />
+        <Route path="/delivery-challans" component={DeliveryChallans} />
+        <Route path="/delivery-challans/new" component={DeliveryChallanCreate} />
+        <Route path="/delivery-challans/:id/edit" component={DeliveryChallanEdit} />
+        <Route path="/customers" component={Customers} />
+        <Route path="/customers/new" component={CustomerCreate} />
+        <Route path="/customers/:id/edit" component={CustomerEdit} />
+        <Route path="/products" component={Products} />
+        <Route path="/products/new" component={ProductCreate} />
+        <Route path="/items" component={ItemsPage} />
+        <Route path="/items/create" component={ItemCreatePage} />
+        <Route path="/items/:id/edit" component={ProductEdit} />
+        <Route path="/items/:id" component={ItemDetailPage} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/support" component={Support} />
+        <Route path="/vendors" component={Vendors} />
+        <Route path="/vendors/new" component={VendorCreate} />
+        <Route path="/vendors/:id/edit" component={VendorEdit} />
+        <Route path="/expenses" component={Expenses} />
+        <Route path="/purchase-orders" component={PurchaseOrders} />
+        <Route path="/bills" component={Bills} />
+        <Route path="/payments-made" component={PaymentsMade} />
+        <Route path="/vendor-credits" component={VendorCredits} />
+        <Route path="/time-tracking" component={TimeTracking} />
+        <Route path="/banking" component={Banking} />
+        <Route path="/filing-compliance" component={FilingCompliance} />
+        <Route path="/accountant" component={Accountant} />
+        <Route path="/documents" component={Documents} />
+        <Route component={NotFound} />
+      </Switch>
+    </AppShell>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AppProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

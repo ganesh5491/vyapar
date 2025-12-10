@@ -1,0 +1,977 @@
+import { useState, useEffect } from "react";
+import { useLocation, useParams } from "wouter";
+import { Plus, Trash2, HelpCircle, Upload, Link as LinkIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const SALUTATIONS = ["Mr.", "Mrs.", "Ms.", "Miss", "Dr."];
+
+const GST_TREATMENTS = [
+  { value: "registered-regular", label: "Registered Business - Regular" },
+  { value: "registered-composition", label: "Registered Business - Composition" },
+  { value: "unregistered", label: "Unregistered Business" },
+  { value: "consumer", label: "Consumer" },
+  { value: "overseas", label: "Overseas" },
+  { value: "sez", label: "Special Economic Zone" },
+  { value: "deemed-export", label: "Deemed Export" },
+];
+
+const INDIAN_STATES = [
+  "[AN] - Andaman and Nicobar Islands",
+  "[AP] - Andhra Pradesh",
+  "[AR] - Arunachal Pradesh",
+  "[AS] - Assam",
+  "[BR] - Bihar",
+  "[CG] - Chhattisgarh",
+  "[CH] - Chandigarh",
+  "[DD] - Daman and Diu",
+  "[DL] - Delhi",
+  "[GA] - Goa",
+  "[GJ] - Gujarat",
+  "[HP] - Himachal Pradesh",
+  "[HR] - Haryana",
+  "[JH] - Jharkhand",
+  "[JK] - Jammu and Kashmir",
+  "[KA] - Karnataka",
+  "[KL] - Kerala",
+  "[LA] - Ladakh",
+  "[LD] - Lakshadweep",
+  "[MH] - Maharashtra",
+  "[ML] - Meghalaya",
+  "[MN] - Manipur",
+  "[MP] - Madhya Pradesh",
+  "[MZ] - Mizoram",
+  "[NL] - Nagaland",
+  "[OR] - Odisha",
+  "[PB] - Punjab",
+  "[PY] - Puducherry",
+  "[RJ] - Rajasthan",
+  "[SK] - Sikkim",
+  "[TN] - Tamil Nadu",
+  "[TS] - Telangana",
+  "[TR] - Tripura",
+  "[UK] - Uttarakhand",
+  "[UP] - Uttar Pradesh",
+  "[WB] - West Bengal",
+];
+
+const PAYMENT_TERMS = [
+  "Due on Receipt",
+  "Net 15",
+  "Net 30",
+  "Net 45",
+  "Net 60",
+  "Due end of the month",
+  "Due end of next month",
+];
+
+const CURRENCIES = [
+  { value: "INR", label: "INR - Indian Rupee" },
+  { value: "USD", label: "USD - US Dollar" },
+  { value: "EUR", label: "EUR - Euro" },
+  { value: "GBP", label: "GBP - British Pound" },
+];
+
+interface ContactPerson {
+  id: string;
+  salutation: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  workPhone: string;
+  mobile: string;
+}
+
+export default function VendorEdit() {
+  const [, setLocation] = useLocation();
+  const params = useParams<{ id: string }>();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("other-details");
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [formData, setFormData] = useState({
+    salutation: "",
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    displayName: "",
+    email: "",
+    workPhone: "",
+    mobile: "",
+    gstTreatment: "",
+    sourceOfSupply: "",
+    pan: "",
+    msmeRegistered: false,
+    currency: "INR",
+    openingBalance: "",
+    paymentTerms: "Due on Receipt",
+    tds: "",
+    billingAddress: {
+      attention: "",
+      countryRegion: "",
+      street1: "",
+      street2: "",
+      city: "",
+      state: "",
+      pinCode: "",
+      phone: "",
+      faxNumber: "",
+    },
+    shippingAddress: {
+      attention: "",
+      countryRegion: "",
+      street1: "",
+      street2: "",
+      city: "",
+      state: "",
+      pinCode: "",
+      phone: "",
+      faxNumber: "",
+    },
+    bankDetails: {
+      accountHolderName: "",
+      bankName: "",
+      accountNumber: "",
+      ifscCode: "",
+      swiftCode: "",
+      branchName: "",
+    },
+    remarks: "",
+  });
+
+  const [contactPersons, setContactPersons] = useState<ContactPerson[]>([]);
+
+  useEffect(() => {
+    fetchVendor();
+  }, [params.id]);
+
+  const fetchVendor = async () => {
+    try {
+      const response = await fetch(`/api/vendors/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        const vendor = data.data;
+        setFormData({
+          salutation: vendor.salutation || "",
+          firstName: vendor.firstName || "",
+          lastName: vendor.lastName || "",
+          companyName: vendor.companyName || "",
+          displayName: vendor.displayName || "",
+          email: vendor.email || "",
+          workPhone: vendor.workPhone || "",
+          mobile: vendor.mobile || "",
+          gstTreatment: vendor.gstTreatment || "",
+          sourceOfSupply: vendor.sourceOfSupply || "",
+          pan: vendor.pan || "",
+          msmeRegistered: vendor.msmeRegistered || false,
+          currency: vendor.currency || "INR",
+          openingBalance: vendor.openingBalance?.toString() || "",
+          paymentTerms: vendor.paymentTerms || "Due on Receipt",
+          tds: vendor.tds || "",
+          billingAddress: vendor.billingAddress || {
+            attention: "",
+            countryRegion: "",
+            street1: "",
+            street2: "",
+            city: "",
+            state: "",
+            pinCode: "",
+            phone: "",
+            faxNumber: "",
+          },
+          shippingAddress: vendor.shippingAddress || {
+            attention: "",
+            countryRegion: "",
+            street1: "",
+            street2: "",
+            city: "",
+            state: "",
+            pinCode: "",
+            phone: "",
+            faxNumber: "",
+          },
+          bankDetails: vendor.bankDetails || {
+            accountHolderName: "",
+            bankName: "",
+            accountNumber: "",
+            ifscCode: "",
+            swiftCode: "",
+            branchName: "",
+          },
+          remarks: vendor.remarks || "",
+        });
+        setContactPersons(vendor.contactPersons || []);
+      } else {
+        toast({ title: "Failed to load vendor", variant: "destructive" });
+        setLocation('/vendors');
+      }
+    } catch (error) {
+      toast({ title: "Failed to load vendor", variant: "destructive" });
+      setLocation('/vendors');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddressChange = (type: 'billingAddress' | 'shippingAddress', field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [type]: { ...prev[type], [field]: value }
+    }));
+  };
+
+  const handleBankDetailsChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      bankDetails: { ...prev.bankDetails, [field]: value }
+    }));
+  };
+
+  const copyBillingToShipping = () => {
+    setFormData(prev => ({
+      ...prev,
+      shippingAddress: { ...prev.billingAddress }
+    }));
+  };
+
+  const addContactPerson = () => {
+    setContactPersons(prev => [...prev, {
+      id: Date.now().toString(),
+      salutation: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      workPhone: "",
+      mobile: "",
+    }]);
+  };
+
+  const updateContactPerson = (id: string, field: string, value: string) => {
+    setContactPersons(prev => prev.map(cp => 
+      cp.id === id ? { ...cp, [field]: value } : cp
+    ));
+  };
+
+  const removeContactPerson = (id: string) => {
+    setContactPersons(prev => prev.filter(cp => cp.id !== id));
+  };
+
+  const handleSave = async () => {
+    if (!formData.displayName) {
+      toast({ title: "Display Name is required", variant: "destructive" });
+      return;
+    }
+
+    if (!formData.gstTreatment) {
+      toast({ title: "GST Treatment is required", variant: "destructive" });
+      return;
+    }
+
+    if (!formData.sourceOfSupply) {
+      toast({ title: "Source of Supply is required", variant: "destructive" });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        ...formData,
+        contactPersons,
+        openingBalance: formData.openingBalance ? parseFloat(formData.openingBalance) : 0,
+      };
+
+      const response = await fetch(`/api/vendors/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        toast({ title: "Vendor updated successfully" });
+        setLocation('/vendors');
+      } else {
+        const error = await response.json();
+        toast({ title: error.message || "Failed to update vendor", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Failed to update vendor", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <p className="text-slate-500">Loading vendor...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-white">
+      <div className="border-b border-slate-200 px-6 py-4">
+        <h1 className="text-2xl font-semibold text-slate-900">Edit Vendor</h1>
+      </div>
+
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-4xl mx-auto p-6 space-y-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-md px-4 py-3 flex items-center gap-2">
+            <LinkIcon className="h-4 w-4 text-blue-600" />
+            <span className="text-sm text-blue-800">
+              Prefill Vendor details from the GST portal using the Vendor's GSTIN.{" "}
+              <a href="#" className="text-blue-600 hover:underline">Prefill</a>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-[200px_1fr] gap-6 items-start">
+            <Label className="text-sm font-medium text-slate-700 pt-2 flex items-center gap-1">
+              Primary Contact
+              <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+            </Label>
+            <div className="flex gap-3">
+              <Select value={formData.salutation} onValueChange={(v) => handleInputChange('salutation', v)}>
+                <SelectTrigger className="w-32" data-testid="select-salutation">
+                  <SelectValue placeholder="Salutation" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SALUTATIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Input 
+                placeholder="First Name" 
+                value={formData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                className="flex-1"
+                data-testid="input-first-name"
+              />
+              <Input 
+                placeholder="Last Name" 
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                className="flex-1"
+                data-testid="input-last-name"
+              />
+            </div>
+
+            <Label className="text-sm font-medium text-slate-700 pt-2">Company Name</Label>
+            <Input 
+              value={formData.companyName}
+              onChange={(e) => handleInputChange('companyName', e.target.value)}
+              data-testid="input-company-name"
+            />
+
+            <Label className="text-sm font-medium text-red-600 pt-2 flex items-center gap-1">
+              Display Name*
+              <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+            </Label>
+            <Input 
+              value={formData.displayName}
+              onChange={(e) => handleInputChange('displayName', e.target.value)}
+              data-testid="input-display-name"
+            />
+
+            <Label className="text-sm font-medium text-slate-700 pt-2 flex items-center gap-1">
+              Email Address
+              <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+            </Label>
+            <Input 
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              data-testid="input-email"
+            />
+
+            <Label className="text-sm font-medium text-slate-700 pt-2 flex items-center gap-1">
+              Phone
+              <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+            </Label>
+            <div className="flex gap-3">
+              <Input 
+                placeholder="Work Phone" 
+                value={formData.workPhone}
+                onChange={(e) => handleInputChange('workPhone', e.target.value)}
+                className="flex-1"
+                data-testid="input-work-phone"
+              />
+              <Input 
+                placeholder="Mobile" 
+                value={formData.mobile}
+                onChange={(e) => handleInputChange('mobile', e.target.value)}
+                className="flex-1"
+                data-testid="input-mobile"
+              />
+            </div>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+            <TabsList className="h-12 w-full justify-start rounded-none border-b bg-transparent p-0 gap-0">
+              <TabsTrigger 
+                value="other-details" 
+                className="rounded-none border-b-2 border-transparent px-6 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                Other Details
+              </TabsTrigger>
+              <TabsTrigger 
+                value="address" 
+                className="rounded-none border-b-2 border-transparent px-6 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                Address
+              </TabsTrigger>
+              <TabsTrigger 
+                value="contact-persons" 
+                className="rounded-none border-b-2 border-transparent px-6 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                Contact Persons
+              </TabsTrigger>
+              <TabsTrigger 
+                value="bank-details" 
+                className="rounded-none border-b-2 border-transparent px-6 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                Bank Details
+              </TabsTrigger>
+              <TabsTrigger 
+                value="custom-fields" 
+                className="rounded-none border-b-2 border-transparent px-6 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                Custom Fields
+              </TabsTrigger>
+              <TabsTrigger 
+                value="reporting-tags" 
+                className="rounded-none border-b-2 border-transparent px-6 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                Reporting Tags
+              </TabsTrigger>
+              <TabsTrigger 
+                value="remarks" 
+                className="rounded-none border-b-2 border-transparent px-6 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                Remarks
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="other-details" className="mt-6">
+              <div className="grid grid-cols-[200px_1fr] gap-6 items-start">
+                <Label className="text-sm font-medium text-red-600 pt-2">GST Treatment*</Label>
+                <Select value={formData.gstTreatment} onValueChange={(v) => handleInputChange('gstTreatment', v)}>
+                  <SelectTrigger data-testid="select-gst-treatment">
+                    <SelectValue placeholder="Select a GST treatment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GST_TREATMENTS.map(g => (
+                      <SelectItem key={g.value} value={g.label}>{g.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Label className="text-sm font-medium text-red-600 pt-2">Source of Supply*</Label>
+                <Select value={formData.sourceOfSupply} onValueChange={(v) => handleInputChange('sourceOfSupply', v)}>
+                  <SelectTrigger data-testid="select-source-of-supply">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INDIAN_STATES.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Label className="text-sm font-medium text-slate-700 pt-2 flex items-center gap-1">
+                  PAN
+                  <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+                </Label>
+                <Input 
+                  value={formData.pan}
+                  onChange={(e) => handleInputChange('pan', e.target.value.toUpperCase())}
+                  maxLength={10}
+                  data-testid="input-pan"
+                />
+
+                <Label className="text-sm font-medium text-slate-700 pt-2 flex items-center gap-1">
+                  MSME Registered?
+                  <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    checked={formData.msmeRegistered}
+                    onCheckedChange={(v) => handleInputChange('msmeRegistered', v)}
+                    data-testid="checkbox-msme"
+                  />
+                  <span className="text-sm text-slate-600">This vendor is MSME registered</span>
+                </div>
+
+                <Label className="text-sm font-medium text-slate-700 pt-2">Currency</Label>
+                <Select value={formData.currency} onValueChange={(v) => handleInputChange('currency', v)}>
+                  <SelectTrigger data-testid="select-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Label className="text-sm font-medium text-slate-700 pt-2">Opening Balance</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-500">INR</span>
+                  <Input 
+                    type="number"
+                    value={formData.openingBalance}
+                    onChange={(e) => handleInputChange('openingBalance', e.target.value)}
+                    className="flex-1"
+                    data-testid="input-opening-balance"
+                  />
+                </div>
+
+                <Label className="text-sm font-medium text-slate-700 pt-2">Payment Terms</Label>
+                <Select value={formData.paymentTerms} onValueChange={(v) => handleInputChange('paymentTerms', v)}>
+                  <SelectTrigger data-testid="select-payment-terms">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_TERMS.map(p => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Label className="text-sm font-medium text-slate-700 pt-2">TDS</Label>
+                <Select value={formData.tds} onValueChange={(v) => handleInputChange('tds', v)}>
+                  <SelectTrigger data-testid="select-tds">
+                    <SelectValue placeholder="Select a Tax" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="tds-194c">TDS 194C - Contractors</SelectItem>
+                    <SelectItem value="tds-194j">TDS 194J - Professional Services</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Label className="text-sm font-medium text-slate-700 pt-2">Documents</Label>
+                <div>
+                  <Button variant="outline" className="gap-2">
+                    <Upload className="h-4 w-4" />
+                    Upload File
+                  </Button>
+                  <p className="text-xs text-slate-500 mt-1">You can upload a maximum of 10 files, 10MB each</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="address" className="mt-6">
+              <div className="grid grid-cols-2 gap-8">
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-4">Billing Address</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm text-slate-600">Attention</Label>
+                      <Input 
+                        value={formData.billingAddress.attention}
+                        onChange={(e) => handleAddressChange('billingAddress', 'attention', e.target.value)}
+                        data-testid="input-billing-attention"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Country/Region</Label>
+                      <Select 
+                        value={formData.billingAddress.countryRegion} 
+                        onValueChange={(v) => handleAddressChange('billingAddress', 'countryRegion', v)}
+                      >
+                        <SelectTrigger data-testid="select-billing-country">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="India">India</SelectItem>
+                          <SelectItem value="United States">United States</SelectItem>
+                          <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Address</Label>
+                      <Textarea 
+                        placeholder="Street 1"
+                        value={formData.billingAddress.street1}
+                        onChange={(e) => handleAddressChange('billingAddress', 'street1', e.target.value)}
+                        className="mb-2"
+                        data-testid="input-billing-street1"
+                      />
+                      <Textarea 
+                        placeholder="Street 2"
+                        value={formData.billingAddress.street2}
+                        onChange={(e) => handleAddressChange('billingAddress', 'street2', e.target.value)}
+                        data-testid="input-billing-street2"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">City</Label>
+                      <Input 
+                        value={formData.billingAddress.city}
+                        onChange={(e) => handleAddressChange('billingAddress', 'city', e.target.value)}
+                        data-testid="input-billing-city"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">State</Label>
+                      <Select 
+                        value={formData.billingAddress.state} 
+                        onValueChange={(v) => handleAddressChange('billingAddress', 'state', v)}
+                      >
+                        <SelectTrigger data-testid="select-billing-state">
+                          <SelectValue placeholder="Select or type to add" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDIAN_STATES.map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Pin Code</Label>
+                      <Input 
+                        value={formData.billingAddress.pinCode}
+                        onChange={(e) => handleAddressChange('billingAddress', 'pinCode', e.target.value)}
+                        data-testid="input-billing-pincode"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Phone</Label>
+                      <Input 
+                        value={formData.billingAddress.phone}
+                        onChange={(e) => handleAddressChange('billingAddress', 'phone', e.target.value)}
+                        data-testid="input-billing-phone"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Fax Number</Label>
+                      <Input 
+                        value={formData.billingAddress.faxNumber}
+                        onChange={(e) => handleAddressChange('billingAddress', 'faxNumber', e.target.value)}
+                        data-testid="input-billing-fax"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-slate-900">Shipping Address</h3>
+                    <button 
+                      type="button"
+                      onClick={copyBillingToShipping}
+                      className="text-sm text-blue-600 hover:underline"
+                      data-testid="button-copy-billing"
+                    >
+                      Copy billing address
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm text-slate-600">Attention</Label>
+                      <Input 
+                        value={formData.shippingAddress.attention}
+                        onChange={(e) => handleAddressChange('shippingAddress', 'attention', e.target.value)}
+                        data-testid="input-shipping-attention"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Country/Region</Label>
+                      <Select 
+                        value={formData.shippingAddress.countryRegion} 
+                        onValueChange={(v) => handleAddressChange('shippingAddress', 'countryRegion', v)}
+                      >
+                        <SelectTrigger data-testid="select-shipping-country">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="India">India</SelectItem>
+                          <SelectItem value="United States">United States</SelectItem>
+                          <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Address</Label>
+                      <Textarea 
+                        placeholder="Street 1"
+                        value={formData.shippingAddress.street1}
+                        onChange={(e) => handleAddressChange('shippingAddress', 'street1', e.target.value)}
+                        className="mb-2"
+                        data-testid="input-shipping-street1"
+                      />
+                      <Textarea 
+                        placeholder="Street 2"
+                        value={formData.shippingAddress.street2}
+                        onChange={(e) => handleAddressChange('shippingAddress', 'street2', e.target.value)}
+                        data-testid="input-shipping-street2"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">City</Label>
+                      <Input 
+                        value={formData.shippingAddress.city}
+                        onChange={(e) => handleAddressChange('shippingAddress', 'city', e.target.value)}
+                        data-testid="input-shipping-city"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">State</Label>
+                      <Select 
+                        value={formData.shippingAddress.state} 
+                        onValueChange={(v) => handleAddressChange('shippingAddress', 'state', v)}
+                      >
+                        <SelectTrigger data-testid="select-shipping-state">
+                          <SelectValue placeholder="Select or type to add" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDIAN_STATES.map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Pin Code</Label>
+                      <Input 
+                        value={formData.shippingAddress.pinCode}
+                        onChange={(e) => handleAddressChange('shippingAddress', 'pinCode', e.target.value)}
+                        data-testid="input-shipping-pincode"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Phone</Label>
+                      <Input 
+                        value={formData.shippingAddress.phone}
+                        onChange={(e) => handleAddressChange('shippingAddress', 'phone', e.target.value)}
+                        data-testid="input-shipping-phone"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-600">Fax Number</Label>
+                      <Input 
+                        value={formData.shippingAddress.faxNumber}
+                        onChange={(e) => handleAddressChange('shippingAddress', 'faxNumber', e.target.value)}
+                        data-testid="input-shipping-fax"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="contact-persons" className="mt-6">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Salutation</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">First Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Last Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Email Address</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Work Phone</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Mobile</th>
+                      <th className="px-4 py-3 w-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {contactPersons.map((cp, index) => (
+                      <tr key={cp.id}>
+                        <td className="px-4 py-2">
+                          <Select 
+                            value={cp.salutation} 
+                            onValueChange={(v) => updateContactPerson(cp.id, 'salutation', v)}
+                          >
+                            <SelectTrigger className="w-24">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {SALUTATIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input 
+                            value={cp.firstName}
+                            onChange={(e) => updateContactPerson(cp.id, 'firstName', e.target.value)}
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input 
+                            value={cp.lastName}
+                            onChange={(e) => updateContactPerson(cp.id, 'lastName', e.target.value)}
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input 
+                            type="email"
+                            value={cp.email}
+                            onChange={(e) => updateContactPerson(cp.id, 'email', e.target.value)}
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input 
+                            value={cp.workPhone}
+                            onChange={(e) => updateContactPerson(cp.id, 'workPhone', e.target.value)}
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Input 
+                            value={cp.mobile}
+                            onChange={(e) => updateContactPerson(cp.id, 'mobile', e.target.value)}
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-slate-400 hover:text-red-600"
+                            onClick={() => removeContactPerson(cp.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                    {contactPersons.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                          No contact persons added yet
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <Button 
+                variant="outline" 
+                className="mt-4 gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                onClick={addContactPerson}
+                data-testid="button-add-contact"
+              >
+                <Plus className="h-4 w-4" />
+                Add Contact Person
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="bank-details" className="mt-6">
+              <div className="max-w-xl space-y-4">
+                <div>
+                  <Label className="text-sm text-slate-600">Account Holder Name</Label>
+                  <Input 
+                    value={formData.bankDetails.accountHolderName}
+                    onChange={(e) => handleBankDetailsChange('accountHolderName', e.target.value)}
+                    data-testid="input-account-holder"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">Bank Name</Label>
+                  <Input 
+                    value={formData.bankDetails.bankName}
+                    onChange={(e) => handleBankDetailsChange('bankName', e.target.value)}
+                    data-testid="input-bank-name"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">Account Number</Label>
+                  <Input 
+                    value={formData.bankDetails.accountNumber}
+                    onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
+                    data-testid="input-account-number"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">IFSC Code</Label>
+                  <Input 
+                    value={formData.bankDetails.ifscCode}
+                    onChange={(e) => handleBankDetailsChange('ifscCode', e.target.value.toUpperCase())}
+                    data-testid="input-ifsc"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">SWIFT Code</Label>
+                  <Input 
+                    value={formData.bankDetails.swiftCode}
+                    onChange={(e) => handleBankDetailsChange('swiftCode', e.target.value.toUpperCase())}
+                    data-testid="input-swift"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">Branch Name</Label>
+                  <Input 
+                    value={formData.bankDetails.branchName}
+                    onChange={(e) => handleBankDetailsChange('branchName', e.target.value)}
+                    data-testid="input-branch"
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="custom-fields" className="mt-6">
+              <div className="text-center py-12 text-slate-500">
+                <p className="text-lg font-medium mb-1">No custom fields configured</p>
+                <p className="text-sm text-slate-400">Custom fields can be configured in Settings</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="reporting-tags" className="mt-6">
+              <div className="text-center py-12 text-slate-500">
+                <p className="text-lg font-medium mb-1">No reporting tags configured</p>
+                <p className="text-sm text-slate-400">Reporting tags can be configured in Settings</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="remarks" className="mt-6">
+              <div className="max-w-xl">
+                <Label className="text-sm text-slate-600 mb-2 block">Remarks (For Internal Use)</Label>
+                <Textarea 
+                  placeholder="Add any internal notes about this vendor..."
+                  value={formData.remarks}
+                  onChange={(e) => handleInputChange('remarks', e.target.value)}
+                  rows={6}
+                  data-testid="input-remarks"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+
+      <div className="border-t border-slate-200 px-6 py-4 flex items-center gap-3">
+        <Button 
+          onClick={handleSave} 
+          disabled={saving}
+          className="bg-blue-600 hover:bg-blue-700"
+          data-testid="button-save"
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => setLocation('/vendors')}
+          data-testid="button-cancel"
+        >
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
