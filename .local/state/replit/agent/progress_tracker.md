@@ -8,4 +8,5 @@
 [x] 8. Fixed cross-env missing package issue and verified workflow is running
 [x] 9. Verified application is fully functional with screenshot
 [x] 10. Final verification - application running successfully on port 5000
-[x] 11. Re-installed cross-env package and confirmed application is running
+[x] 11. Added Salesperson dropdown with Manage Salespersons to sales-order-edit.tsx
+[x] 12. Added Salesperson dropdown with Manage Salespersons to invoice-edit.tsx

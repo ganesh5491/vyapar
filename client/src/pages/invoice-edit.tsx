@@ -10,6 +10,8 @@ import {
   ArrowLeft,
   Printer,
   Share2,
+  Search,
+  Settings,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { addDays, endOfMonth, addMonths, format, parse } from "date-fns";
@@ -30,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ManageSalespersonsDialog } from "@/components/ManageSalespersonsDialog";
 
 interface InvoiceItem {
   id: string;
@@ -68,10 +71,26 @@ export default function InvoiceEdit() {
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [shippingCharges, setShippingCharges] = useState(0);
   const [adjustment, setAdjustment] = useState(0);
+  const [selectedSalesperson, setSelectedSalesperson] = useState("");
+  const [showManageSalespersons, setShowManageSalespersons] = useState(false);
+  const [salespersons, setSalespersons] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     fetchInvoice();
+    fetchSalespersons();
   }, [params.id]);
+
+  const fetchSalespersons = async () => {
+    try {
+      const response = await fetch('/api/salespersons');
+      if (response.ok) {
+        const data = await response.json();
+        setSalespersons(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch salespersons:', error);
+    }
+  };
 
   const fetchInvoice = async () => {
     try {
@@ -100,6 +119,7 @@ export default function InvoiceEdit() {
         })));
         setShippingCharges(invoice.shippingCharges || 0);
         setAdjustment(invoice.adjustment || 0);
+        setSelectedSalesperson(invoice.salesperson || "");
       }
     } catch (error) {
       console.error('Failed to fetch invoice:', error);
@@ -208,6 +228,7 @@ export default function InvoiceEdit() {
           pincode: ''
         },
         paymentTerms,
+        salesperson: selectedSalesperson,
         items: invoiceItems,
         subTotal: totals.subtotal,
         shippingCharges,
@@ -342,6 +363,42 @@ export default function InvoiceEdit() {
                   </PopoverContent>
                 </Popover>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Salesperson</Label>
+              <Select value={selectedSalesperson} onValueChange={(val) => {
+                if (val === "manage_salespersons") {
+                  setShowManageSalespersons(true);
+                } else {
+                  setSelectedSalesperson(val);
+                }
+              }}>
+                <SelectTrigger data-testid="select-salesperson">
+                  <SelectValue placeholder="Select salesperson" />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="relative mb-2">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      className="w-full pl-8 pr-2 py-1.5 text-sm border-b bg-transparent outline-none"
+                      placeholder="Search"
+                    />
+                  </div>
+                  {salespersons.map((sp) => (
+                    <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
+                  ))}
+                  <div
+                    className="flex items-center gap-2 px-2 py-1.5 text-sm text-blue-600 cursor-pointer hover:bg-slate-100"
+                    onClick={() => {
+                      setShowManageSalespersons(true);
+                    }}
+                  >
+                    <Settings className="h-4 w-4" />
+                    Manage Salespersons
+                  </div>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -506,6 +563,11 @@ export default function InvoiceEdit() {
           </div>
         </div>
       </div>
+      <ManageSalespersonsDialog
+        open={showManageSalespersons}
+        onOpenChange={setShowManageSalespersons}
+        onSalespersonChange={fetchSalespersons}
+      />
     </div>
   );
 }

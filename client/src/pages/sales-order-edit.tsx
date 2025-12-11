@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
-import { Plus, X, Search, Upload, Pencil, ArrowLeft, Loader2 } from "lucide-react";
+import { Plus, X, Search, Upload, Pencil, ArrowLeft, Loader2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { ManageSalespersonsDialog } from "@/components/ManageSalespersonsDialog";
 
 interface Customer {
   id: string;
@@ -118,6 +119,8 @@ export default function SalesOrderEditPage() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [originalOrder, setOriginalOrder] = useState<any>({});
+  const [showManageSalespersons, setShowManageSalespersons] = useState(false);
+  const [salespersons, setSalespersons] = useState<{ id: string; name: string }[]>([]);
 
   const [formData, setFormData] = useState({
     customerId: "",
@@ -158,6 +161,7 @@ export default function SalesOrderEditPage() {
   useEffect(() => {
     fetchCustomers();
     fetchItems();
+    fetchSalespersons();
   }, []);
 
   useEffect(() => {
@@ -187,6 +191,18 @@ export default function SalesOrderEditPage() {
       }
     } catch (error) {
       console.error('Failed to fetch items:', error);
+    }
+  };
+
+  const fetchSalespersons = async () => {
+    try {
+      const response = await fetch('/api/salespersons');
+      if (response.ok) {
+        const data = await response.json();
+        setSalespersons(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch salespersons:', error);
     }
   };
 
@@ -574,13 +590,36 @@ export default function SalesOrderEditPage() {
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label>Salesperson</Label>
-            <Select value={formData.salesperson} onValueChange={(v) => setFormData(prev => ({ ...prev, salesperson: v }))}>
+            <Select value={formData.salesperson} onValueChange={(v) => {
+              if (v === "manage_salespersons") {
+                setShowManageSalespersons(true);
+              } else {
+                setFormData(prev => ({ ...prev, salesperson: v }));
+              }
+            }}>
               <SelectTrigger data-testid="select-salesperson">
                 <SelectValue placeholder="Select or Add Salesperson" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="rohan">Rohan Bhosale</SelectItem>
-                <SelectItem value="amit">Amit Sharma</SelectItem>
+                <div className="relative mb-2">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    className="w-full pl-8 pr-2 py-1.5 text-sm border-b bg-transparent outline-none"
+                    placeholder="Search"
+                  />
+                </div>
+                {salespersons.map(sp => (
+                  <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
+                ))}
+                <div
+                  className="flex items-center gap-2 px-2 py-1.5 text-sm text-blue-600 cursor-pointer hover:bg-slate-100"
+                  onClick={() => {
+                    setShowManageSalespersons(true);
+                  }}
+                >
+                  <Settings className="h-4 w-4" />
+                  Manage Salespersons
+                </div>
               </SelectContent>
             </Select>
           </div>
@@ -815,6 +854,11 @@ export default function SalesOrderEditPage() {
           </div>
         </div>
       </div>
+      <ManageSalespersonsDialog
+        open={showManageSalespersons}
+        onOpenChange={setShowManageSalespersons}
+        onSalespersonChange={fetchSalespersons}
+      />
     </div>
   );
 }
