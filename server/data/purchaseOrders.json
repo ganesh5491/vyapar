@@ -1,4 +1,78 @@
 {
-  "purchaseOrders": [],
-  "nextPurchaseOrderNumber": 1
+  "purchaseOrders": [
+    {
+      "id": "1765429085994",
+      "purchaseOrderNumber": "PO-2025-0001",
+      "referenceNumber": "6546132",
+      "date": "2025-12-11",
+      "deliveryDate": "",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "vendorAddress": {},
+      "deliveryAddress": {
+        "attention": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "countryRegion": "India"
+      },
+      "deliveryAddressType": "organization",
+      "paymentTerms": "Due on Receipt",
+      "shipmentPreference": "Express Shipping",
+      "reverseCharge": false,
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "itemName": "Cloud Server",
+          "description": "",
+          "account": "Inventory Asset",
+          "quantity": 1,
+          "rate": 0,
+          "tax": "none",
+          "taxAmount": 0,
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 0,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 0,
+      "notes": "",
+      "termsAndConditions": "",
+      "attachments": [],
+      "status": "ISSUED",
+      "receiveStatus": "YET TO BE RECEIVED",
+      "billedStatus": "BILLED",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-11T04:58:05.994Z",
+      "updatedAt": "2025-12-11T04:59:04.603Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-11T04:58:05.994Z",
+          "action": "created",
+          "description": "Purchase Order created for ₹0",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T04:59:04.603Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        }
+      ]
+    }
+  ],
+  "nextPurchaseOrderNumber": 2
 }
