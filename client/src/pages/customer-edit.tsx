@@ -17,14 +17,52 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useAppStore, Customer } from "@/lib/store";
+
+interface Customer {
+  id: string;
+  displayName: string;
+  companyName?: string;
+  email?: string;
+  workPhone?: string;
+  mobile?: string;
+  gstTreatment?: string;
+  placeOfSupply?: string;
+  gstin?: string;
+  pan?: string;
+  taxPreference?: string;
+  currency?: string;
+  paymentTerms?: string;
+  customerType?: string;
+  billingAddress?: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+  };
+  shippingAddress?: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+  };
+  contactPersons?: Array<{
+    salutation: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    workPhone: string;
+    mobile: string;
+  }>;
+}
 
 export default function CustomerEdit() {
   const [, setLocation] = useLocation();
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
-  const { customers, updateCustomer, getCustomerById } = useAppStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState<Customer | null>(null);
 
   const [formData, setFormData] = useState({
@@ -63,88 +101,133 @@ export default function CustomerEdit() {
   }>>([]);
 
   useEffect(() => {
-    if (params.id) {
-      const found = getCustomerById(params.id);
-      if (found) {
-        setCustomer(found);
-        setFormData({
-          customerType: found.customerType || "business",
-          displayName: found.displayName,
-          companyName: found.companyName || "",
-          email: found.email || "",
-          workPhone: found.workPhone || "",
-          mobile: found.mobile || "",
-          gstTreatment: found.gstTreatment || "",
-          placeOfSupply: found.placeOfSupply || "",
-          gstin: found.gstin || "",
-          pan: found.pan || "",
-          taxPreference: found.taxPreference || "taxable",
-          currency: found.currency || "INR",
-          paymentTerms: found.paymentTerms || "",
-          billingStreet: found.billingAddress?.street || "",
-          billingCity: found.billingAddress?.city || "",
-          billingState: found.billingAddress?.state || "",
-          billingCountry: found.billingAddress?.country || "India",
-          billingPincode: found.billingAddress?.pincode || "",
-          shippingStreet: found.shippingAddress?.street || "",
-          shippingCity: found.shippingAddress?.city || "",
-          shippingState: found.shippingAddress?.state || "",
-          shippingCountry: found.shippingAddress?.country || "India",
-          shippingPincode: found.shippingAddress?.pincode || "",
-        });
-        // Load contact persons if they exist
-        if ((found as any).contactPersons) {
-          setContactPersons((found as any).contactPersons);
+    const fetchCustomer = async () => {
+      if (!params.id) return;
+      try {
+        const response = await fetch(`/api/customers/${params.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          const found = data.data;
+          if (found) {
+            setCustomer(found);
+            setFormData({
+              customerType: found.customerType || "business",
+              displayName: found.displayName || found.name || "",
+              companyName: found.companyName || "",
+              email: found.email || "",
+              workPhone: found.workPhone || found.phone || "",
+              mobile: found.mobile || "",
+              gstTreatment: found.gstTreatment || "",
+              placeOfSupply: found.placeOfSupply || "",
+              gstin: found.gstin || "",
+              pan: found.pan || "",
+              taxPreference: found.taxPreference || "taxable",
+              currency: found.currency || "INR",
+              paymentTerms: found.paymentTerms || "",
+              billingStreet: found.billingAddress?.street || "",
+              billingCity: found.billingAddress?.city || "",
+              billingState: found.billingAddress?.state || "",
+              billingCountry: found.billingAddress?.country || "India",
+              billingPincode: found.billingAddress?.pincode || "",
+              shippingStreet: found.shippingAddress?.street || "",
+              shippingCity: found.shippingAddress?.city || "",
+              shippingState: found.shippingAddress?.state || "",
+              shippingCountry: found.shippingAddress?.country || "India",
+              shippingPincode: found.shippingAddress?.pincode || "",
+            });
+            if (found.contactPersons) {
+              setContactPersons(found.contactPersons);
+            }
+          }
         }
+      } catch (error) {
+        console.error('Failed to fetch customer:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load customer data.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [params.id, getCustomerById]);
+    };
+    fetchCustomer();
+  }, [params.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!params.id) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    
+    try {
+      const updateData = {
+        name: formData.displayName,
+        displayName: formData.displayName,
+        companyName: formData.companyName,
+        email: formData.email,
+        phone: formData.workPhone,
+        workPhone: formData.workPhone,
+        mobile: formData.mobile,
+        gstTreatment: formData.gstTreatment,
+        placeOfSupply: formData.placeOfSupply,
+        gstin: formData.gstin,
+        pan: formData.pan,
+        taxPreference: formData.taxPreference,
+        currency: formData.currency,
+        paymentTerms: formData.paymentTerms,
+        customerType: formData.customerType,
+        billingAddress: {
+          street: formData.billingStreet,
+          city: formData.billingCity,
+          state: formData.billingState,
+          country: formData.billingCountry,
+          pincode: formData.billingPincode,
+        },
+        shippingAddress: {
+          street: formData.shippingStreet,
+          city: formData.shippingCity,
+          state: formData.shippingState,
+          country: formData.shippingCountry,
+          pincode: formData.shippingPincode,
+        },
+        contactPersons: contactPersons,
+      };
 
-    updateCustomer(params.id, {
-      displayName: formData.displayName,
-      companyName: formData.companyName,
-      email: formData.email,
-      workPhone: formData.workPhone,
-      mobile: formData.mobile,
-      gstTreatment: formData.gstTreatment,
-      placeOfSupply: formData.placeOfSupply,
-      gstin: formData.gstin,
-      pan: formData.pan,
-      taxPreference: formData.taxPreference,
-      currency: formData.currency,
-      paymentTerms: formData.paymentTerms,
-      customerType: formData.customerType,
-      billingAddress: {
-        street: formData.billingStreet,
-        city: formData.billingCity,
-        state: formData.billingState,
-        country: formData.billingCountry,
-        pincode: formData.billingPincode,
-      },
-      shippingAddress: {
-        street: formData.shippingStreet,
-        city: formData.shippingCity,
-        state: formData.shippingState,
-        country: formData.shippingCountry,
-        pincode: formData.shippingPincode,
-      },
-      contactPersons: contactPersons,
-    } as any);
+      const response = await fetch(`/api/customers/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      });
 
-    toast({
-      title: "Customer Updated",
-      description: "The customer has been successfully updated.",
-    });
-    setIsSubmitting(false);
-    setLocation("/customers");
+      if (response.ok) {
+        toast({
+          title: "Customer Updated",
+          description: "The customer has been successfully updated.",
+        });
+        setLocation("/customers");
+      } else {
+        throw new Error('Failed to update customer');
+      }
+    } catch (error) {
+      console.error('Failed to update customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update customer. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto py-12 text-center">
+        <p className="text-slate-500">Loading customer...</p>
+      </div>
+    );
+  }
 
   if (!customer) {
     return (

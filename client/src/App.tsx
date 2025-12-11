@@ -21,6 +21,7 @@ import ItemCreatePage from "@/modules/items/pages/ItemCreatePage";
 import ItemDetailPage from "@/modules/items/pages/ItemDetailPage";
 import QuotesPage from "@/modules/sales/pages/QuotesPage";
 import QuoteCreatePage from "@/modules/sales/pages/QuoteCreatePage";
+import QuoteEditPage from "@/modules/sales/pages/QuoteEditPage";
 import SalesOrdersPage from "@/pages/sales-orders";
 import SalesOrderCreatePage from "@/pages/sales-order-create";
 import SalesOrderEditPage from "@/pages/sales-order-edit";
@@ -61,6 +62,8 @@ function Router() {
         <Route path="/estimates" component={QuotesPage} />
         <Route path="/quotes" component={QuotesPage} />
         <Route path="/quotes/create" component={QuoteCreatePage} />
+        <Route path="/estimates/:id/edit" component={QuoteEditPage} />
+        <Route path="/quotes/:id/edit" component={QuoteEditPage} />
         <Route path="/sales-orders" component={SalesOrdersPage} />
         <Route path="/sales-orders/create" component={SalesOrderCreatePage} />
         <Route path="/sales-orders/:id/edit" component={SalesOrderEditPage} />

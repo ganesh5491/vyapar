@@ -1188,7 +1188,7 @@ export default function VendorsPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto border-t border-slate-200 dark:border-slate-700">
+        <div className="flex-1 overflow-auto">
           {loading ? (
             <div className="p-8 text-center text-slate-500">Loading vendors...</div>
           ) : sortedVendors.length === 0 ? (
@@ -1209,31 +1209,83 @@ export default function VendorsPage() {
               </Button>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-              {sortedVendors.map((vendor) => (
-                <div 
-                  key={vendor.id} 
-                  className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
-                    selectedVendor?.id === vendor.id ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-l-blue-600' : ''
-                  }`}
-                  onClick={() => handleVendorClick(vendor)}
-                  data-testid={`card-vendor-${vendor.id}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
+                <tr className="border-b border-slate-200 dark:border-slate-700">
+                  <th className="w-10 px-3 py-3 text-left">
+                    <Checkbox 
+                      checked={selectedVendors.length === sortedVendors.length && sortedVendors.length > 0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (selectedVendors.length === sortedVendors.length) {
+                          setSelectedVendors([]);
+                        } else {
+                          setSelectedVendors(sortedVendors.map(v => v.id));
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Company Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Work Phone</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Payables (BCY)</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Unused Credits (BCY)</th>
+                  <th className="w-10 px-3 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {sortedVendors.map((vendor) => (
+                  <tr 
+                    key={vendor.id} 
+                    className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
+                      selectedVendor?.id === vendor.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                    }`}
+                    onClick={() => handleVendorClick(vendor)}
+                    data-testid={`row-vendor-${vendor.id}`}
+                  >
+                    <td className="px-3 py-3">
                       <Checkbox 
                         checked={selectedVendors.includes(vendor.id)}
                         onClick={(e) => toggleSelectVendor(vendor.id, e)}
                       />
-                      <div>
-                        <span className="font-medium text-blue-600">{vendor.displayName}</span>
-                        <p className="text-sm text-slate-500">{formatCurrencyLocal(vendor.payables || 0)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="font-medium text-blue-600 dark:text-blue-400">{vendor.displayName}</span>
+                    </td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                      {vendor.companyName || '-'}
+                    </td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                      {vendor.email || '-'}
+                    </td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                      {vendor.workPhone || '-'}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
+                      {formatCurrencyLocal(vendor.payables || 0)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
+                      {formatCurrencyLocal(vendor.unusedCredits || 0)}
+                    </td>
+                    <td className="px-3 py-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Search className="h-4 w-4 text-slate-400" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleVendorClick(vendor); }}>
+                            View Details
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
