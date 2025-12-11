@@ -12,3 +12,6 @@
 [x] 12. Added Salesperson dropdown with Manage Salespersons to invoice-edit.tsx
 [x] 13. Re-installed cross-env package and restarted workflow
 [x] 14. Verified application is running after session restart
+[x] 15. Updated sidebar to use accordion behavior (only one section open at a time)
+[x] 16. Updated Customers page UI to table layout with columns: Name, Company Name, Email, Work Phone, Place of Supply, Receivables, Unused Credits
+[x] 17. Updated Quotes/Estimates page UI to proper table layout with full detail panel

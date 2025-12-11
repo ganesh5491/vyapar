@@ -83,6 +83,10 @@ interface CustomerListItem {
   email: string;
   phone: string;
   status?: string;
+  companyName?: string;
+  placeOfSupply?: string;
+  outstandingReceivables?: number;
+  unusedCredits?: number;
   billingAddress?: {
     street: string;
     city: string;
@@ -1171,7 +1175,7 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto border-t border-slate-200 dark:border-slate-700">
+        <div className="flex-1 overflow-auto">
           {loading ? (
             <div className="p-8 text-center text-slate-500">Loading customers...</div>
           ) : filteredCustomers.length === 0 ? (
@@ -1185,31 +1189,87 @@ export default function CustomersPage() {
               </Button>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-              {filteredCustomers.map((customer) => (
-                <div 
-                  key={customer.id} 
-                  className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
-                    selectedCustomer?.id === customer.id ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-l-blue-600' : ''
-                  }`}
-                  onClick={() => handleCustomerClick(customer)}
-                  data-testid={`card-customer-${customer.id}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
+                <tr className="border-b border-slate-200 dark:border-slate-700">
+                  <th className="w-10 px-3 py-3 text-left">
+                    <Checkbox 
+                      checked={selectedCustomers.length === filteredCustomers.length && filteredCustomers.length > 0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (selectedCustomers.length === filteredCustomers.length) {
+                          setSelectedCustomers([]);
+                        } else {
+                          setSelectedCustomers(filteredCustomers.map(c => c.id));
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Company Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Work Phone</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Place of Supply</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Receivables (BCY)</th>
+                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Unused Credits (BCY)</th>
+                  <th className="w-10 px-3 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {filteredCustomers.map((customer) => (
+                  <tr 
+                    key={customer.id} 
+                    className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
+                      selectedCustomer?.id === customer.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                    }`}
+                    onClick={() => handleCustomerClick(customer)}
+                    data-testid={`row-customer-${customer.id}`}
+                  >
+                    <td className="px-3 py-3">
                       <Checkbox 
                         checked={selectedCustomers.includes(customer.id)}
                         onClick={(e) => toggleSelectCustomer(customer.id, e)}
                       />
-                      <div>
-                        <span className="font-medium text-slate-900 dark:text-white">{customer.name}</span>
-                        <p className="text-sm text-slate-500">{formatCurrency(0)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="font-medium text-blue-600 dark:text-blue-400">{customer.name}</span>
+                    </td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                      {customer.companyName || '-'}
+                    </td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                      {customer.email || '-'}
+                    </td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                      {customer.phone || '-'}
+                    </td>
+                    <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                      {customer.placeOfSupply || '-'}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
+                      {formatCurrency(customer.outstandingReceivables || 0)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
+                      {formatCurrency(customer.unusedCredits || 0)}
+                    </td>
+                    <td className="px-3 py-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Search className="h-4 w-4 text-slate-400" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleCustomerClick(customer); }}>
+                            View Details
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

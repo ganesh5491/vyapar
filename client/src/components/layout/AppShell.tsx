@@ -28,15 +28,7 @@ import { cn } from "@/lib/utils";
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-    sales: false,
-    purchases: false,
-    accountant: false,
-  });
-
-  const toggleMenu = (menu: string) => {
-    setOpenMenus(prev => ({ ...prev, [menu]: !prev[menu] }));
-  };
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const NavItem = ({ 
     href, 
@@ -87,10 +79,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     label: string;
     children: React.ReactNode;
   }) => {
-    const isOpen = openMenus[id] || false;
+    const isOpen = openMenu === id;
     
     return (
-      <Collapsible open={isOpen} onOpenChange={() => toggleMenu(id)}>
+      <Collapsible open={isOpen} onOpenChange={(open) => setOpenMenu(open ? id : null)}>
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"
