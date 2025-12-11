@@ -15,6 +15,7 @@ const DELIVERY_CHALLANS_FILE = path.join(DATA_DIR, "deliveryChallans.json");
 const EXPENSES_FILE = path.join(DATA_DIR, "expenses.json");
 const DASHBOARD_FILE = path.join(DATA_DIR, "dashboard.json");
 const REPORTS_FILE = path.join(DATA_DIR, "reports.json");
+const PURCHASE_ORDERS_FILE = path.join(DATA_DIR, "purchaseOrders.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -210,6 +211,25 @@ function readReportsData() {
 function writeReportsData(data: any) {
   ensureDataDir();
   fs.writeFileSync(REPORTS_FILE, JSON.stringify(data, null, 2));
+}
+
+function readPurchaseOrdersData() {
+  ensureDataDir();
+  if (!fs.existsSync(PURCHASE_ORDERS_FILE)) {
+    const defaultData = { purchaseOrders: [], nextPurchaseOrderNumber: 1 };
+    fs.writeFileSync(PURCHASE_ORDERS_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(PURCHASE_ORDERS_FILE, "utf-8"));
+}
+
+function writePurchaseOrdersData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(PURCHASE_ORDERS_FILE, JSON.stringify(data, null, 2));
+}
+
+function generatePurchaseOrderNumber(num: number): string {
+  return `PO-2025-${String(num).padStart(4, '0')}`;
 }
 
 export async function registerRoutes(
@@ -2150,6 +2170,228 @@ export async function registerRoutes(
       res.json({ success: true, data });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to update reports data" });
+    }
+  });
+
+  // Purchase Orders API
+  app.get("/api/purchase-orders/next-number", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      const nextNumber = generatePurchaseOrderNumber(data.nextPurchaseOrderNumber);
+      res.json({ success: true, data: { purchaseOrderNumber: nextNumber } });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to get next purchase order number" });
+    }
+  });
+
+  app.get("/api/purchase-orders", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      res.json({ success: true, data: data.purchaseOrders });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch purchase orders" });
+    }
+  });
+
+  app.get("/api/purchase-orders/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      const purchaseOrder = data.purchaseOrders.find((po: any) => po.id === req.params.id);
+      if (!purchaseOrder) {
+        return res.status(404).json({ success: false, message: "Purchase order not found" });
+      }
+      res.json({ success: true, data: purchaseOrder });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch purchase order" });
+    }
+  });
+
+  app.post("/api/purchase-orders", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      const purchaseOrderNumber = generatePurchaseOrderNumber(data.nextPurchaseOrderNumber);
+      const now = new Date().toISOString();
+
+      const newPurchaseOrder = {
+        id: String(Date.now()),
+        purchaseOrderNumber,
+        referenceNumber: req.body.referenceNumber || '',
+        date: req.body.date || new Date().toISOString().split('T')[0],
+        deliveryDate: req.body.deliveryDate || '',
+        vendorId: req.body.vendorId || '',
+        vendorName: req.body.vendorName || '',
+        vendorAddress: req.body.vendorAddress || {},
+        deliveryAddress: req.body.deliveryAddress || {},
+        deliveryAddressType: req.body.deliveryAddressType || 'organization',
+        paymentTerms: req.body.paymentTerms || 'Due on Receipt',
+        shipmentPreference: req.body.shipmentPreference || '',
+        reverseCharge: req.body.reverseCharge || false,
+        items: req.body.items || [],
+        subTotal: req.body.subTotal || 0,
+        discountType: req.body.discountType || 'percent',
+        discountValue: req.body.discountValue || 0,
+        discountAmount: req.body.discountAmount || 0,
+        taxType: req.body.taxType || 'TDS',
+        taxCategory: req.body.taxCategory || '',
+        taxAmount: req.body.taxAmount || 0,
+        adjustment: req.body.adjustment || 0,
+        adjustmentDescription: req.body.adjustmentDescription || '',
+        total: req.body.total || 0,
+        notes: req.body.notes || '',
+        termsAndConditions: req.body.termsAndConditions || '',
+        attachments: req.body.attachments || [],
+        status: req.body.status || 'ISSUED',
+        receiveStatus: req.body.receiveStatus || 'YET TO BE RECEIVED',
+        billedStatus: req.body.billedStatus || 'YET TO BE BILLED',
+        pdfTemplate: req.body.pdfTemplate || 'Standard Template',
+        createdAt: now,
+        updatedAt: now,
+        createdBy: req.body.createdBy || 'Admin User',
+        activityLogs: [
+          {
+            id: '1',
+            timestamp: now,
+            action: 'created',
+            description: `Purchase Order created for ₹${req.body.total?.toLocaleString('en-IN') || '0.00'}`,
+            user: req.body.createdBy || 'Admin User'
+          }
+        ]
+      };
+
+      data.purchaseOrders.unshift(newPurchaseOrder);
+      data.nextPurchaseOrderNumber += 1;
+      writePurchaseOrdersData(data);
+
+      res.status(201).json({ success: true, data: newPurchaseOrder });
+    } catch (error) {
+      console.error('Error creating purchase order:', error);
+      res.status(500).json({ success: false, message: 'Failed to create purchase order' });
+    }
+  });
+
+  app.put("/api/purchase-orders/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      const poIndex = data.purchaseOrders.findIndex((po: any) => po.id === req.params.id);
+
+      if (poIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Purchase order not found' });
+      }
+
+      const now = new Date().toISOString();
+      const existingPO = data.purchaseOrders[poIndex];
+
+      const updatedPO = {
+        ...existingPO,
+        ...req.body,
+        id: existingPO.id,
+        purchaseOrderNumber: existingPO.purchaseOrderNumber,
+        createdAt: existingPO.createdAt,
+        updatedAt: now,
+        activityLogs: [
+          ...existingPO.activityLogs,
+          {
+            id: String(existingPO.activityLogs.length + 1),
+            timestamp: now,
+            action: 'updated',
+            description: 'Purchase Order has been updated',
+            user: req.body.updatedBy || 'Admin User'
+          }
+        ]
+      };
+
+      data.purchaseOrders[poIndex] = updatedPO;
+      writePurchaseOrdersData(data);
+
+      res.json({ success: true, data: updatedPO });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to update purchase order' });
+    }
+  });
+
+  app.patch("/api/purchase-orders/:id/status", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      const poIndex = data.purchaseOrders.findIndex((po: any) => po.id === req.params.id);
+
+      if (poIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Purchase order not found' });
+      }
+
+      const now = new Date().toISOString();
+      const existingPO = data.purchaseOrders[poIndex];
+      const newStatus = req.body.status;
+
+      let actionDescription = `Status changed to ${newStatus}`;
+      if (newStatus === 'ISSUED') actionDescription = 'Purchase Order has been issued';
+      if (newStatus === 'CLOSED') actionDescription = 'Purchase Order has been closed';
+      if (newStatus === 'CANCELLED') actionDescription = 'Purchase Order has been cancelled';
+
+      existingPO.status = newStatus;
+      existingPO.updatedAt = now;
+      existingPO.activityLogs.push({
+        id: String(existingPO.activityLogs.length + 1),
+        timestamp: now,
+        action: newStatus.toLowerCase(),
+        description: actionDescription,
+        user: req.body.updatedBy || 'Admin User'
+      });
+
+      data.purchaseOrders[poIndex] = existingPO;
+      writePurchaseOrdersData(data);
+
+      res.json({ success: true, data: existingPO });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to update purchase order status' });
+    }
+  });
+
+  app.post("/api/purchase-orders/:id/convert-to-bill", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      const poIndex = data.purchaseOrders.findIndex((po: any) => po.id === req.params.id);
+
+      if (poIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Purchase order not found' });
+      }
+
+      const now = new Date().toISOString();
+      const purchaseOrder = data.purchaseOrders[poIndex];
+
+      purchaseOrder.billedStatus = 'BILLED';
+      purchaseOrder.updatedAt = now;
+      purchaseOrder.activityLogs.push({
+        id: String(purchaseOrder.activityLogs.length + 1),
+        timestamp: now,
+        action: 'converted_to_bill',
+        description: 'Purchase Order converted to Bill',
+        user: req.body.convertedBy || 'Admin User'
+      });
+
+      data.purchaseOrders[poIndex] = purchaseOrder;
+      writePurchaseOrdersData(data);
+
+      res.json({ success: true, data: purchaseOrder, message: 'Purchase Order converted to Bill' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to convert to bill' });
+    }
+  });
+
+  app.delete("/api/purchase-orders/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPurchaseOrdersData();
+      const poIndex = data.purchaseOrders.findIndex((po: any) => po.id === req.params.id);
+
+      if (poIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Purchase order not found' });
+      }
+
+      data.purchaseOrders.splice(poIndex, 1);
+      writePurchaseOrdersData(data);
+
+      res.json({ success: true, message: 'Purchase order deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to delete purchase order' });
     }
   });
 

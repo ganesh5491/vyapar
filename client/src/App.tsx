@@ -33,6 +33,8 @@ import VendorCreate from "@/pages/vendor-create";
 import VendorEdit from "@/pages/vendor-edit";
 import Expenses from "@/pages/expenses";
 import PurchaseOrders from "@/pages/purchase-orders";
+import PurchaseOrderCreate from "@/pages/purchase-order-create";
+import PurchaseOrderEdit from "@/pages/purchase-order-edit";
 import Bills from "@/pages/bills";
 import PaymentsMade from "@/pages/payments-made";
 import VendorCredits from "@/pages/vendor-credits";
@@ -80,6 +82,8 @@ function Router() {
         <Route path="/vendors/:id/edit" component={VendorEdit} />
         <Route path="/expenses" component={Expenses} />
         <Route path="/purchase-orders" component={PurchaseOrders} />
+        <Route path="/purchase-orders/new" component={PurchaseOrderCreate} />
+        <Route path="/purchase-orders/:id/edit" component={PurchaseOrderEdit} />
         <Route path="/bills" component={Bills} />
         <Route path="/payments-made" component={PaymentsMade} />
         <Route path="/vendor-credits" component={VendorCredits} />
