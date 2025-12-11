@@ -101,22 +101,22 @@
       "customerId": "1",
       "customerName": "CYBAEM TECH PRIVATE LIMITED",
       "billingAddress": {
-        "street": "",
-        "city": "",
-        "state": "",
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
         "country": "India",
-        "pincode": ""
+        "pincode": "411057"
       },
       "shippingAddress": {
-        "street": "",
-        "city": "",
-        "state": "",
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
         "country": "India",
-        "pincode": ""
+        "pincode": "411057"
       },
       "paymentTerms": "Due on Receipt",
-      "deliveryMethod": "",
-      "salesperson": "rohan",
+      "deliveryMethod": "Standard Delivery",
+      "salesperson": "4",
       "placeOfSupply": "",
       "items": [
         {
@@ -125,7 +125,7 @@
           "name": "Cloud Server",
           "description": "",
           "quantity": 1,
-          "unit": "",
+          "unit": "pcs",
           "rate": 555,
           "discount": 0,
           "discountType": "percentage",
@@ -133,7 +133,9 @@
           "taxName": "none",
           "amount": 555,
           "invoicedQty": 0,
-          "invoiceStatus": "Not Invoiced"
+          "invoiceStatus": "Not Invoiced",
+          "hsnSac": "",
+          "ordered": 1
         }
       ],
       "subTotal": 555,
@@ -155,7 +157,7 @@
       "sourceNumber": "QT-000007",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-11T06:56:10.284Z",
-      "updatedAt": "2025-12-11T06:56:10.284Z",
+      "updatedAt": "2025-12-11T10:47:58.473Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -163,6 +165,13 @@
           "timestamp": "2025-12-11T06:56:10.284Z",
           "action": "created",
           "description": "Sales Order created from Quote QT-000007",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T10:47:58.473Z",
+          "action": "updated",
+          "description": "Sales Order has been updated",
           "user": "Admin User"
         }
       ]
