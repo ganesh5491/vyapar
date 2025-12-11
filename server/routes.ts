@@ -16,6 +16,7 @@ const EXPENSES_FILE = path.join(DATA_DIR, "expenses.json");
 const DASHBOARD_FILE = path.join(DATA_DIR, "dashboard.json");
 const REPORTS_FILE = path.join(DATA_DIR, "reports.json");
 const PURCHASE_ORDERS_FILE = path.join(DATA_DIR, "purchaseOrders.json");
+const BILLS_FILE = path.join(DATA_DIR, "bills.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -230,6 +231,46 @@ function writePurchaseOrdersData(data: any) {
 
 function generatePurchaseOrderNumber(num: number): string {
   return `PO-2025-${String(num).padStart(4, '0')}`;
+}
+
+function readBillsData() {
+  ensureDataDir();
+  if (!fs.existsSync(BILLS_FILE)) {
+    const defaultData = { 
+      bills: [], 
+      nextBillNumber: 1,
+      accounts: [
+        { id: '1', name: 'Cost of Goods Sold', type: 'expense' },
+        { id: '2', name: 'Office Supplies', type: 'expense' },
+        { id: '3', name: 'Software', type: 'expense' },
+        { id: '4', name: 'Professional Services', type: 'expense' },
+        { id: '5', name: 'Utilities', type: 'expense' },
+        { id: '6', name: 'Rent', type: 'expense' },
+        { id: '7', name: 'Travel Expense', type: 'expense' },
+        { id: '8', name: 'Marketing', type: 'expense' }
+      ],
+      taxes: [
+        { id: '1', name: 'IGST18', rate: 18 },
+        { id: '2', name: 'CGST9', rate: 9 },
+        { id: '3', name: 'SGST9', rate: 9 },
+        { id: '4', name: 'GST5', rate: 5 },
+        { id: '5', name: 'GST12', rate: 12 },
+        { id: '6', name: 'GST28', rate: 28 }
+      ]
+    };
+    fs.writeFileSync(BILLS_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(BILLS_FILE, "utf-8"));
+}
+
+function writeBillsData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(BILLS_FILE, JSON.stringify(data, null, 2));
+}
+
+function generateBillNumber(num: number): string {
+  return String(num);
 }
 
 export async function registerRoutes(
@@ -2392,6 +2433,261 @@ export async function registerRoutes(
       res.json({ success: true, message: 'Purchase order deleted successfully' });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to delete purchase order' });
+    }
+  });
+
+  // Bills API
+  app.get("/api/bills/next-number", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      const nextNumber = generateBillNumber(data.nextBillNumber);
+      res.json({ success: true, data: { billNumber: nextNumber } });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to get next bill number" });
+    }
+  });
+
+  app.get("/api/bills/accounts", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      res.json({ success: true, data: data.accounts || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch accounts" });
+    }
+  });
+
+  app.get("/api/bills/taxes", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      res.json({ success: true, data: data.taxes || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch taxes" });
+    }
+  });
+
+  app.get("/api/bills", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      res.json({ success: true, data: data.bills });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch bills" });
+    }
+  });
+
+  app.get("/api/bills/:id", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      const bill = data.bills.find((b: any) => b.id === req.params.id);
+      if (!bill) {
+        return res.status(404).json({ success: false, message: "Bill not found" });
+      }
+      res.json({ success: true, data: bill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch bill" });
+    }
+  });
+
+  app.post("/api/bills", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      const billNumber = req.body.billNumber || generateBillNumber(data.nextBillNumber);
+      const now = new Date().toISOString();
+
+      const newBill = {
+        id: String(Date.now()),
+        billNumber,
+        orderNumber: req.body.orderNumber || '',
+        vendorId: req.body.vendorId || '',
+        vendorName: req.body.vendorName || '',
+        vendorAddress: req.body.vendorAddress || {
+          street1: '',
+          street2: '',
+          city: '',
+          state: '',
+          pinCode: '',
+          country: 'India',
+          gstin: ''
+        },
+        billDate: req.body.billDate || new Date().toISOString().split('T')[0],
+        dueDate: req.body.dueDate || new Date().toISOString().split('T')[0],
+        paymentTerms: req.body.paymentTerms || 'Due on Receipt',
+        reverseCharge: req.body.reverseCharge || false,
+        subject: req.body.subject || '',
+        items: req.body.items || [],
+        subTotal: req.body.subTotal || 0,
+        discountType: req.body.discountType || 'percent',
+        discountValue: req.body.discountValue || 0,
+        discountAmount: req.body.discountAmount || 0,
+        taxType: req.body.taxType || 'TDS',
+        taxCategory: req.body.taxCategory || '',
+        taxAmount: req.body.taxAmount || 0,
+        adjustment: req.body.adjustment || 0,
+        adjustmentDescription: req.body.adjustmentDescription || '',
+        total: req.body.total || 0,
+        amountPaid: req.body.amountPaid || 0,
+        balanceDue: req.body.balanceDue || req.body.total || 0,
+        notes: req.body.notes || '',
+        attachments: req.body.attachments || [],
+        status: req.body.status || 'OPEN',
+        pdfTemplate: req.body.pdfTemplate || 'Standard Template',
+        journalEntries: req.body.journalEntries || [],
+        createdAt: now,
+        updatedAt: now,
+        createdBy: req.body.createdBy || 'Admin User',
+        activityLogs: [
+          {
+            id: '1',
+            timestamp: now,
+            action: 'created',
+            description: `Bill created for ₹${req.body.total?.toLocaleString('en-IN') || '0.00'}`,
+            user: req.body.createdBy || 'Admin User'
+          }
+        ]
+      };
+
+      data.bills.unshift(newBill);
+      data.nextBillNumber += 1;
+      writeBillsData(data);
+
+      res.status(201).json({ success: true, data: newBill });
+    } catch (error) {
+      console.error('Error creating bill:', error);
+      res.status(500).json({ success: false, message: 'Failed to create bill' });
+    }
+  });
+
+  app.put("/api/bills/:id", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      const billIndex = data.bills.findIndex((b: any) => b.id === req.params.id);
+
+      if (billIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Bill not found' });
+      }
+
+      const now = new Date().toISOString();
+      const existingBill = data.bills[billIndex];
+
+      const updatedBill = {
+        ...existingBill,
+        ...req.body,
+        id: existingBill.id,
+        billNumber: existingBill.billNumber,
+        createdAt: existingBill.createdAt,
+        updatedAt: now,
+        activityLogs: [
+          ...(existingBill.activityLogs || []),
+          {
+            id: String((existingBill.activityLogs?.length || 0) + 1),
+            timestamp: now,
+            action: 'updated',
+            description: 'Bill has been updated',
+            user: req.body.updatedBy || 'Admin User'
+          }
+        ]
+      };
+
+      data.bills[billIndex] = updatedBill;
+      writeBillsData(data);
+
+      res.json({ success: true, data: updatedBill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to update bill' });
+    }
+  });
+
+  app.patch("/api/bills/:id/status", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      const billIndex = data.bills.findIndex((b: any) => b.id === req.params.id);
+
+      if (billIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Bill not found' });
+      }
+
+      const now = new Date().toISOString();
+      const existingBill = data.bills[billIndex];
+      const newStatus = req.body.status;
+
+      let actionDescription = `Status changed to ${newStatus}`;
+      if (newStatus === 'PAID') actionDescription = 'Bill has been paid';
+      if (newStatus === 'OVERDUE') actionDescription = 'Bill is overdue';
+      if (newStatus === 'VOID') actionDescription = 'Bill has been voided';
+
+      existingBill.status = newStatus;
+      existingBill.updatedAt = now;
+      if (newStatus === 'PAID') {
+        existingBill.amountPaid = existingBill.total;
+        existingBill.balanceDue = 0;
+      }
+      existingBill.activityLogs = existingBill.activityLogs || [];
+      existingBill.activityLogs.push({
+        id: String(existingBill.activityLogs.length + 1),
+        timestamp: now,
+        action: newStatus.toLowerCase(),
+        description: actionDescription,
+        user: req.body.updatedBy || 'Admin User'
+      });
+
+      data.bills[billIndex] = existingBill;
+      writeBillsData(data);
+
+      res.json({ success: true, data: existingBill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to update bill status' });
+    }
+  });
+
+  app.post("/api/bills/:id/record-payment", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      const billIndex = data.bills.findIndex((b: any) => b.id === req.params.id);
+
+      if (billIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Bill not found' });
+      }
+
+      const now = new Date().toISOString();
+      const bill = data.bills[billIndex];
+      const paymentAmount = req.body.amount || 0;
+
+      bill.amountPaid = (bill.amountPaid || 0) + paymentAmount;
+      bill.balanceDue = bill.total - bill.amountPaid;
+      bill.status = bill.balanceDue <= 0 ? 'PAID' : 'PARTIALLY_PAID';
+      bill.updatedAt = now;
+      bill.activityLogs = bill.activityLogs || [];
+      bill.activityLogs.push({
+        id: String(bill.activityLogs.length + 1),
+        timestamp: now,
+        action: 'payment',
+        description: `Payment of ₹${paymentAmount.toLocaleString('en-IN')} recorded`,
+        user: req.body.recordedBy || 'Admin User'
+      });
+
+      data.bills[billIndex] = bill;
+      writeBillsData(data);
+
+      res.json({ success: true, data: bill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to record payment' });
+    }
+  });
+
+  app.delete("/api/bills/:id", (req: Request, res: Response) => {
+    try {
+      const data = readBillsData();
+      const billIndex = data.bills.findIndex((b: any) => b.id === req.params.id);
+
+      if (billIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Bill not found' });
+      }
+
+      data.bills.splice(billIndex, 1);
+      writeBillsData(data);
+
+      res.json({ success: true, message: 'Bill deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to delete bill' });
     }
   });
 

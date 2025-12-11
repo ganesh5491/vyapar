@@ -36,6 +36,8 @@ import PurchaseOrders from "@/pages/purchase-orders";
 import PurchaseOrderCreate from "@/pages/purchase-order-create";
 import PurchaseOrderEdit from "@/pages/purchase-order-edit";
 import Bills from "@/pages/bills";
+import BillCreate from "@/pages/bill-create";
+import BillEdit from "@/pages/bill-edit";
 import PaymentsMade from "@/pages/payments-made";
 import VendorCredits from "@/pages/vendor-credits";
 import TimeTracking from "@/pages/time-tracking";
@@ -85,6 +87,8 @@ function Router() {
         <Route path="/purchase-orders/new" component={PurchaseOrderCreate} />
         <Route path="/purchase-orders/:id/edit" component={PurchaseOrderEdit} />
         <Route path="/bills" component={Bills} />
+        <Route path="/bills/new" component={BillCreate} />
+        <Route path="/bills/:id/edit" component={BillEdit} />
         <Route path="/payments-made" component={PaymentsMade} />
         <Route path="/vendor-credits" component={VendorCredits} />
         <Route path="/time-tracking" component={TimeTracking} />

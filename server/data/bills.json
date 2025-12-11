@@ -1,0 +1,78 @@
+{
+  "bills": [],
+  "nextBillNumber": 1,
+  "accounts": [
+    {
+      "id": "1",
+      "name": "Cost of Goods Sold",
+      "type": "expense"
+    },
+    {
+      "id": "2",
+      "name": "Office Supplies",
+      "type": "expense"
+    },
+    {
+      "id": "3",
+      "name": "Software",
+      "type": "expense"
+    },
+    {
+      "id": "4",
+      "name": "Professional Services",
+      "type": "expense"
+    },
+    {
+      "id": "5",
+      "name": "Utilities",
+      "type": "expense"
+    },
+    {
+      "id": "6",
+      "name": "Rent",
+      "type": "expense"
+    },
+    {
+      "id": "7",
+      "name": "Travel Expense",
+      "type": "expense"
+    },
+    {
+      "id": "8",
+      "name": "Marketing",
+      "type": "expense"
+    }
+  ],
+  "taxes": [
+    {
+      "id": "1",
+      "name": "IGST18",
+      "rate": 18
+    },
+    {
+      "id": "2",
+      "name": "CGST9",
+      "rate": 9
+    },
+    {
+      "id": "3",
+      "name": "SGST9",
+      "rate": 9
+    },
+    {
+      "id": "4",
+      "name": "GST5",
+      "rate": 5
+    },
+    {
+      "id": "5",
+      "name": "GST12",
+      "rate": 12
+    },
+    {
+      "id": "6",
+      "name": "GST28",
+      "rate": 28
+    }
+  ]
+}
