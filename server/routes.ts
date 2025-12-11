@@ -545,6 +545,132 @@ export async function registerRoutes(
     }
   });
 
+  // Customer Comments API
+  app.get("/api/customers/:id/comments", (req: Request, res: Response) => {
+    try {
+      const data = readCustomersData();
+      const customer = data.customers.find((c: any) => c.id === req.params.id);
+      if (!customer) {
+        return res.status(404).json({ success: false, message: "Customer not found" });
+      }
+      res.json({ success: true, data: customer.comments || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/customers/:id/comments", (req: Request, res: Response) => {
+    try {
+      const data = readCustomersData();
+      const index = data.customers.findIndex((c: any) => c.id === req.params.id);
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Customer not found" });
+      }
+      const newComment = {
+        id: String(Date.now()),
+        text: req.body.text,
+        author: req.body.author || "Admin User",
+        createdAt: new Date().toISOString()
+      };
+      if (!data.customers[index].comments) {
+        data.customers[index].comments = [];
+      }
+      data.customers[index].comments.push(newComment);
+      writeCustomersData(data);
+      res.status(201).json({ success: true, data: newComment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to add comment" });
+    }
+  });
+
+  // Customer Transactions API
+  app.get("/api/customers/:id/transactions", (req: Request, res: Response) => {
+    try {
+      const customerId = req.params.id;
+      const invoicesData = readInvoicesData();
+      const quotesData = readQuotesData();
+      const salesOrdersData = readSalesOrdersData();
+      
+      const customerInvoices = (invoicesData.invoices || []).filter((inv: any) => inv.customerId === customerId);
+      const customerQuotes = (quotesData.quotes || []).filter((q: any) => q.customerId === customerId);
+      const customerSalesOrders = (salesOrdersData.salesOrders || []).filter((so: any) => so.customerId === customerId);
+      
+      res.json({
+        success: true,
+        data: {
+          invoices: customerInvoices.map((inv: any) => ({
+            id: inv.id,
+            type: 'invoice',
+            date: inv.date || inv.invoiceDate,
+            number: inv.invoiceNumber,
+            orderNumber: inv.salesOrderNumber || '',
+            amount: inv.total || 0,
+            balance: inv.balanceDue || inv.total || 0,
+            status: inv.status || 'Draft'
+          })),
+          customerPayments: [],
+          quotes: customerQuotes.map((q: any) => ({
+            id: q.id,
+            type: 'quote',
+            date: q.date,
+            number: q.quoteNumber,
+            orderNumber: q.referenceNumber || '',
+            amount: q.total || 0,
+            balance: 0,
+            status: q.status || 'Draft'
+          })),
+          salesOrders: customerSalesOrders.map((so: any) => ({
+            id: so.id,
+            type: 'salesOrder',
+            date: so.date || so.salesOrderDate,
+            number: so.salesOrderNumber,
+            orderNumber: so.referenceNumber || '',
+            amount: so.total || 0,
+            balance: 0,
+            status: so.status || 'Draft'
+          })),
+          deliveryChallans: [],
+          recurringInvoices: [],
+          expenses: [],
+          projects: [],
+          journals: [],
+          bills: [],
+          creditNotes: []
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch transactions" });
+    }
+  });
+
+  // Customer Mails API
+  app.get("/api/customers/:id/mails", (req: Request, res: Response) => {
+    try {
+      const data = readCustomersData();
+      const customer = data.customers.find((c: any) => c.id === req.params.id);
+      if (!customer) {
+        return res.status(404).json({ success: false, message: "Customer not found" });
+      }
+      res.json({ success: true, data: customer.mails || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch mails" });
+    }
+  });
+
+  // Customer Activities API
+  app.get("/api/customers/:id/activities", (req: Request, res: Response) => {
+    try {
+      const data = readCustomersData();
+      const customer = data.customers.find((c: any) => c.id === req.params.id);
+      if (!customer) {
+        return res.status(404).json({ success: false, message: "Customer not found" });
+      }
+      res.json({ success: true, data: customer.activities || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch activities" });
+    }
+  });
+
   // Quotes API
   app.get("/api/quotes/next-number", (req: Request, res: Response) => {
     try {
@@ -1579,6 +1705,132 @@ export async function registerRoutes(
       res.json({ success: true, data: data.vendors[index] });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to update vendor status" });
+    }
+  });
+
+  // Vendor Comments API
+  app.get("/api/vendors/:id/comments", (req: Request, res: Response) => {
+    try {
+      const data = readVendorsData();
+      const vendor = data.vendors.find((v: any) => v.id === req.params.id);
+      if (!vendor) {
+        return res.status(404).json({ success: false, message: "Vendor not found" });
+      }
+      res.json({ success: true, data: vendor.comments || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/vendors/:id/comments", (req: Request, res: Response) => {
+    try {
+      const data = readVendorsData();
+      const index = data.vendors.findIndex((v: any) => v.id === req.params.id);
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Vendor not found" });
+      }
+      const newComment = {
+        id: String(Date.now()),
+        text: req.body.text,
+        author: req.body.author || "Admin User",
+        createdAt: new Date().toISOString()
+      };
+      if (!data.vendors[index].comments) {
+        data.vendors[index].comments = [];
+      }
+      data.vendors[index].comments.push(newComment);
+      writeVendorsData(data);
+      res.status(201).json({ success: true, data: newComment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to add comment" });
+    }
+  });
+
+  // Vendor Transactions API
+  app.get("/api/vendors/:id/transactions", (req: Request, res: Response) => {
+    try {
+      const vendorId = req.params.id;
+      const billsData = readBillsData();
+      const purchaseOrdersData = readPurchaseOrdersData();
+      const expensesData = readExpensesData();
+      
+      const vendorBills = (billsData.bills || []).filter((b: any) => b.vendorId === vendorId);
+      const vendorPurchaseOrders = (purchaseOrdersData.purchaseOrders || []).filter((po: any) => po.vendorId === vendorId);
+      const vendorExpenses = (expensesData.expenses || []).filter((e: any) => e.vendorId === vendorId);
+      
+      res.json({
+        success: true,
+        data: {
+          bills: vendorBills.map((b: any) => ({
+            id: b.id,
+            type: 'bill',
+            date: b.billDate || b.date,
+            number: b.billNumber,
+            orderNumber: b.orderNumber || '',
+            vendor: b.vendorName || '',
+            amount: b.total || 0,
+            balance: b.balanceDue || b.total || 0,
+            status: b.status || 'Draft'
+          })),
+          billPayments: [],
+          expenses: vendorExpenses.map((e: any) => ({
+            id: e.id,
+            type: 'expense',
+            date: e.date,
+            number: e.expenseNumber || '',
+            invoiceNumber: e.invoiceNumber || '',
+            vendor: e.vendorName || '',
+            paidThrough: e.paidThrough || '',
+            customer: e.customerName || '',
+            amount: e.amount || 0,
+            balance: 0,
+            status: e.status || 'Unbilled'
+          })),
+          purchaseOrders: vendorPurchaseOrders.map((po: any) => ({
+            id: po.id,
+            type: 'purchaseOrder',
+            date: po.date || po.purchaseOrderDate,
+            number: po.purchaseOrderNumber,
+            referenceNumber: po.referenceNumber || '',
+            deliveryDate: po.expectedDeliveryDate || '',
+            amount: po.total || 0,
+            balance: 0,
+            status: po.status || 'Draft'
+          })),
+          vendorCredits: [],
+          journals: []
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch transactions" });
+    }
+  });
+
+  // Vendor Mails API
+  app.get("/api/vendors/:id/mails", (req: Request, res: Response) => {
+    try {
+      const data = readVendorsData();
+      const vendor = data.vendors.find((v: any) => v.id === req.params.id);
+      if (!vendor) {
+        return res.status(404).json({ success: false, message: "Vendor not found" });
+      }
+      res.json({ success: true, data: vendor.mails || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch mails" });
+    }
+  });
+
+  // Vendor Activities API
+  app.get("/api/vendors/:id/activities", (req: Request, res: Response) => {
+    try {
+      const data = readVendorsData();
+      const vendor = data.vendors.find((v: any) => v.id === req.params.id);
+      if (!vendor) {
+        return res.status(404).json({ success: false, message: "Vendor not found" });
+      }
+      res.json({ success: true, data: vendor.activities || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch activities" });
     }
   });
 
