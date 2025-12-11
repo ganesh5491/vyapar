@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore, Customer } from "@/lib/store";
 
@@ -51,6 +53,15 @@ export default function CustomerEdit() {
     shippingPincode: "",
   });
 
+  const [contactPersons, setContactPersons] = useState<Array<{
+    salutation: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    workPhone: string;
+    mobile: string;
+  }>>([]);
+
   useEffect(() => {
     if (params.id) {
       const found = getCustomerById(params.id);
@@ -81,6 +92,10 @@ export default function CustomerEdit() {
           shippingCountry: found.shippingAddress?.country || "India",
           shippingPincode: found.shippingAddress?.pincode || "",
         });
+        // Load contact persons if they exist
+        if ((found as any).contactPersons) {
+          setContactPersons((found as any).contactPersons);
+        }
       }
     }
   }, [params.id, getCustomerById]);
@@ -120,7 +135,8 @@ export default function CustomerEdit() {
         country: formData.shippingCountry,
         pincode: formData.shippingPincode,
       },
-    });
+      contactPersons: contactPersons,
+    } as any);
 
     toast({
       title: "Customer Updated",
@@ -144,8 +160,8 @@ export default function CustomerEdit() {
   return (
     <div className="max-w-5xl mx-auto pb-20 p-4">
       <div className="mb-6">
-        <div 
-          className="flex items-center gap-2 mb-4 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer w-fit" 
+        <div
+          className="flex items-center gap-2 mb-4 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer w-fit"
           onClick={() => setLocation("/customers")}
           data-testid="link-back-customers"
         >
@@ -237,6 +253,7 @@ export default function CustomerEdit() {
           <TabsList className="w-full justify-start h-auto border-b border-slate-200 bg-transparent p-0 rounded-none space-x-6">
             <TabsTrigger value="tax" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2">Tax Details</TabsTrigger>
             <TabsTrigger value="address" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2">Address</TabsTrigger>
+            <TabsTrigger value="contact" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2">Contact Persons</TabsTrigger>
           </TabsList>
 
           <div className="mt-6">
@@ -244,8 +261,8 @@ export default function CustomerEdit() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="gstTreatment">GST Treatment *</Label>
-                  <Select 
-                    value={formData.gstTreatment} 
+                  <Select
+                    value={formData.gstTreatment}
                     onValueChange={(val) => setFormData({ ...formData, gstTreatment: val })}
                   >
                     <SelectTrigger data-testid="select-gst-treatment">
@@ -263,8 +280,8 @@ export default function CustomerEdit() {
 
                 <div className="space-y-2">
                   <Label htmlFor="placeOfSupply">Place of Supply</Label>
-                  <Select 
-                    value={formData.placeOfSupply} 
+                  <Select
+                    value={formData.placeOfSupply}
                     onValueChange={(val) => setFormData({ ...formData, placeOfSupply: val })}
                   >
                     <SelectTrigger data-testid="select-place-of-supply">
@@ -302,8 +319,8 @@ export default function CustomerEdit() {
 
                 <div className="space-y-2">
                   <Label htmlFor="currency">Currency</Label>
-                  <Select 
-                    value={formData.currency} 
+                  <Select
+                    value={formData.currency}
                     onValueChange={(val) => setFormData({ ...formData, currency: val })}
                   >
                     <SelectTrigger data-testid="select-currency">
@@ -319,8 +336,8 @@ export default function CustomerEdit() {
 
                 <div className="space-y-2">
                   <Label htmlFor="paymentTerms">Payment Terms</Label>
-                  <Select 
-                    value={formData.paymentTerms} 
+                  <Select
+                    value={formData.paymentTerms}
                     onValueChange={(val) => setFormData({ ...formData, paymentTerms: val })}
                   >
                     <SelectTrigger data-testid="select-payment-terms">
@@ -463,6 +480,133 @@ export default function CustomerEdit() {
                   </div>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="contact">
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Salutation</TableHead>
+                        <TableHead>First Name</TableHead>
+                        <TableHead>Last Name</TableHead>
+                        <TableHead>Email Address</TableHead>
+                        <TableHead>Work Phone</TableHead>
+                        <TableHead>Mobile</TableHead>
+                        <TableHead className="w-10"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contactPersons.map((person, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Input
+                              value={person.salutation}
+                              onChange={(e) => {
+                                const updated = [...contactPersons];
+                                updated[index].salutation = e.target.value;
+                                setContactPersons(updated);
+                              }}
+                              className="h-8"
+                              placeholder="Mr."
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={person.firstName}
+                              onChange={(e) => {
+                                const updated = [...contactPersons];
+                                updated[index].firstName = e.target.value;
+                                setContactPersons(updated);
+                              }}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={person.lastName}
+                              onChange={(e) => {
+                                const updated = [...contactPersons];
+                                updated[index].lastName = e.target.value;
+                                setContactPersons(updated);
+                              }}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={person.email}
+                              onChange={(e) => {
+                                const updated = [...contactPersons];
+                                updated[index].email = e.target.value;
+                                setContactPersons(updated);
+                              }}
+                              className="h-8"
+                              type="email"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={person.workPhone}
+                              onChange={(e) => {
+                                const updated = [...contactPersons];
+                                updated[index].workPhone = e.target.value;
+                                setContactPersons(updated);
+                              }}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={person.mobile}
+                              onChange={(e) => {
+                                const updated = [...contactPersons];
+                                updated[index].mobile = e.target.value;
+                                setContactPersons(updated);
+                              }}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              type="button"
+                              onClick={() => {
+                                const updated = contactPersons.filter((_, i) => i !== index);
+                                setContactPersons(updated);
+                              }}
+                            >
+                              <X className="h-4 w-4 text-slate-400 hover:text-red-500" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {contactPersons.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-slate-500">
+                            No contact persons added.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4"
+                onClick={() => {
+                  setContactPersons([
+                    ...contactPersons,
+                    { salutation: "", firstName: "", lastName: "", email: "", workPhone: "", mobile: "" }
+                  ]);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add Contact Person
+              </Button>
             </TabsContent>
           </div>
         </Tabs>

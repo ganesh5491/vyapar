@@ -44,6 +44,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ManageSalespersonsDialog } from "@/components/ManageSalespersonsDialog";
 
 interface InvoiceItem {
   id: number;
@@ -85,7 +86,7 @@ export default function InvoiceCreate() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { addInvoice, invoices, customers, contactPersons, addContactPerson, pendingCustomerId, setPendingCustomerId } = useAppStore();
-  
+
   const [date, setDate] = useState<Date>(new Date());
   const [dueDate, setDueDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() + 30)));
   const [hasShipping, setHasShipping] = useState(false);
@@ -93,7 +94,7 @@ export default function InvoiceCreate() {
   const [paymentReceived, setPaymentReceived] = useState(false);
   const [adjustment, setAdjustment] = useState(0);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>(customers[0]?.id || "");
-  
+
   const [selectedTerms, setSelectedTerms] = useState<string>("net30");
   const [termsSearchQuery, setTermsSearchQuery] = useState("");
   const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -121,7 +122,7 @@ export default function InvoiceCreate() {
             addressStr = parts.join('\n');
           }
         }
-        const defaultAddress = addressStr || 
+        const defaultAddress = addressStr ||
           `${customer.companyName}\n${customer.email}\n${customer.workPhone}`;
         setBillingAddress(defaultAddress);
       }
@@ -145,7 +146,23 @@ export default function InvoiceCreate() {
     }
   }, [selectedTerms, date]);
 
-  const filteredTermsOptions = TERMS_OPTIONS.filter(opt => 
+  useEffect(() => {
+    fetchSalespersons();
+  }, []);
+
+  const fetchSalespersons = async () => {
+    try {
+      const response = await fetch('/api/salespersons');
+      if (response.ok) {
+        const data = await response.json();
+        setSalespersons(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch salespersons:', error);
+    }
+  };
+
+  const filteredTermsOptions = TERMS_OPTIONS.filter(opt =>
     opt.label.toLowerCase().includes(termsSearchQuery.toLowerCase())
   );
 
@@ -178,6 +195,8 @@ export default function InvoiceCreate() {
   // Salesperson state
   const [selectedSalesperson, setSelectedSalesperson] = useState<string>("");
   const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
+  const [showManageSalespersons, setShowManageSalespersons] = useState(false);
+  const [salespersons, setSalespersons] = useState<{ id: string; name: string }[]>([]);
   const [newPersonFirstName, setNewPersonFirstName] = useState("");
   const [newPersonLastName, setNewPersonLastName] = useState("");
   const [newPersonEmail, setNewPersonEmail] = useState("");
@@ -186,14 +205,14 @@ export default function InvoiceCreate() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
-  
+
   const getNextInvoiceNumber = () => {
-    const lastNumber = invoices.length > 0 
-      ? parseInt(invoices[0].invoiceNumber.replace("INV-", "")) 
+    const lastNumber = invoices.length > 0
+      ? parseInt(invoices[0].invoiceNumber.replace("INV-", ""))
       : 12;
     return `INV-${String(lastNumber + 1).padStart(5, "0")}`;
   };
-  
+
   const [invoiceNumber, setInvoiceNumber] = useState(getNextInvoiceNumber().replace("INV-", ""));
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
@@ -201,7 +220,7 @@ export default function InvoiceCreate() {
   const handleSaveInvoice = async (saveStatus: "draft" | "pending" = "pending") => {
     const formattedDate = format(date, "yyyy-MM-dd");
     const formattedDueDate = format(dueDate, "yyyy-MM-dd");
-    
+
     let finalStatus = saveStatus.toUpperCase();
     if (saveStatus !== "draft") {
       if (selectedTerms === "paid" || paymentReceived) {
@@ -474,9 +493,9 @@ export default function InvoiceCreate() {
                     <div className="flex items-center justify-between">
                       <p className="font-medium text-foreground">{selectedCustomer?.displayName || "Select a customer"}</p>
                       {selectedCustomer && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700"
                           onClick={() => setIsEditingBillingAddress(!isEditingBillingAddress)}
                         >
@@ -507,8 +526,8 @@ export default function InvoiceCreate() {
                       <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Invoice #</Label>
                       <div className="flex items-center w-full">
                         <span className="bg-secondary/50 border border-r-0 border-border/60 rounded-l-md px-3 py-2.5 text-sm text-muted-foreground whitespace-nowrap">INV-</span>
-                        <Input 
-                          className="flex-1 min-w-0 rounded-l-none border-l-0 focus-visible:ring-0 focus-visible:border-primary" 
+                        <Input
+                          className="flex-1 min-w-0 rounded-l-none border-l-0 focus-visible:ring-0 focus-visible:border-primary"
                           value={invoiceNumber}
                           onChange={(e) => setInvoiceNumber(e.target.value)}
                         />
@@ -539,8 +558,8 @@ export default function InvoiceCreate() {
                       <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Terms</Label>
                       <Popover open={isTermsOpen} onOpenChange={setIsTermsOpen}>
                         <PopoverTrigger asChild>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             role="combobox"
                             className="w-full justify-between bg-secondary/20 border-border/60 font-normal"
                           >
@@ -590,9 +609,9 @@ export default function InvoiceCreate() {
                             )}
                           </div>
                           <div className="border-t border-slate-100 p-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="w-full justify-start text-muted-foreground hover:text-foreground"
                             >
                               <Settings className="h-4 w-4 mr-2" />
@@ -621,33 +640,41 @@ export default function InvoiceCreate() {
                   <div className="space-y-2">
                     <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Salesperson</Label>
                     <Select value={selectedSalesperson} onValueChange={(val) => {
-                      if (val === "add_new") {
-                        setIsAddPersonModalOpen(true);
+                      if (val === "manage_salespersons") {
+                        setShowManageSalespersons(true);
                       } else {
                         setSelectedSalesperson(val);
                       }
                     }}>
                       <SelectTrigger className="bg-secondary/20 border-border/60">
                         <SelectValue placeholder="Select salesperson">
-                          {selectedSalesperson ? getSalespersonName(selectedSalesperson) : "Select salesperson"}
+                          {selectedSalesperson || "Select salesperson"}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="z-[100]">
-                        {contactPersons.map((person) => (
-                          <SelectItem key={person.id} value={person.id}>
-                            {person.firstName} {person.lastName}
-                            <span className="text-xs text-muted-foreground ml-2">
-                              ({customers.find(c => c.id === person.customerId)?.displayName || "Unknown"})
-                            </span>
+                        <div className="p-2">
+                          <div className="relative">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="Search" className="pl-8 h-9" />
+                          </div>
+                        </div>
+                        {salespersons.map((sp) => (
+                          <SelectItem key={sp.id} value={sp.name}>
+                            {sp.name}
                           </SelectItem>
                         ))}
                         <Separator className="my-1" />
-                        <SelectItem value="add_new" className="text-primary font-medium">
-                          <div className="flex items-center gap-2">
-                            <UserPlus className="h-4 w-4" />
-                            Add New Person
-                          </div>
-                        </SelectItem>
+                        <div
+                          className="flex items-center gap-2 p-2 text-sm text-blue-600 cursor-pointer hover:bg-slate-100"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowManageSalespersons(true);
+                          }}
+                        >
+                          <Plus className="h-4 w-4" />
+                          Manage Salespersons
+                        </div>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1147,7 +1174,12 @@ export default function InvoiceCreate() {
         </DialogContent>
       </Dialog>
 
-    </div >
+      <ManageSalespersonsDialog
+        open={showManageSalespersons}
+        onOpenChange={setShowManageSalespersons}
+        onSalespersonChange={fetchSalespersons}
+      />
+    </div>
   );
 }
 

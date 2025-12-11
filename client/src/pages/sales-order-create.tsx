@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { ManageSalespersonsDialog } from "@/components/ManageSalespersonsDialog";
 
 interface Customer {
   id: string;
@@ -88,6 +89,8 @@ export default function SalesOrderCreatePage() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextOrderNumber, setNextOrderNumber] = useState("SO-00001");
+  const [showManageSalespersons, setShowManageSalespersons] = useState(false);
+  const [salespersons, setSalespersons] = useState<{ id: string; name: string }[]>([]);
 
   const [formData, setFormData] = useState({
     customerId: "",
@@ -128,7 +131,20 @@ export default function SalesOrderCreatePage() {
     fetchCustomers();
     fetchItems();
     fetchNextOrderNumber();
+    fetchSalespersons();
   }, []);
+
+  const fetchSalespersons = async () => {
+    try {
+      const response = await fetch('/api/salespersons');
+      if (response.ok) {
+        const data = await response.json();
+        setSalespersons(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch salespersons:', error);
+    }
+  };
 
   const fetchCustomers = async () => {
     try {
@@ -472,13 +488,37 @@ export default function SalesOrderCreatePage() {
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label>Salesperson</Label>
-            <Select value={formData.salesperson} onValueChange={(v) => setFormData(prev => ({ ...prev, salesperson: v }))}>
+            <Select value={formData.salesperson} onValueChange={(v) => {
+              if (v === "manage_salespersons") {
+                setShowManageSalespersons(true);
+              } else {
+                setFormData(prev => ({ ...prev, salesperson: v }));
+              }
+            }}>
               <SelectTrigger data-testid="select-salesperson">
                 <SelectValue placeholder="Select or Add Salesperson" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="rohan">Rohan Bhosale</SelectItem>
-                <SelectItem value="amit">Amit Sharma</SelectItem>
+                <div className="p-2">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search" className="pl-8 h-9" />
+                  </div>
+                </div>
+                {salespersons.map(sp => (
+                  <SelectItem key={sp.id} value={sp.name}>{sp.name}</SelectItem>
+                ))}
+                <div
+                  className="flex items-center gap-2 p-2 text-sm text-blue-600 cursor-pointer hover:bg-slate-100 border-t mt-1"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowManageSalespersons(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Manage Salespersons
+                </div>
               </SelectContent>
             </Select>
           </div>
@@ -738,6 +778,12 @@ export default function SalesOrderCreatePage() {
           </Button>
         </div>
       </div>
-    </div>
+
+      <ManageSalespersonsDialog
+        open={showManageSalespersons}
+        onOpenChange={setShowManageSalespersons}
+        onSalespersonChange={fetchSalespersons}
+      />
+    </div >
   );
 }

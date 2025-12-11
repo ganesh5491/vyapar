@@ -55,7 +55,157 @@
       "unusedCredits": 0,
       "createdAt": "2025-12-10T12:04:16.268Z",
       "updatedAt": "2025-12-10T12:04:16.269Z"
+    },
+    {
+      "id": "2",
+      "salutation": "Mr.",
+      "firstName": "Ganesh",
+      "lastName": "kale",
+      "companyName": "Amazon",
+      "displayName": "Ganesh kale",
+      "email": "ganesh@gmail.com",
+      "workPhone": "1234211323",
+      "mobile": "",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "[NL] - Nagaland",
+      "pan": "KCWPK1232H",
+      "msmeRegistered": false,
+      "currency": "INR",
+      "openingBalance": 2311,
+      "paymentTerms": "Due on Receipt",
+      "tds": "tds-194c",
+      "billingAddress": {
+        "attention": "Bhumkar chown pune",
+        "countryRegion": "India",
+        "street1": "Bhumkar chown ",
+        "street2": "pune",
+        "city": "pune",
+        "state": "[UK] - Uttarakhand",
+        "pinCode": "",
+        "phone": "",
+        "faxNumber": ""
+      },
+      "shippingAddress": {
+        "attention": "Bhumkar chown pune",
+        "countryRegion": "India",
+        "street1": "Bhumkar chown ",
+        "street2": "pune",
+        "city": "pune",
+        "state": "[UK] - Uttarakhand",
+        "pinCode": "",
+        "phone": "",
+        "faxNumber": ""
+      },
+      "bankDetails": {
+        "accountHolderName": "",
+        "bankName": "",
+        "accountNumber": "",
+        "ifscCode": "",
+        "swiftCode": "",
+        "branchName": ""
+      },
+      "remarks": "",
+      "contactPersons": [
+        {
+          "id": "1765437716731",
+          "salutation": "Mr.",
+          "firstName": "kjnkj",
+          "lastName": ",m ,m",
+          "email": "saf@gamil.com",
+          "workPhone": "123132423",
+          "mobile": ""
+        },
+        {
+          "id": "1765437716798",
+          "salutation": "",
+          "firstName": "",
+          "lastName": "",
+          "email": "",
+          "workPhone": "",
+          "mobile": ""
+        }
+      ],
+      "status": "active",
+      "payables": 0,
+      "unusedCredits": 0,
+      "createdAt": "2025-12-11T07:22:16.837Z",
+      "updatedAt": "2025-12-11T07:22:16.837Z"
+    },
+    {
+      "id": "3",
+      "salutation": "Mr.",
+      "firstName": "Ganesh",
+      "lastName": "kale",
+      "companyName": "Amazon",
+      "displayName": "Ganesh kale (Copy)",
+      "email": "ganesh@gmail.com",
+      "workPhone": "1234211323",
+      "mobile": "",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "[NL] - Nagaland",
+      "pan": "KCWPK1232H",
+      "msmeRegistered": false,
+      "currency": "INR",
+      "openingBalance": 2311,
+      "paymentTerms": "Due on Receipt",
+      "tds": "tds-194c",
+      "billingAddress": {
+        "attention": "Bhumkar chown pune",
+        "countryRegion": "India",
+        "street1": "Bhumkar chown ",
+        "street2": "pune",
+        "city": "pune",
+        "state": "[UK] - Uttarakhand",
+        "pinCode": "",
+        "phone": "",
+        "faxNumber": ""
+      },
+      "shippingAddress": {
+        "attention": "Bhumkar chown pune",
+        "countryRegion": "India",
+        "street1": "Bhumkar chown ",
+        "street2": "pune",
+        "city": "pune",
+        "state": "[UK] - Uttarakhand",
+        "pinCode": "",
+        "phone": "",
+        "faxNumber": ""
+      },
+      "bankDetails": {
+        "accountHolderName": "",
+        "bankName": "",
+        "accountNumber": "",
+        "ifscCode": "",
+        "swiftCode": "",
+        "branchName": ""
+      },
+      "remarks": "",
+      "contactPersons": [
+        {
+          "id": "1765437716731",
+          "salutation": "Mr.",
+          "firstName": "kjnkj",
+          "lastName": ",m ,m",
+          "email": "saf@gamil.com",
+          "workPhone": "123132423",
+          "mobile": ""
+        },
+        {
+          "id": "1765437716798",
+          "salutation": "",
+          "firstName": "",
+          "lastName": "",
+          "email": "",
+          "workPhone": "",
+          "mobile": ""
+        }
+      ],
+      "status": "active",
+      "payables": 0,
+      "unusedCredits": 0,
+      "createdAt": "2025-12-11T07:40:45.923Z",
+      "updatedAt": "2025-12-11T07:40:45.923Z"
     }
   ],
-  "nextVendorId": 2
+  "nextVendorId": 4
 }

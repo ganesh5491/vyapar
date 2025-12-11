@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ManageSalespersonsDialog } from "@/components/ManageSalespersonsDialog";
 
 interface Customer {
   id: string;
@@ -70,6 +71,8 @@ export default function QuoteCreatePage() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextQuoteNumber, setNextQuoteNumber] = useState("QT-000005");
+  const [showManageSalespersons, setShowManageSalespersons] = useState(false);
+  const [salespersons, setSalespersons] = useState<{ id: string; name: string }[]>([]);
 
   const [formData, setFormData] = useState({
     customerId: "",
@@ -108,7 +111,20 @@ export default function QuoteCreatePage() {
     fetchCustomers();
     fetchItems();
     fetchNextQuoteNumber();
+    fetchSalespersons();
   }, []);
+
+  const fetchSalespersons = async () => {
+    try {
+      const response = await fetch('/api/salespersons');
+      if (response.ok) {
+        const data = await response.json();
+        setSalespersons(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch salespersons:', error);
+    }
+  };
 
   const fetchCustomers = async () => {
     try {
@@ -178,19 +194,19 @@ export default function QuoteCreatePage() {
   const updateQuoteItem = (index: number, field: string, value: any) => {
     const updatedItems = [...quoteItems];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
-    
+
     const quantity = updatedItems[index].quantity;
     const rate = updatedItems[index].rate;
     const discount = updatedItems[index].discount;
     const discountType = updatedItems[index].discountType;
-    
+
     let subtotal = quantity * rate;
     if (discountType === 'percentage') {
       subtotal = subtotal - (subtotal * discount / 100);
     } else {
       subtotal = subtotal - discount;
     }
-    
+
     updatedItems[index].amount = Math.max(0, subtotal);
     setQuoteItems(updatedItems);
   };
@@ -243,7 +259,7 @@ export default function QuoteCreatePage() {
     try {
       const subTotal = calculateSubTotal();
       const taxAmount = calculateTax();
-      
+
       const quoteData = {
         customerId: formData.customerId,
         customerName: formData.customerName,
@@ -334,7 +350,7 @@ export default function QuoteCreatePage() {
           <div className="space-y-2">
             <Label className="text-red-600">Quote#*</Label>
             <div className="flex gap-2">
-              <Input 
+              <Input
                 value={formData.quoteNumber || nextQuoteNumber}
                 onChange={(e) => setFormData(prev => ({ ...prev, quoteNumber: e.target.value }))}
                 className="flex-1"
@@ -346,7 +362,7 @@ export default function QuoteCreatePage() {
           </div>
           <div className="space-y-2">
             <Label>Reference#</Label>
-            <Input 
+            <Input
               value={formData.referenceNumber}
               onChange={(e) => setFormData(prev => ({ ...prev, referenceNumber: e.target.value }))}
             />
@@ -356,7 +372,7 @@ export default function QuoteCreatePage() {
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label className="text-red-600">Quote Date*</Label>
-            <Input 
+            <Input
               type="date"
               value={formData.quoteDate}
               onChange={(e) => setFormData(prev => ({ ...prev, quoteDate: e.target.value }))}
@@ -364,7 +380,7 @@ export default function QuoteCreatePage() {
           </div>
           <div className="space-y-2">
             <Label>Expiry Date</Label>
-            <Input 
+            <Input
               type="date"
               value={formData.expiryDate}
               onChange={(e) => setFormData(prev => ({ ...prev, expiryDate: e.target.value }))}
@@ -375,12 +391,37 @@ export default function QuoteCreatePage() {
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label>Salesperson</Label>
-            <Select value={formData.salesperson} onValueChange={(v) => setFormData(prev => ({ ...prev, salesperson: v }))}>
+            <Select value={formData.salesperson} onValueChange={(v) => {
+              if (v === "manage_salespersons") {
+                setShowManageSalespersons(true);
+              } else {
+                setFormData(prev => ({ ...prev, salesperson: v }));
+              }
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Select or Add Salesperson" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="rohan">Rohan Bhosale</SelectItem>
+                <div className="p-2">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search" className="pl-8 h-9" />
+                  </div>
+                </div>
+                {salespersons.map(sp => (
+                  <SelectItem key={sp.id} value={sp.name}>{sp.name}</SelectItem>
+                ))}
+                <div
+                  className="flex items-center gap-2 p-2 text-sm text-blue-600 cursor-pointer hover:bg-slate-100 border-t mt-1"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowManageSalespersons(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Manage Salespersons
+                </div>
               </SelectContent>
             </Select>
           </div>
@@ -401,7 +442,7 @@ export default function QuoteCreatePage() {
         <div className="space-y-2">
           <Label>Subject</Label>
           <div className="flex gap-2">
-            <Input 
+            <Input
               value={formData.subject}
               onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
               placeholder="Let your customer know what this Quote is for"
@@ -448,7 +489,7 @@ export default function QuoteCreatePage() {
                       </Select>
                     </td>
                     <td className="px-4 py-2">
-                      <Input 
+                      <Input
                         type="number"
                         min="1"
                         value={item.quantity}
@@ -457,7 +498,7 @@ export default function QuoteCreatePage() {
                       />
                     </td>
                     <td className="px-4 py-2">
-                      <Input 
+                      <Input
                         type="number"
                         min="0"
                         step="0.01"
@@ -468,15 +509,15 @@ export default function QuoteCreatePage() {
                     </td>
                     <td className="px-4 py-2">
                       <div className="flex items-center gap-1">
-                        <Input 
+                        <Input
                           type="number"
                           min="0"
                           value={item.discount}
                           onChange={(e) => updateQuoteItem(index, 'discount', parseFloat(e.target.value) || 0)}
                           className="w-16 text-center"
                         />
-                        <Select 
-                          value={item.discountType} 
+                        <Select
+                          value={item.discountType}
                           onValueChange={(v) => updateQuoteItem(index, 'discountType', v)}
                         >
                           <SelectTrigger className="w-14">
@@ -505,9 +546,9 @@ export default function QuoteCreatePage() {
                       {formatCurrency(item.amount)}
                     </td>
                     <td className="px-4 py-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-red-500 hover:text-red-700"
                         onClick={() => removeRow(index)}
                       >
@@ -535,7 +576,7 @@ export default function QuoteCreatePage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Customer Notes</Label>
-              <Textarea 
+              <Textarea
                 value={formData.customerNotes}
                 onChange={(e) => setFormData(prev => ({ ...prev, customerNotes: e.target.value }))}
                 placeholder="Looking forward for your business."
@@ -551,7 +592,7 @@ export default function QuoteCreatePage() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Shipping Charges</span>
-              <Input 
+              <Input
                 type="number"
                 min="0"
                 step="0.01"
@@ -581,7 +622,7 @@ export default function QuoteCreatePage() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Adjustment</span>
-              <Input 
+              <Input
                 type="number"
                 step="0.01"
                 value={formData.adjustment}
@@ -600,7 +641,7 @@ export default function QuoteCreatePage() {
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-2">
               <Label>Terms & Conditions</Label>
-              <Textarea 
+              <Textarea
                 value={formData.termsAndConditions}
                 onChange={(e) => setFormData(prev => ({ ...prev, termsAndConditions: e.target.value }))}
                 placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
@@ -625,21 +666,21 @@ export default function QuoteCreatePage() {
         </p>
 
         <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
-          <Button 
+          <Button
             variant="outline"
             onClick={() => handleSubmit('DRAFT')}
             disabled={loading}
           >
             Save as Draft
           </Button>
-          <Button 
+          <Button
             className="bg-blue-600 hover:bg-blue-700"
             onClick={() => handleSubmit('SENT')}
             disabled={loading}
           >
             Save and Send
           </Button>
-          <Button 
+          <Button
             variant="ghost"
             onClick={() => setLocation('/quotes')}
           >
@@ -647,6 +688,12 @@ export default function QuoteCreatePage() {
           </Button>
         </div>
       </div>
-    </div>
+
+      <ManageSalespersonsDialog
+        open={showManageSalespersons}
+        onOpenChange={setShowManageSalespersons}
+        onSalespersonChange={fetchSalespersons}
+      />
+    </div >
   );
 }

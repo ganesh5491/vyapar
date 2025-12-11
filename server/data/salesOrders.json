@@ -1,6 +1,173 @@
 {
   "salesOrders": [
     {
+      "id": "1765436192477",
+      "salesOrderNumber": "SO-00005",
+      "referenceNumber": "",
+      "date": "2025-12-11",
+      "expectedShipmentDate": "",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "",
+      "salesperson": "",
+      "placeOfSupply": "Maharashtra",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Antivirus",
+          "description": "",
+          "quantity": 43,
+          "unit": "",
+          "rate": 700,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 30100,
+          "invoicedQty": 43,
+          "invoiceStatus": "Invoiced"
+        }
+      ],
+      "subTotal": 30100,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 30100,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [
+        {
+          "id": "INV-00010",
+          "invoiceNumber": "INV-00010",
+          "date": "2025-12-11",
+          "dueDate": "2025-12-11",
+          "status": "DRAFT",
+          "amount": 30100,
+          "balanceDue": 30100
+        }
+      ],
+      "sourceType": "quote",
+      "sourceId": "2",
+      "sourceNumber": "QT-000003",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-11T06:56:32.477Z",
+      "updatedAt": "2025-12-11T07:49:07.809Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-11T06:56:32.477Z",
+          "action": "created",
+          "description": "Sales Order created from Quote QT-000003",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T07:49:07.809Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00010 created",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765436170284",
+      "salesOrderNumber": "SO-00004",
+      "referenceNumber": "",
+      "date": "2025-12-11",
+      "expectedShipmentDate": "",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "",
+      "salesperson": "rohan",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 555,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 555,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        }
+      ],
+      "subTotal": 555,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 555,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CONFIRMED",
+      "invoiceStatus": "Not Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [],
+      "sourceType": "quote",
+      "sourceId": "1765435390839",
+      "sourceNumber": "QT-000007",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-11T06:56:10.284Z",
+      "updatedAt": "2025-12-11T06:56:10.284Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-11T06:56:10.284Z",
+          "action": "created",
+          "description": "Sales Order created from Quote QT-000007",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765300911055",
       "salesOrderNumber": "SO-00003",
       "referenceNumber": "",
@@ -371,6 +538,6 @@
       ]
     }
   ],
-  "nextSalesOrderNumber": 4,
-  "nextInvoiceNumber": 10
+  "nextSalesOrderNumber": 6,
+  "nextInvoiceNumber": 11
 }

@@ -17,6 +17,7 @@ const DASHBOARD_FILE = path.join(DATA_DIR, "dashboard.json");
 const REPORTS_FILE = path.join(DATA_DIR, "reports.json");
 const PURCHASE_ORDERS_FILE = path.join(DATA_DIR, "purchaseOrders.json");
 const BILLS_FILE = path.join(DATA_DIR, "bills.json");
+const SALESPERSONS_FILE = path.join(DATA_DIR, "salespersons.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -105,6 +106,22 @@ function readInvoicesData() {
   }
   return JSON.parse(fs.readFileSync(INVOICES_FILE, "utf-8"));
 }
+
+function readSalespersonsData() {
+  ensureDataDir();
+  if (!fs.existsSync(SALESPERSONS_FILE)) {
+    const defaultData = { salespersons: [], nextSalespersonId: 1 };
+    fs.writeFileSync(SALESPERSONS_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(SALESPERSONS_FILE, "utf-8"));
+}
+
+function writeSalespersonsData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(SALESPERSONS_FILE, JSON.stringify(data, null, 2));
+}
+
 
 function writeInvoicesData(data: any) {
   ensureDataDir();
@@ -236,8 +253,8 @@ function generatePurchaseOrderNumber(num: number): string {
 function readBillsData() {
   ensureDataDir();
   if (!fs.existsSync(BILLS_FILE)) {
-    const defaultData = { 
-      bills: [], 
+    const defaultData = {
+      bills: [],
       nextBillNumber: 1,
       accounts: [
         { id: '1', name: 'Cost of Goods Sold', type: 'expense' },
@@ -1615,7 +1632,7 @@ export async function registerRoutes(
       const data = readDeliveryChallansData();
       const challanNumber = generateChallanNumber(data.nextChallanNumber);
       const now = new Date().toISOString();
-      
+
       const newChallan = {
         id: String(Date.now()),
         challanNumber,
@@ -1666,14 +1683,14 @@ export async function registerRoutes(
     try {
       const data = readDeliveryChallansData();
       const index = data.deliveryChallans.findIndex((c: any) => c.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Delivery challan not found" });
       }
 
       const existingChallan = data.deliveryChallans[index];
       const now = new Date().toISOString();
-      
+
       const updatedChallan = {
         ...existingChallan,
         ...req.body,
@@ -1705,7 +1722,7 @@ export async function registerRoutes(
     try {
       const data = readDeliveryChallansData();
       const index = data.deliveryChallans.findIndex((c: any) => c.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Delivery challan not found" });
       }
@@ -1723,7 +1740,7 @@ export async function registerRoutes(
     try {
       const challansData = readDeliveryChallansData();
       const challanIndex = challansData.deliveryChallans.findIndex((c: any) => c.id === req.params.id);
-      
+
       if (challanIndex === -1) {
         return res.status(404).json({ success: false, message: "Delivery challan not found" });
       }
@@ -1804,9 +1821,9 @@ export async function registerRoutes(
       const data = readExpensesData();
       const sortBy = req.query.sortBy as string || 'createdTime';
       const sortOrder = req.query.sortOrder as string || 'desc';
-      
+
       let expenses = [...data.expenses];
-      
+
       expenses.sort((a: any, b: any) => {
         let aVal = a[sortBy];
         let bVal = b[sortBy];
@@ -1819,7 +1836,7 @@ export async function registerRoutes(
         }
         return aVal > bVal ? 1 : -1;
       });
-      
+
       res.json({ success: true, data: expenses });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch expenses" });
@@ -1844,7 +1861,7 @@ export async function registerRoutes(
       const data = readExpensesData();
       const now = new Date().toISOString();
       const expenseNumber = generateExpenseNumber(data.nextExpenseId);
-      
+
       const newExpense = {
         id: String(data.nextExpenseId),
         expenseNumber,
@@ -1876,11 +1893,11 @@ export async function registerRoutes(
         updatedAt: now,
         createdTime: now
       };
-      
+
       data.expenses.unshift(newExpense);
       data.nextExpenseId += 1;
       writeExpensesData(data);
-      
+
       res.status(201).json({ success: true, data: newExpense });
     } catch (error) {
       console.error('Error creating expense:', error);
@@ -1892,11 +1909,11 @@ export async function registerRoutes(
     try {
       const data = readExpensesData();
       const index = data.expenses.findIndex((e: any) => e.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Expense not found" });
       }
-      
+
       data.expenses[index] = {
         ...data.expenses[index],
         ...req.body,
@@ -1905,7 +1922,7 @@ export async function registerRoutes(
         createdAt: data.expenses[index].createdAt,
         updatedAt: new Date().toISOString()
       };
-      
+
       writeExpensesData(data);
       res.json({ success: true, data: data.expenses[index] });
     } catch (error) {
@@ -1917,14 +1934,14 @@ export async function registerRoutes(
     try {
       const data = readExpensesData();
       const index = data.expenses.findIndex((e: any) => e.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Expense not found" });
       }
-      
+
       data.expenses.splice(index, 1);
       writeExpensesData(data);
-      
+
       res.json({ success: true, message: "Expense deleted successfully" });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to delete expense" });
@@ -1945,7 +1962,7 @@ export async function registerRoutes(
     try {
       const data = readExpensesData();
       const now = new Date().toISOString();
-      
+
       const newMileage = {
         id: String(data.nextMileageId),
         date: req.body.date || new Date().toISOString().split('T')[0],
@@ -1969,11 +1986,11 @@ export async function registerRoutes(
         createdAt: now,
         updatedAt: now
       };
-      
+
       data.mileageRecords.unshift(newMileage);
       data.nextMileageId += 1;
       writeExpensesData(data);
-      
+
       res.status(201).json({ success: true, data: newMileage });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to create mileage record" });
@@ -1984,14 +2001,14 @@ export async function registerRoutes(
     try {
       const data = readExpensesData();
       const index = data.mileageRecords.findIndex((m: any) => m.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Mileage record not found" });
       }
-      
+
       data.mileageRecords.splice(index, 1);
       writeExpensesData(data);
-      
+
       res.json({ success: true, message: "Mileage record deleted successfully" });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to delete mileage record" });
@@ -2043,14 +2060,14 @@ export async function registerRoutes(
     try {
       const data = readExpensesData();
       const index = data.mileageSettings.mileageRates.findIndex((r: any) => r.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Mileage rate not found" });
       }
-      
+
       data.mileageSettings.mileageRates.splice(index, 1);
       writeExpensesData(data);
-      
+
       res.json({ success: true, message: "Mileage rate deleted successfully" });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to delete mileage rate" });
@@ -2063,7 +2080,7 @@ export async function registerRoutes(
       const data = readExpensesData();
       const importedExpenses = req.body.expenses || [];
       const now = new Date().toISOString();
-      
+
       const newExpenses = importedExpenses.map((expense: any, index: number) => ({
         id: String(data.nextExpenseId + index),
         expenseNumber: generateExpenseNumber(data.nextExpenseId + index),
@@ -2073,11 +2090,11 @@ export async function registerRoutes(
         updatedAt: now,
         createdTime: now
       }));
-      
+
       data.expenses = [...newExpenses, ...data.expenses];
       data.nextExpenseId += importedExpenses.length;
       writeExpensesData(data);
-      
+
       res.status(201).json({ success: true, data: newExpenses, message: `${newExpenses.length} expenses imported successfully` });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to import expenses" });
@@ -2688,6 +2705,51 @@ export async function registerRoutes(
       res.json({ success: true, message: 'Bill deleted successfully' });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to delete bill' });
+    }
+  });
+
+  // Salespersons API
+  app.get("/api/salespersons", (_req, res) => {
+    try {
+      const data = readSalespersonsData();
+      res.json({ success: true, data: data.salespersons });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch salespersons" });
+    }
+  });
+
+  app.post("/api/salespersons", (req, res) => {
+    try {
+      const data = readSalespersonsData();
+      const newSalesperson = {
+        id: String(data.nextSalespersonId++),
+        ...req.body,
+        createdAt: new Date().toISOString()
+      };
+
+      data.salespersons.push(newSalesperson);
+      writeSalespersonsData(data);
+
+      res.json({ success: true, data: newSalesperson });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to create salesperson" });
+    }
+  });
+
+  app.delete("/api/salespersons/:id", (req, res) => {
+    try {
+      const data = readSalespersonsData();
+      const index = data.salespersons.findIndex((s: any) => s.id === req.params.id);
+
+      if (index !== -1) {
+        data.salespersons.splice(index, 1);
+        writeSalespersonsData(data);
+        res.json({ success: true, message: "Salesperson deleted successfully" });
+      } else {
+        res.status(404).json({ success: false, message: "Salesperson not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete salesperson" });
     }
   });
 

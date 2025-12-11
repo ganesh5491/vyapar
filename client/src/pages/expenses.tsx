@@ -474,8 +474,9 @@ export default function Expenses() {
 
   return (
     <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300">
-      <div className={`flex-1 flex flex-col overflow-hidden ${selectedExpense ? 'border-r border-slate-200' : ''}`}>
-        <div className="max-w-7xl mx-auto w-full space-y-4 p-4">
+      {/* Left side - Expense List */}
+      <div className={`flex flex-col overflow-hidden transition-all duration-300 ${selectedExpense ? 'w-[60%]' : 'w-full'}`}>
+        <div className="w-full space-y-4 p-4 overflow-y-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -714,18 +715,20 @@ export default function Expenses() {
             </Tabs>
           </div>
         </div>
-
-        {selectedExpense && (
-          <div className="w-[600px] flex-shrink-0 overflow-hidden">
-            <ExpenseDetailPanel
-              expense={selectedExpense}
-              onClose={handleClosePanel}
-              onEdit={handleEditExpense}
-              onDelete={handleDeleteExpense}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Right side - Expense Detail Panel */}
+      {selectedExpense && (
+        <div className="w-[40%] border-l border-slate-200 flex-shrink-0 overflow-hidden bg-white">
+          <ExpenseDetailPanel
+            expense={selectedExpense}
+            onClose={handleClosePanel}
+            onEdit={handleEditExpense}
+            onDelete={handleDeleteExpense}
+          />
+        </div>
+      )}
+
 
       <Dialog open={showRecordExpense} onOpenChange={setShowRecordExpense}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

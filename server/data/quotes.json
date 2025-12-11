@@ -1,6 +1,168 @@
 {
   "quotes": [
     {
+      "id": "1765435390839",
+      "quoteNumber": "QT-000007",
+      "referenceNumber": "",
+      "date": "2025-12-11",
+      "expiryDate": "",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "rohan",
+      "projectName": "default",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 555,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 555
+        }
+      ],
+      "subTotal": 555,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 555,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-11T06:43:10.839Z",
+      "updatedAt": "2025-12-11T06:56:10.284Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-11T06:43:10.839Z",
+          "action": "created",
+          "description": "Quote created for ₹555",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T06:56:10.284Z",
+          "action": "converted",
+          "description": "Converted to Sales Order SO-00004",
+          "user": "Admin User",
+          "link": "/sales-orders/1765436170284"
+        }
+      ]
+    },
+    {
+      "id": "1765434998603",
+      "quoteNumber": "QT-000006",
+      "referenceNumber": "",
+      "date": "2025-12-11",
+      "expiryDate": "",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "rohan",
+      "projectName": "default",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "3",
+          "name": "EMPLOYEE ACTIVITY MONITORING APP",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-11T06:36:38.602Z",
+      "updatedAt": "2025-12-11T07:38:18.924Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-11T06:36:38.602Z",
+          "action": "created",
+          "description": "Quote created for ₹0",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T07:38:18.911Z",
+          "action": "converted",
+          "description": "Converted to Invoice INV-00006",
+          "user": "Admin User",
+          "link": "/invoices/1765438698911"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-11T07:38:18.924Z",
+          "action": "converted",
+          "description": "Converted to Invoice INV-00007",
+          "user": "Admin User",
+          "link": "/invoices/1765438698924"
+        }
+      ]
+    },
+    {
       "id": "1765280697873",
       "quoteNumber": "QT-000005",
       "referenceNumber": "",
@@ -245,10 +407,10 @@
       "total": 30100,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "SENT",
+      "status": "CONVERTED",
       "emailRecipients": [],
       "createdAt": "2025-10-08T10:00:00.000Z",
-      "updatedAt": "2025-10-08T10:00:00.000Z",
+      "updatedAt": "2025-12-11T06:56:32.477Z",
       "createdBy": "Rohan Bhosale",
       "activityLogs": [
         {
@@ -257,6 +419,14 @@
           "action": "created",
           "description": "Quote created for ₹30,100.00",
           "user": "Rohan Bhosale"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T06:56:32.477Z",
+          "action": "converted",
+          "description": "Converted to Sales Order SO-00005",
+          "user": "Admin User",
+          "link": "/sales-orders/1765436192477"
         }
       ]
     },
@@ -353,10 +523,10 @@
       "total": 566400,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "DRAFT",
+      "status": "CONVERTED",
       "emailRecipients": [],
       "createdAt": "2025-04-24T10:00:00.000Z",
-      "updatedAt": "2025-04-24T10:00:00.000Z",
+      "updatedAt": "2025-12-11T06:55:52.028Z",
       "createdBy": "Rohan Bhosale",
       "activityLogs": [
         {
@@ -365,9 +535,17 @@
           "action": "created",
           "description": "Quote created for ₹5,66,400.00",
           "user": "Rohan Bhosale"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T06:55:52.028Z",
+          "action": "converted",
+          "description": "Converted to Invoice INV-00004",
+          "user": "Admin User",
+          "link": "/invoices/1765436152028"
         }
       ]
     }
   ],
-  "nextQuoteNumber": 6
+  "nextQuoteNumber": 8
 }
