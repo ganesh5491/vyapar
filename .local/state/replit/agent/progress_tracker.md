@@ -10,3 +10,4 @@
 [x] 10. Final verification - application running successfully on port 5000
 [x] 11. Added Salesperson dropdown with Manage Salespersons to sales-order-edit.tsx
 [x] 12. Added Salesperson dropdown with Manage Salespersons to invoice-edit.tsx
+[x] 13. Re-installed cross-env package and restarted workflow
