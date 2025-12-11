@@ -15,3 +15,4 @@
 [x] 15. Updated sidebar to use accordion behavior (only one section open at a time)
 [x] 16. Updated Customers page UI to table layout with columns: Name, Company Name, Email, Work Phone, Place of Supply, Receivables, Unused Credits
 [x] 17. Updated Quotes/Estimates page UI to proper table layout with full detail panel
+[x] 18. Session restart - reinstalled cross-env and verified application running (Dec 11, 2025)
