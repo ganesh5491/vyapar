@@ -52,13 +52,13 @@
       "balanceDue": 0,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "PENDING",
+      "status": "SENT",
       "sourceType": "quote",
       "sourceId": "1765434998603",
       "sourceNumber": "QT-000006",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-11T07:38:18.924Z",
-      "updatedAt": "2025-12-11T07:38:18.924Z",
+      "updatedAt": "2025-12-11T13:08:15.805Z",
       "createdBy": "Admin User",
       "payments": [],
       "activityLogs": [
@@ -67,6 +67,13 @@
           "timestamp": "2025-12-11T07:38:18.924Z",
           "action": "created",
           "description": "Invoice created from Quote QT-000006",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T13:08:15.805Z",
+          "action": "sent",
+          "description": "Invoice has been sent",
           "user": "Admin User"
         }
       ]
@@ -528,7 +535,76 @@
           "user": "Admin User"
         }
       ]
+    },
+    {
+      "id": "1765512535378",
+      "invoiceNumber": "INV-00008",
+      "referenceNumber": "DC-00001",
+      "date": "2025-12-12",
+      "dueDate": "2026-01-11",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED ",
+      "billingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Cloud Server",
+          "description": "",
+          "hsnSac": "998315",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 500,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 90,
+          "taxName": "GST18",
+          "amount": 590
+        }
+      ],
+      "subTotal": 500,
+      "shippingCharges": 0,
+      "cgst": 45,
+      "sgst": 45,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 590,
+      "amountPaid": 0,
+      "balanceDue": 590,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": "delivery_challan",
+      "sourceId": "1",
+      "sourceNumber": "DC-00001",
+      "createdAt": "2025-12-12T04:08:55.378Z",
+      "updatedAt": "2025-12-12T04:08:55.378Z",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T04:08:55.378Z",
+          "action": "created",
+          "description": "Invoice INV-00008 created from delivery challan DC-00001",
+          "user": "Admin User"
+        }
+      ]
     }
   ],
-  "nextInvoiceNumber": 8
+  "nextInvoiceNumber": 9
 }

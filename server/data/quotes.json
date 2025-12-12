@@ -54,10 +54,10 @@
       "total": 555,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "CONVERTED",
+      "status": "SENT",
       "emailRecipients": [],
       "createdAt": "2025-12-11T06:43:10.839Z",
-      "updatedAt": "2025-12-11T06:56:10.284Z",
+      "updatedAt": "2025-12-12T04:12:38.225Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -74,6 +74,20 @@
           "description": "Converted to Sales Order SO-00004",
           "user": "Admin User",
           "link": "/sales-orders/1765436170284"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-12T04:12:38.220Z",
+          "action": "sent",
+          "description": "Quote has been sent to customer",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-12T04:12:38.225Z",
+          "action": "sent",
+          "description": "Quote has been sent to customer",
+          "user": "Admin User"
         }
       ]
     },
@@ -356,7 +370,7 @@
     {
       "id": "2",
       "quoteNumber": "QT-000003",
-      "referenceNumber": "",
+      "referenceNumber": "123211",
       "date": "2025-10-08",
       "expiryDate": "2025-11-08",
       "customerId": "2",
@@ -400,17 +414,17 @@
       "shippingCharges": 0,
       "tdsType": "",
       "tdsAmount": 0,
-      "cgst": 0,
-      "sgst": 0,
+      "cgst": 2709,
+      "sgst": 2709,
       "igst": 0,
       "adjustment": 0,
-      "total": 30100,
-      "customerNotes": "",
+      "total": 35518,
+      "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
       "status": "CONVERTED",
       "emailRecipients": [],
       "createdAt": "2025-10-08T10:00:00.000Z",
-      "updatedAt": "2025-12-11T06:56:32.477Z",
+      "updatedAt": "2025-12-11T13:07:20.203Z",
       "createdBy": "Rohan Bhosale",
       "activityLogs": [
         {
@@ -427,8 +441,16 @@
           "description": "Converted to Sales Order SO-00005",
           "user": "Admin User",
           "link": "/sales-orders/1765436192477"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-11T13:07:20.203Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
         }
-      ]
+      ],
+      "updatedBy": "Admin User"
     },
     {
       "id": "3",

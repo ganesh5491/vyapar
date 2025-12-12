@@ -2,7 +2,7 @@
   "customers": [
     {
       "id": "1",
-      "name": "CYBAEM TECH PRIVATE LIMITED",
+      "name": "CYBAEM TECH PRIVATE LIMITED ",
       "email": "rohan@cybaemtech.com",
       "phone": "",
       "billingAddress": {
@@ -19,7 +19,22 @@
         "country": "India",
         "pincode": "411057"
       },
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "displayName": "CYBAEM TECH PRIVATE LIMITED ",
+      "companyName": "CYBAEM TECH PRIVATE LIMITED  1",
+      "workPhone": "",
+      "mobile": "",
+      "gstTreatment": "",
+      "placeOfSupply": "",
+      "gstin": "",
+      "pan": "",
+      "taxPreference": "taxable",
+      "currency": "INR",
+      "paymentTerms": "",
+      "customerType": "business",
+      "contactPersons": [],
+      "updatedAt": "2025-12-12T04:06:47.284Z",
+      "status": "inactive"
     },
     {
       "id": "2",
@@ -40,7 +55,9 @@
         "country": "India",
         "pincode": ""
       },
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "status": "active",
+      "updatedAt": "2025-12-12T04:06:27.595Z"
     },
     {
       "id": "3",

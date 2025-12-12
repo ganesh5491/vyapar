@@ -1,6 +1,115 @@
 {
   "salesOrders": [
     {
+      "id": "1765458352635",
+      "salesOrderNumber": "SO-00009",
+      "referenceNumber": "34343",
+      "date": "2025-12-11",
+      "expectedShipmentDate": "",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "Standard Delivery",
+      "salesperson": "afshjd",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "3",
+          "name": "EMPLOYEE ACTIVITY MONITORING APP",
+          "description": "",
+          "hsnSac": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 0,
+          "ordered": 1,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "customerNotes": "Looking forward to your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [
+        {
+          "id": "INV-00015",
+          "invoiceNumber": "INV-00015",
+          "date": "2025-12-11",
+          "dueDate": "2025-12-11",
+          "status": "DRAFT",
+          "amount": 0,
+          "balanceDue": 0
+        },
+        {
+          "id": "INV-00016",
+          "invoiceNumber": "INV-00016",
+          "date": "2025-12-11",
+          "dueDate": "2025-12-11",
+          "status": "DRAFT",
+          "amount": 0,
+          "balanceDue": 0
+        }
+      ],
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-11T13:05:52.635Z",
+      "updatedAt": "2025-12-11T13:06:12.129Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-11T13:05:52.635Z",
+          "action": "created",
+          "description": "Sales Order created for ₹0",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-11T13:06:12.125Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00015 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-11T13:06:12.129Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00016 created",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765456640413",
       "salesOrderNumber": "SO-00008",
       "referenceNumber": "4381",
@@ -847,6 +956,6 @@
       ]
     }
   ],
-  "nextSalesOrderNumber": 9,
-  "nextInvoiceNumber": 15
+  "nextSalesOrderNumber": 10,
+  "nextInvoiceNumber": 17
 }

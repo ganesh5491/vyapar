@@ -3,27 +3,27 @@
     {
       "id": "1",
       "challanNumber": "DC-00001",
-      "referenceNumber": "",
+      "referenceNumber": "321123",
       "date": "2025-12-10",
-      "customerId": "2",
-      "customerName": "A SQUARE ARCHITECTS",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED ",
       "challanType": "supply_on_approval",
       "billingAddress": {
-        "street": "Bopkhel",
+        "street": "Hinjewadi",
         "city": "Pune",
         "state": "Maharashtra",
         "country": "India",
-        "pincode": "411031"
+        "pincode": "411057"
       },
       "shippingAddress": {
-        "street": "Bopkhel",
+        "street": "Hinjewadi",
         "city": "Pune",
         "state": "Maharashtra",
         "country": "India",
-        "pincode": "411031"
+        "pincode": "411057"
       },
-      "placeOfSupply": "Maharashtra (27)",
-      "gstin": "27BBZPR1986D1ZV",
+      "placeOfSupply": "",
+      "gstin": "",
       "items": [
         {
           "id": "1",
@@ -33,27 +33,27 @@
           "hsnSac": "998315",
           "quantity": 1,
           "unit": "pcs",
-          "rate": 0,
+          "rate": 500,
           "discount": 0,
           "discountType": "percentage",
-          "tax": 0,
+          "tax": 90,
           "taxName": "GST18",
-          "amount": 0
+          "amount": 590
         }
       ],
-      "subTotal": 0,
-      "cgst": 0,
-      "sgst": 0,
+      "subTotal": 500,
+      "cgst": 45,
+      "sgst": 45,
       "igst": 0,
       "adjustment": 0,
-      "total": 0,
+      "total": 590,
       "customerNotes": "",
       "termsAndConditions": "",
       "status": "DRAFT",
       "invoiceStatus": "INVOICED",
-      "invoiceId": "1765349952937",
+      "invoiceId": "1765512535378",
       "createdAt": "2025-12-18T10:00:00.000Z",
-      "updatedAt": "2025-12-10T06:59:12.937Z",
+      "updatedAt": "2025-12-12T04:08:55.378Z",
       "activityLogs": [
         {
           "id": "1",
@@ -67,6 +67,20 @@
           "timestamp": "2025-12-10T06:59:12.937Z",
           "action": "converted",
           "description": "Converted to invoice INV-00002",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-12T04:08:46.216Z",
+          "action": "updated",
+          "description": "Delivery challan updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-12T04:08:55.378Z",
+          "action": "converted",
+          "description": "Converted to invoice INV-00008",
           "user": "Admin User"
         }
       ]
