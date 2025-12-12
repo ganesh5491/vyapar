@@ -1,4 +1,61 @@
 {
-  "ewayBills": [],
-  "nextEWayBillNumber": 1
+  "ewayBills": [
+    {
+      "id": "ewb-1765532859886",
+      "ewayBillNumber": "EWB-000001",
+      "documentType": "invoices",
+      "transactionSubType": "sales_return",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "customerGstin": "",
+      "documentNumber": "",
+      "documentId": "",
+      "date": "2025-12-12",
+      "expiryDate": "2025-12-27",
+      "transactionType": "regular",
+      "dispatchFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billTo": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "shipTo": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "placeOfDelivery": "[MH] - Maharashtra",
+      "transporter": "transporter2",
+      "distance": 53,
+      "modeOfTransportation": "road",
+      "vehicleType": "over_dimensional",
+      "vehicleNo": "MH 12 8391",
+      "transporterDocNo": "73282123",
+      "transporterDocDate": "2025-12-25",
+      "items": [],
+      "total": 0,
+      "status": "GENERATED",
+      "createdAt": "2025-12-12T09:47:39.886Z",
+      "updatedAt": "2025-12-12T09:47:39.886Z",
+      "generatedAt": "2025-12-12T09:47:40.151Z"
+    }
+  ],
+  "nextEWayBillNumber": 2
 }
