@@ -286,6 +286,61 @@ export default function DeliveryChallans() {
         }
     };
 
+    const handleStatusChange = async (challanId: string, newStatus: string) => {
+        try {
+            const response = await fetch(`/api/delivery-challans/${challanId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                toast({
+                    title: "Status Updated",
+                    description: `Delivery challan status changed to ${newStatus}.`,
+                });
+                fetchChallans();
+                if (selectedChallan?.id === challanId) {
+                    fetchChallanDetail(challanId);
+                }
+            } else {
+                throw new Error('Failed to update status');
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to update status. Please try again.",
+                variant: "destructive"
+            });
+        }
+    };
+
+    const handleCloneChallan = async (challanId: string) => {
+        try {
+            const response = await fetch(`/api/delivery-challans/${challanId}/clone`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                toast({
+                    title: "Challan Cloned",
+                    description: `New challan ${data.data.challanNumber} has been created.`,
+                });
+                fetchChallans();
+            } else {
+                throw new Error('Failed to clone');
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to clone delivery challan. Please try again.",
+                variant: "destructive"
+            });
+        }
+    };
+
     const handleGeneratePDF = () => {
         if (!selectedChallan) return;
 
@@ -603,13 +658,48 @@ export default function DeliveryChallans() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem data-testid="action-duplicate">
+                                {!selectedChallan.invoiceId && (
+                                    <DropdownMenuItem 
+                                        onClick={() => handleConvertToInvoice(selectedChallan.id)}
+                                        className="text-primary font-medium"
+                                        data-testid="action-convert-invoice"
+                                    >
+                                        Convert to Invoice
+                                    </DropdownMenuItem>
+                                )}
+                                {selectedChallan.status === 'DELIVERED' && (
+                                    <DropdownMenuItem 
+                                        onClick={() => handleStatusChange(selectedChallan.id, 'OPEN')}
+                                        data-testid="action-revert-open"
+                                    >
+                                        Revert to Open
+                                    </DropdownMenuItem>
+                                )}
+                                {selectedChallan.status === 'OPEN' && (
+                                    <DropdownMenuItem 
+                                        onClick={() => handleStatusChange(selectedChallan.id, 'DELIVERED')}
+                                        data-testid="action-mark-delivered"
+                                    >
+                                        Mark as Delivered
+                                    </DropdownMenuItem>
+                                )}
+                                {selectedChallan.status === 'DRAFT' && (
+                                    <DropdownMenuItem 
+                                        onClick={() => handleStatusChange(selectedChallan.id, 'OPEN')}
+                                        data-testid="action-mark-open"
+                                    >
+                                        Mark as Open
+                                    </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem data-testid="action-eway-bill">
+                                    Add e-Way Bill Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                    onClick={() => handleCloneChallan(selectedChallan.id)}
+                                    data-testid="action-clone"
+                                >
                                     <Copy className="h-4 w-4 mr-2" />
                                     Clone
-                                </DropdownMenuItem>
-                                <DropdownMenuItem data-testid="action-email">
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Email Challan
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 

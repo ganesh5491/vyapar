@@ -75,7 +75,7 @@
     {
       "id": "3",
       "name": "Uraja Foods",
-      "email": "",
+      "email": "uraja@gmail.com",
       "phone": "",
       "billingAddress": {
         "street": "",
@@ -91,12 +91,26 @@
         "country": "India",
         "pincode": ""
       },
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "displayName": "Uraja Foods",
+      "companyName": "Uraja Foods",
+      "workPhone": "",
+      "mobile": "",
+      "gstTreatment": "Registered Business - Composition",
+      "placeOfSupply": "Maharashtra",
+      "gstin": "",
+      "pan": "",
+      "taxPreference": "taxable",
+      "currency": "INR",
+      "paymentTerms": "",
+      "customerType": "business",
+      "contactPersons": [],
+      "updatedAt": "2025-12-12T06:08:54.799Z"
     },
     {
       "id": "4",
       "name": "Saturo Technologies Private Limited",
-      "email": "",
+      "email": "Saturo@gmail.com",
       "phone": "",
       "billingAddress": {
         "street": "",
@@ -112,7 +126,21 @@
         "country": "India",
         "pincode": ""
       },
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "displayName": "Saturo Technologies Private Limited",
+      "companyName": "Saturo Technologies Private Limited",
+      "workPhone": "",
+      "mobile": "",
+      "gstTreatment": "Consumer",
+      "placeOfSupply": "Karnataka",
+      "gstin": "",
+      "pan": "",
+      "taxPreference": "taxable",
+      "currency": "INR",
+      "paymentTerms": "",
+      "customerType": "business",
+      "contactPersons": [],
+      "updatedAt": "2025-12-12T06:16:44.695Z"
     }
   ],
   "nextCustomerId": 6

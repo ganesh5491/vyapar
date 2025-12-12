@@ -51,6 +51,7 @@ import DeliveryChallanCreate from "@/pages/delivery-challan-create";
 import DeliveryChallanEdit from "@/pages/delivery-challan-edit";
 import CreditNotes from "@/pages/credit-notes";
 import CreditNoteCreate from "@/pages/credit-note-create";
+import CreditNoteEdit from "@/pages/credit-note-edit";
 
 function Router() {
   return (
@@ -74,6 +75,7 @@ function Router() {
         <Route path="/delivery-challans/:id/edit" component={DeliveryChallanEdit} />
         <Route path="/credit-notes" component={CreditNotes} />
         <Route path="/credit-notes/create" component={CreditNoteCreate} />
+        <Route path="/credit-notes/:id/edit" component={CreditNoteEdit} />
         <Route path="/customers" component={Customers} />
         <Route path="/customers/new" component={CustomerCreate} />
         <Route path="/customers/:id/edit" component={CustomerEdit} />

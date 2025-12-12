@@ -46,6 +46,16 @@ interface Customer {
   shippingAddress?: any;
 }
 
+interface InventoryItem {
+  id: string;
+  name: string;
+  description?: string;
+  hsnSac?: string;
+  sellingPrice?: number;
+  unit?: string;
+  type?: string;
+}
+
 const CHALLAN_TYPES = [
   { value: "supply_on_approval", label: "Supply on Approval" },
   { value: "supply_for_job_work", label: "Supply for Job Work" },
@@ -73,6 +83,7 @@ export default function DeliveryChallanCreate() {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [challanType, setChallanType] = useState<string>("");
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [customerNotes, setCustomerNotes] = useState("");
   const [termsAndConditions, setTermsAndConditions] = useState("");
   const [adjustment, setAdjustment] = useState(0);
@@ -95,7 +106,38 @@ export default function DeliveryChallanCreate() {
   useEffect(() => {
     fetchNextChallanNumber();
     fetchCustomers();
+    fetchInventoryItems();
   }, []);
+
+  const fetchInventoryItems = async () => {
+    try {
+      const response = await fetch('/api/items');
+      if (response.ok) {
+        const data = await response.json();
+        setInventoryItems(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+    }
+  };
+
+  const handleItemSelect = (challanItemId: number, inventoryItemId: string) => {
+    const inventoryItem = inventoryItems.find(i => i.id === inventoryItemId);
+    if (inventoryItem) {
+      setItems(items.map(item => {
+        if (item.id === challanItemId) {
+          return {
+            ...item,
+            name: inventoryItem.name,
+            description: inventoryItem.description || "",
+            hsnSac: inventoryItem.hsnSac || "",
+            rate: inventoryItem.sellingPrice || 0
+          };
+        }
+        return item;
+      }));
+    }
+  };
 
   const fetchNextChallanNumber = async () => {
     try {
@@ -445,13 +487,23 @@ export default function DeliveryChallanCreate() {
                   return (
                     <TableRow key={item.id}>
                       <TableCell>
-                        <Input
-                          value={item.name}
-                          onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                          placeholder="Type or click to select an item."
-                          className="border-0 shadow-none focus-visible:ring-0 px-0"
-                          data-testid={`input-item-name-${index}`}
-                        />
+                        <Select
+                          value={inventoryItems.find(inv => inv.name === item.name)?.id || ""}
+                          onValueChange={(v) => handleItemSelect(item.id, v)}
+                        >
+                          <SelectTrigger className="w-full" data-testid={`select-item-${index}`}>
+                            <SelectValue placeholder="Select an item">
+                              {item.name || "Select an item"}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {inventoryItems.map((invItem) => (
+                              <SelectItem key={invItem.id} value={invItem.id}>
+                                {invItem.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         <Input

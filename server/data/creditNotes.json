@@ -1,6 +1,70 @@
 {
   "creditNotes": [
     {
+      "id": "1765519677707",
+      "creditNoteNumber": "CN-00002",
+      "referenceNumber": "121321",
+      "date": "2025-12-12",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED ",
+      "invoiceId": "",
+      "invoiceNumber": "",
+      "reason": "sales_return",
+      "salesperson": "Sujay",
+      "subject": "",
+      "billingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "gstin": "",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1765519648425",
+          "itemId": "",
+          "name": "",
+          "description": "",
+          "account": "service",
+          "quantity": 1,
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "tdsType": "TDS",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "creditsRemaining": 0,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "OPEN",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T06:07:57.707Z",
+      "updatedAt": "2025-12-12T06:07:57.707Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T06:07:57.707Z",
+          "action": "created",
+          "description": "Credit Note created for ₹0",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1",
       "creditNoteNumber": "CN-00001",
       "referenceNumber": "1234",
@@ -56,5 +120,5 @@
       "createdBy": "Admin User"
     }
   ],
-  "nextCreditNoteNumber": 2
+  "nextCreditNoteNumber": 3
 }

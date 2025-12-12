@@ -320,12 +320,13 @@ export async function registerRoutes(
     try {
       const items = readItems();
       const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limit = parseInt(req.query.limit as string) || 1000;
       const offset = (page - 1) * limit;
 
       const paginatedItems = items.slice(offset, offset + limit);
 
       res.json({
+        success: true,
         data: paginatedItems,
         meta: {
           page,
@@ -335,7 +336,7 @@ export async function registerRoutes(
         }
       });
     } catch (error) {
-      res.status(500).json({ error: "Failed to read items" });
+      res.status(500).json({ success: false, error: "Failed to read items" });
     }
   });
 
@@ -2084,6 +2085,79 @@ export async function registerRoutes(
     } catch (error) {
       console.error('Error converting to invoice:', error);
       res.status(500).json({ success: false, message: "Failed to convert to invoice" });
+    }
+  });
+
+  app.patch("/api/delivery-challans/:id/status", (req: Request, res: Response) => {
+    try {
+      const challansData = readDeliveryChallansData();
+      const challanIndex = challansData.deliveryChallans.findIndex((c: any) => c.id === req.params.id);
+      
+      if (challanIndex === -1) {
+        return res.status(404).json({ success: false, message: "Delivery challan not found" });
+      }
+
+      const challan = challansData.deliveryChallans[challanIndex];
+      const now = new Date().toISOString();
+      
+      challan.status = req.body.status;
+      challan.updatedAt = now;
+      
+      if (!challan.activityLogs) challan.activityLogs = [];
+      challan.activityLogs.push({
+        id: String(challan.activityLogs.length + 1),
+        timestamp: now,
+        action: 'status_changed',
+        description: `Status changed to ${req.body.status}`,
+        user: req.body.user || 'Admin User'
+      });
+
+      challansData.deliveryChallans[challanIndex] = challan;
+      writeDeliveryChallansData(challansData);
+
+      res.json({ success: true, data: challan });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update status" });
+    }
+  });
+
+  app.post("/api/delivery-challans/:id/clone", (req: Request, res: Response) => {
+    try {
+      const challansData = readDeliveryChallansData();
+      const originalChallan = challansData.deliveryChallans.find((c: any) => c.id === req.params.id);
+      
+      if (!originalChallan) {
+        return res.status(404).json({ success: false, message: "Delivery challan not found" });
+      }
+
+      const now = new Date().toISOString();
+      const newChallanNumber = generateChallanNumber(challansData.nextChallanNumber);
+      
+      const clonedChallan = {
+        ...originalChallan,
+        id: String(Date.now()),
+        challanNumber: newChallanNumber,
+        status: 'DRAFT',
+        invoiceStatus: null,
+        invoiceId: null,
+        createdAt: now,
+        updatedAt: now,
+        activityLogs: [{
+          id: '1',
+          timestamp: now,
+          action: 'created',
+          description: `Cloned from ${originalChallan.challanNumber}`,
+          user: req.body.user || 'Admin User'
+        }]
+      };
+
+      challansData.deliveryChallans.push(clonedChallan);
+      challansData.nextChallanNumber += 1;
+      writeDeliveryChallansData(challansData);
+
+      res.json({ success: true, data: clonedChallan });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to clone delivery challan" });
     }
   });
 
