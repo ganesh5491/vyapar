@@ -1,6 +1,89 @@
 {
   "salesOrders": [
     {
+      "id": "1765518014969",
+      "salesOrderNumber": "SO-00010",
+      "referenceNumber": "",
+      "date": "2025-12-12",
+      "expectedShipmentDate": "2025-12-13",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Net 30",
+      "deliveryMethod": "Express Delivery",
+      "salesperson": "Sujay",
+      "placeOfSupply": "gujarat",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Antivirus1",
+          "description": "",
+          "hsnSac": "85238020",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 410,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 410,
+          "ordered": 1,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        }
+      ],
+      "subTotal": 410,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 410,
+      "customerNotes": "sdjfbfhj",
+      "termsAndConditions": "",
+      "orderStatus": "Confirmed",
+      "invoiceStatus": "Not Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [],
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T05:40:14.969Z",
+      "updatedAt": "2025-12-12T05:40:42.229Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T05:40:14.969Z",
+          "action": "created",
+          "description": "Sales Order created for ₹410",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T05:40:42.229Z",
+          "action": "updated",
+          "description": "Sales Order has been updated",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765458352635",
       "salesOrderNumber": "SO-00009",
       "referenceNumber": "34343",
@@ -956,6 +1039,6 @@
       ]
     }
   ],
-  "nextSalesOrderNumber": 10,
+  "nextSalesOrderNumber": 11,
   "nextInvoiceNumber": 17
 }
