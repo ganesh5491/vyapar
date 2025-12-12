@@ -806,7 +806,7 @@ export default function SalesOrdersPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300">
+    <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300 -m-4 lg:-m-6">
       <div className={`flex-1 flex flex-col overflow-hidden ${selectedOrder ? 'max-w-md' : ''}`}>
         <div className="flex items-center justify-between p-4 gap-4">
           <div className="flex items-center gap-2">
@@ -993,7 +993,7 @@ export default function SalesOrdersPage() {
       </div>
 
       {selectedOrder && (
-        <div className="w-[600px] flex-shrink-0">
+        <div className="flex-1 min-w-0">
           <SalesOrderDetailPanel
             order={selectedOrder}
             onClose={handleClosePanel}
