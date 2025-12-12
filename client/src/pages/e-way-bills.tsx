@@ -1,35 +1,24 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
     Plus, 
-    MoreHorizontal, 
-    Trash2, 
-    Pencil,
     X,
-    Search,
-    Filter,
-    ChevronDown,
+    Settings,
     FileText,
     Truck,
     Train,
     Plane,
     Ship,
-    ExternalLink
+    ExternalLink,
+    Pencil,
+    ChevronDown
 } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
     Select,
     SelectContent,
@@ -56,9 +45,11 @@ interface EWayBillListItem {
     documentType: string;
     documentNumber: string;
     customerName: string;
+    customerGstin: string;
     customerId: string;
     date: string;
-    amount: number;
+    expiryDate: string;
+    total: number;
     status: string;
     transactionType: string;
 }
@@ -69,9 +60,11 @@ interface EWayBillDetail {
     documentType: string;
     transactionSubType: string;
     customerName: string;
+    customerGstin: string;
     customerId: string;
     documentNumber: string;
     date: string;
+    expiryDate: string;
     transactionType: string;
     dispatchFrom: {
         street: string;
@@ -115,11 +108,30 @@ interface EWayBillDetail {
     createdAt: string;
 }
 
+interface Customer {
+    id: string;
+    displayName: string;
+    companyName: string;
+    gstin?: string;
+    billingAddress?: any;
+    shippingAddress?: any;
+}
+
+interface CreditNote {
+    id: string;
+    creditNoteNumber: string;
+    customerId: string;
+    customerName: string;
+    total: number;
+    date: string;
+}
+
 const formatCurrency = (amount: number) => {
     return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
@@ -140,18 +152,16 @@ const formatAddress = (address: any): string[] => {
 
 const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
-        case 'ACTIVE':
-            return 'bg-green-100 text-green-700 border-green-200';
         case 'GENERATED':
-            return 'bg-blue-100 text-blue-700 border-blue-200';
-        case 'DRAFT':
-            return 'bg-slate-100 text-slate-600 border-slate-200';
+            return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+        case 'NOT_GENERATED':
+            return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
         case 'CANCELLED':
-            return 'bg-red-100 text-red-700 border-red-200';
+            return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
         case 'EXPIRED':
-            return 'bg-amber-100 text-amber-700 border-amber-200';
+            return 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700';
         default:
-            return 'bg-slate-100 text-slate-600 border-slate-200';
+            return 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700';
     }
 };
 
@@ -176,23 +186,52 @@ const transactionTypes = [
     { value: 'combination', label: 'Combination of 2 and 3' },
 ];
 
+const ewayBillStatuses = [
+    { value: 'all', label: 'All' },
+    { value: 'NOT_GENERATED', label: 'Not Generated (0)' },
+    { value: 'GENERATED', label: 'Generated' },
+    { value: 'CANCELLED', label: 'Cancelled' },
+    { value: 'EXPIRED', label: 'Expired' },
+];
+
+const transactionPeriods = [
+    { value: 'this_month', label: 'This Month' },
+    { value: 'last_month', label: 'Last Month' },
+    { value: 'this_year', label: 'This Year' },
+    { value: 'all', label: 'All Time' },
+];
+
+const transactionTypeFilters = [
+    { value: 'invoices', label: 'Invoices' },
+    { value: 'credit_notes', label: 'Credit Notes' },
+    { value: 'delivery_challans', label: 'Delivery Challans' },
+    { value: 'all', label: 'All Types' },
+];
+
 export default function EWayBills() {
-    const [, setLocation] = useLocation();
     const { toast } = useToast();
     const [ewayBills, setEwayBills] = useState<EWayBillListItem[]>([]);
     const [selectedBill, setSelectedBill] = useState<EWayBillDetail | null>(null);
     const [selectedBills, setSelectedBills] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [billToDelete, setBillToDelete] = useState<string | null>(null);
     const [showCreateForm, setShowCreateForm] = useState(false);
     
+    const [periodFilter, setPeriodFilter] = useState('this_month');
+    const [transactionTypeFilter, setTransactionTypeFilter] = useState('invoices');
+    const [statusFilter, setStatusFilter] = useState('NOT_GENERATED');
+
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
+    
     const [formData, setFormData] = useState({
         documentType: 'credit_notes',
         transactionSubType: 'sales_return',
+        customerId: '',
         customerName: '',
         documentNumber: '',
+        documentId: '',
         date: new Date().toISOString().split('T')[0],
         transactionType: 'regular',
         placeOfDelivery: '',
@@ -205,29 +244,54 @@ export default function EWayBills() {
         transporterDocDate: '',
     });
 
+    const [addressData, setAddressData] = useState({
+        dispatchFrom: {
+            street: 'Hinjewadi - Wakad road',
+            city: 'Hinjewadi',
+            state: 'Pune',
+            country: 'Maharashtra',
+            pincode: 'India - 411057',
+        },
+        billFrom: {
+            street: 'Hinjewadi - Wakad road',
+            city: 'Hinjewadi',
+            state: 'Pune',
+            country: 'Maharashtra',
+            pincode: 'India - 411057',
+        },
+        billTo: {
+            street: 'Plot No.G- 2 Katfal',
+            city: 'Baramati, Maharashtra',
+            state: 'Industrial Development',
+            country: 'Corporation Area, Baramati',
+            pincode: 'India - 413133',
+        },
+        shipTo: {
+            street: 'Plot No.G- 2 Katfal',
+            city: 'Baramati, Maharashtra',
+            state: 'Industrial Development',
+            country: 'Corporation Area, Baramati',
+            pincode: 'India - 413133',
+        },
+    });
+
     useEffect(() => {
         fetchEWayBills();
-    }, []);
+        fetchCustomers();
+        fetchCreditNotes();
+    }, [periodFilter, transactionTypeFilter, statusFilter]);
 
     const fetchEWayBills = async () => {
         try {
-            const response = await fetch('/api/bills');
+            const params = new URLSearchParams();
+            if (periodFilter !== 'all') params.append('period', periodFilter);
+            if (transactionTypeFilter !== 'all') params.append('transactionType', transactionTypeFilter);
+            if (statusFilter !== 'all') params.append('status', statusFilter);
+            
+            const response = await fetch(`/api/eway-bills?${params.toString()}`);
             if (response.ok) {
                 const data = await response.json();
-                const bills = data.data || [];
-                const mappedBills: EWayBillListItem[] = bills.map((bill: any, index: number) => ({
-                    id: bill.id || `ewb-${index + 1}`,
-                    ewayBillNumber: `EWB-${String(index + 1).padStart(6, '0')}`,
-                    documentType: 'Invoices',
-                    documentNumber: bill.billNumber || `INV-${index + 1}`,
-                    customerName: bill.vendorName || 'Unknown Customer',
-                    customerId: bill.vendorId || `cust-${index + 1}`,
-                    date: bill.billDate || new Date().toISOString(),
-                    amount: bill.total || 0,
-                    status: bill.status || 'DRAFT',
-                    transactionType: 'Regular',
-                }));
-                setEwayBills(mappedBills);
+                setEwayBills(data.data || []);
             }
         } catch (error) {
             console.error('Failed to fetch e-way bills:', error);
@@ -236,65 +300,67 @@ export default function EWayBills() {
         }
     };
 
-    const fetchBillDetail = async (id: string) => {
+    const fetchCustomers = async () => {
         try {
-            const response = await fetch(`/api/bills/${id}`);
+            const response = await fetch('/api/customers');
             if (response.ok) {
                 const data = await response.json();
-                const bill = data.data;
-                const detail: EWayBillDetail = {
-                    id: bill.id,
-                    ewayBillNumber: `EWB-${String(bill.id).padStart(6, '0')}`,
-                    documentType: 'Invoices',
-                    transactionSubType: 'Supply',
-                    customerName: bill.vendorName || 'Unknown Customer',
-                    customerId: bill.vendorId,
-                    documentNumber: bill.billNumber,
-                    date: bill.billDate,
-                    transactionType: 'Regular',
-                    dispatchFrom: {
-                        street: 'Hinjewadi - Wakad road',
-                        city: 'Hinjewadi',
-                        state: 'Pune',
-                        country: 'Maharashtra',
-                        pincode: 'India - 411057',
-                    },
-                    billFrom: {
-                        street: 'Hinjewadi - Wakad road',
-                        city: 'Hinjewadi',
-                        state: 'Pune',
-                        country: 'Maharashtra',
-                        pincode: 'India - 411057',
-                    },
-                    billTo: bill.vendorAddress || {
-                        street: 'flat No. 605, B wing, Ganesh',
-                        city: 'Galaxy, Dattanagar',
-                        state: 'Varodi Daymukh',
-                        country: 'Maharashtra',
-                        pincode: 'India - 411046',
-                    },
-                    shipTo: bill.vendorAddress || {
-                        street: 'flat No. 605, B wing, Ganesh',
-                        city: 'Galaxy, Dattanagar',
-                        state: 'Varodi Daymukh',
-                        country: 'Maharashtra',
-                        pincode: 'India - 411046',
-                    },
-                    placeOfDelivery: '[MH] - Maharashtra',
-                    transporter: '',
-                    distance: 0,
-                    modeOfTransportation: 'road',
-                    vehicleType: 'regular',
-                    vehicleNo: '',
-                    transporterDocNo: '',
-                    transporterDocDate: '',
-                    items: bill.items || [],
-                    total: bill.total || 0,
-                    status: bill.status || 'DRAFT',
-                    createdAt: bill.createdAt || new Date().toISOString(),
-                };
-                setSelectedBill(detail);
+                setCustomers(data.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch customers:', error);
+        }
+    };
+
+    const fetchCreditNotes = async () => {
+        try {
+            const response = await fetch('/api/credit-notes');
+            if (response.ok) {
+                const data = await response.json();
+                setCreditNotes(data.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch credit notes:', error);
+        }
+    };
+
+    const fetchBillDetail = async (id: string) => {
+        try {
+            const response = await fetch(`/api/eway-bills/${id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setSelectedBill(data.data);
                 setShowCreateForm(true);
+                
+                if (data.data) {
+                    setFormData({
+                        documentType: data.data.documentType || 'credit_notes',
+                        transactionSubType: data.data.transactionSubType || 'sales_return',
+                        customerId: data.data.customerId || '',
+                        customerName: data.data.customerName || '',
+                        documentNumber: data.data.documentNumber || '',
+                        documentId: data.data.documentId || '',
+                        date: data.data.date || new Date().toISOString().split('T')[0],
+                        transactionType: data.data.transactionType || 'regular',
+                        placeOfDelivery: data.data.placeOfDelivery || '',
+                        transporter: data.data.transporter || '',
+                        distance: data.data.distance || 0,
+                        modeOfTransportation: data.data.modeOfTransportation || 'road',
+                        vehicleType: data.data.vehicleType || 'regular',
+                        vehicleNo: data.data.vehicleNo || '',
+                        transporterDocNo: data.data.transporterDocNo || '',
+                        transporterDocDate: data.data.transporterDocDate || '',
+                    });
+                    
+                    if (data.data.dispatchFrom || data.data.billFrom || data.data.billTo || data.data.shipTo) {
+                        setAddressData({
+                            dispatchFrom: data.data.dispatchFrom || addressData.dispatchFrom,
+                            billFrom: data.data.billFrom || addressData.billFrom,
+                            billTo: data.data.billTo || addressData.billTo,
+                            shipTo: data.data.shipTo || addressData.shipTo,
+                        });
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to fetch bill detail:', error);
@@ -316,8 +382,10 @@ export default function EWayBills() {
         setFormData({
             documentType: 'credit_notes',
             transactionSubType: 'sales_return',
+            customerId: '',
             customerName: '',
             documentNumber: '',
+            documentId: '',
             date: new Date().toISOString().split('T')[0],
             transactionType: 'regular',
             placeOfDelivery: '',
@@ -335,14 +403,20 @@ export default function EWayBills() {
         if (!billToDelete) return;
 
         try {
-            toast({
-                title: "E-Way Bill Deleted",
-                description: "The e-way bill has been deleted successfully.",
+            const response = await fetch(`/api/eway-bills/${billToDelete}`, {
+                method: 'DELETE',
             });
-            fetchEWayBills();
-            if (selectedBill?.id === billToDelete) {
-                setSelectedBill(null);
-                setShowCreateForm(false);
+            
+            if (response.ok) {
+                toast({
+                    title: "E-Way Bill Deleted",
+                    description: "The e-way bill has been deleted successfully.",
+                });
+                fetchEWayBills();
+                if (selectedBill?.id === billToDelete) {
+                    setSelectedBill(null);
+                    setShowCreateForm(false);
+                }
             }
         } catch (error) {
             toast({
@@ -356,22 +430,83 @@ export default function EWayBills() {
         }
     };
 
-    const handleSave = () => {
-        toast({
-            title: "E-Way Bill Saved",
-            description: "The e-way bill has been saved as draft.",
-        });
-        setShowCreateForm(false);
-        setSelectedBill(null);
+    const handleSave = async () => {
+        try {
+            const payload = {
+                ...formData,
+                ...addressData,
+                status: 'NOT_GENERATED',
+            };
+            
+            const url = selectedBill ? `/api/eway-bills/${selectedBill.id}` : '/api/eway-bills';
+            const method = selectedBill ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            
+            if (response.ok) {
+                toast({
+                    title: "E-Way Bill Saved",
+                    description: "The e-way bill has been saved as draft.",
+                });
+                fetchEWayBills();
+                setShowCreateForm(false);
+                setSelectedBill(null);
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to save e-way bill.",
+                variant: "destructive"
+            });
+        }
     };
 
-    const handleSaveAndGenerate = () => {
-        toast({
-            title: "E-Way Bill Generated",
-            description: "The e-way bill has been generated successfully.",
-        });
-        setShowCreateForm(false);
-        setSelectedBill(null);
+    const handleSaveAndGenerate = async () => {
+        try {
+            const payload = {
+                ...formData,
+                ...addressData,
+                status: 'NOT_GENERATED',
+            };
+            
+            const url = selectedBill ? `/api/eway-bills/${selectedBill.id}` : '/api/eway-bills';
+            const method = selectedBill ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                const generateResponse = await fetch(`/api/eway-bills/${data.data.id}/generate`, {
+                    method: 'PATCH',
+                });
+                
+                if (generateResponse.ok) {
+                    toast({
+                        title: "E-Way Bill Generated",
+                        description: "The e-way bill has been generated successfully.",
+                    });
+                }
+                
+                fetchEWayBills();
+                setShowCreateForm(false);
+                setSelectedBill(null);
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to generate e-way bill.",
+                variant: "destructive"
+            });
+        }
     };
 
     const handleCancel = () => {
@@ -379,15 +514,41 @@ export default function EWayBills() {
         setSelectedBill(null);
     };
 
-    const filteredBills = ewayBills.filter(bill =>
-        bill.ewayBillNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        bill.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        bill.documentNumber.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleCustomerChange = (customerId: string) => {
+        const customer = customers.find(c => c.id === customerId);
+        if (customer) {
+            setFormData({
+                ...formData,
+                customerId: customer.id,
+                customerName: customer.displayName || customer.companyName,
+            });
+            
+            if (customer.billingAddress || customer.shippingAddress) {
+                setAddressData({
+                    ...addressData,
+                    billTo: customer.billingAddress || addressData.billTo,
+                    shipTo: customer.shippingAddress || customer.billingAddress || addressData.shipTo,
+                });
+            }
+        }
+    };
+
+    const handleCreditNoteChange = (creditNoteId: string) => {
+        const creditNote = creditNotes.find(cn => cn.id === creditNoteId);
+        if (creditNote) {
+            setFormData({
+                ...formData,
+                documentNumber: creditNote.creditNoteNumber,
+                documentId: creditNote.id,
+                customerId: creditNote.customerId,
+                customerName: creditNote.customerName,
+            });
+        }
+    };
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedBills(filteredBills.map(b => b.id));
+            setSelectedBills(ewayBills.map(b => b.id));
         } else {
             setSelectedBills([]);
         }
@@ -403,88 +564,152 @@ export default function EWayBills() {
 
     return (
         <div className="flex h-full" data-testid="eway-bills-page">
-            <div className={`${showCreateForm ? 'w-80' : 'flex-1'} border-r flex flex-col bg-background transition-all duration-300`}>
+            <div className={`${showCreateForm ? 'hidden md:flex md:w-80 lg:w-96' : 'flex-1'} border-r flex flex-col bg-background transition-all duration-300`}>
                 <div className="p-4 border-b space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                        <h1 className="text-xl font-semibold" data-testid="text-page-title">E-Way Bills</h1>
-                        <Button onClick={handleNewEWayBill} size="sm" data-testid="button-new-eway-bill">
-                            <Plus className="w-4 h-4 mr-1" />
-                            New
-                        </Button>
+                        <h1 className="text-xl font-semibold" data-testid="text-page-title">e-Way Bills</h1>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" className="text-blue-600" data-testid="button-portal-settings">
+                                <Settings className="w-4 h-4 mr-1" />
+                                Change e-Way Bill Portal Settings
+                            </Button>
+                            <Button onClick={handleNewEWayBill} size="sm" data-testid="button-new-eway-bill">
+                                <Plus className="w-4 h-4 mr-1" />
+                                New
+                            </Button>
+                        </div>
                     </div>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search e-way bills..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9"
-                            data-testid="input-search"
-                        />
+                    
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Transaction Period:</span>
+                            <Select value={periodFilter} onValueChange={setPeriodFilter} data-testid="select-period-filter">
+                                <SelectTrigger className="w-[140px]" data-testid="select-trigger-period">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {transactionPeriods.map((period) => (
+                                        <SelectItem key={period.value} value={period.value}>
+                                            {period.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Transaction Type:</span>
+                            <Select value={transactionTypeFilter} onValueChange={setTransactionTypeFilter} data-testid="select-type-filter">
+                                <SelectTrigger className="w-[140px]" data-testid="select-trigger-type">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {transactionTypeFilters.map((type) => (
+                                        <SelectItem key={type.value} value={type.value}>
+                                            {type.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">e-Way Bill Status:</span>
+                            <Select value={statusFilter} onValueChange={setStatusFilter} data-testid="select-status-filter">
+                                <SelectTrigger className="w-[160px]" data-testid="select-trigger-status">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ewayBillStatuses.map((status) => (
+                                        <SelectItem key={status.value} value={status.value}>
+                                            {status.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1">
-                    {loading ? (
-                        <div className="p-8 text-center text-muted-foreground" data-testid="text-loading">
-                            Loading e-way bills...
-                        </div>
-                    ) : filteredBills.length === 0 ? (
-                        <div className="p-8 text-center text-muted-foreground" data-testid="text-empty">
-                            No e-way bills found
-                        </div>
-                    ) : (
-                        <div className="divide-y">
-                            {filteredBills.map((bill) => (
-                                <div
-                                    key={bill.id}
-                                    className={`p-4 cursor-pointer hover-elevate ${
-                                        selectedBill?.id === bill.id ? 'bg-accent' : ''
-                                    }`}
-                                    onClick={() => handleSelectBill(bill)}
-                                    data-testid={`row-eway-bill-${bill.id}`}
-                                >
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="flex items-start gap-3">
-                                            <Checkbox
-                                                checked={selectedBills.includes(bill.id)}
-                                                onCheckedChange={(checked) => handleSelectOne(bill.id, checked as boolean)}
-                                                onClick={(e) => e.stopPropagation()}
-                                                data-testid={`checkbox-select-${bill.id}`}
-                                            />
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="font-medium text-sm" data-testid={`text-ewb-number-${bill.id}`}>
-                                                        {bill.ewayBillNumber}
-                                                    </span>
-                                                    <Badge variant="outline" className={`text-xs ${getStatusColor(bill.status)}`}>
-                                                        {bill.status}
-                                                    </Badge>
-                                                </div>
-                                                <p className="text-sm text-muted-foreground truncate" data-testid={`text-customer-${bill.id}`}>
-                                                    {bill.customerName}
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                                                    <span>{bill.documentType}</span>
-                                                    <span>•</span>
-                                                    <span>{bill.documentNumber}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-medium text-sm" data-testid={`text-amount-${bill.id}`}>
-                                                {formatCurrency(bill.amount)}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
+                <div className="flex-1 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full" data-testid="table-eway-bills">
+                            <thead className="bg-muted/50 sticky top-0">
+                                <tr className="border-b">
+                                    <th className="p-3 text-left w-10">
+                                        <Checkbox 
+                                            checked={selectedBills.length === ewayBills.length && ewayBills.length > 0}
+                                            onCheckedChange={handleSelectAll}
+                                            data-testid="checkbox-select-all"
+                                        />
+                                    </th>
+                                    <th className="p-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                        Date
+                                        <ChevronDown className="w-3 h-3 inline ml-1" />
+                                    </th>
+                                    <th className="p-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Transaction#</th>
+                                    <th className="p-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Customer Name</th>
+                                    <th className="p-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Customer GSTIN</th>
+                                    <th className="p-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Expiry Date</th>
+                                    <th className="p-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={7} className="p-8 text-center text-muted-foreground" data-testid="text-loading">
+                                            Loading e-way bills...
+                                        </td>
+                                    </tr>
+                                ) : ewayBills.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="p-8 text-center text-muted-foreground" data-testid="text-empty">
+                                            Yay! You do not have any pending invoices for which e-way bills have to be generated.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    ewayBills.map((bill) => (
+                                        <tr
+                                            key={bill.id}
+                                            className={`border-b cursor-pointer hover-elevate ${
+                                                selectedBill?.id === bill.id ? 'bg-accent' : ''
+                                            }`}
+                                            onClick={() => handleSelectBill(bill)}
+                                            data-testid={`row-eway-bill-${bill.id}`}
+                                        >
+                                            <td className="p-3">
+                                                <Checkbox
+                                                    checked={selectedBills.includes(bill.id)}
+                                                    onCheckedChange={(checked) => handleSelectOne(bill.id, checked as boolean)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    data-testid={`checkbox-select-${bill.id}`}
+                                                />
+                                            </td>
+                                            <td className="p-3 text-sm" data-testid={`text-date-${bill.id}`}>
                                                 {formatDate(bill.date)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </ScrollArea>
+                                            </td>
+                                            <td className="p-3 text-sm text-blue-600" data-testid={`text-transaction-${bill.id}`}>
+                                                {bill.documentNumber || bill.ewayBillNumber}
+                                            </td>
+                                            <td className="p-3 text-sm" data-testid={`text-customer-${bill.id}`}>
+                                                {bill.customerName}
+                                            </td>
+                                            <td className="p-3 text-sm" data-testid={`text-gstin-${bill.id}`}>
+                                                {bill.customerGstin || '-'}
+                                            </td>
+                                            <td className="p-3 text-sm" data-testid={`text-expiry-${bill.id}`}>
+                                                {formatDate(bill.expiryDate)}
+                                            </td>
+                                            <td className="p-3 text-sm text-right" data-testid={`text-total-${bill.id}`}>
+                                                {formatCurrency(bill.total)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             {showCreateForm && (
@@ -548,128 +773,110 @@ export default function EWayBills() {
                             <div className="space-y-2">
                                 <Label className="text-red-500">Customer Name*</Label>
                                 <Select
-                                    value={selectedBill?.customerName || formData.customerName}
-                                    onValueChange={(value) => setFormData({ ...formData, customerName: value })}
+                                    value={formData.customerId}
+                                    onValueChange={handleCustomerChange}
                                     data-testid="select-customer-name"
                                 >
                                     <SelectTrigger data-testid="select-trigger-customer-name">
                                         <SelectValue placeholder="Select customer" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="ganesh traders">ganesh traders</SelectItem>
-                                        <SelectItem value="abc corp">ABC Corp</SelectItem>
-                                        <SelectItem value="xyz ltd">XYZ Ltd</SelectItem>
+                                        {customers.map((customer) => (
+                                            <SelectItem key={customer.id} value={customer.id}>
+                                                {customer.displayName || customer.companyName}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-red-500">Credit Note#*</Label>
-                                    <Input
-                                        value={selectedBill?.documentNumber || formData.documentNumber}
-                                        onChange={(e) => setFormData({ ...formData, documentNumber: e.target.value })}
-                                        placeholder="CN-00002"
-                                        data-testid="input-document-number"
-                                    />
+                            {formData.documentType === 'credit_notes' && (
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Credit Note#*</Label>
+                                        <Select
+                                            value={formData.documentId}
+                                            onValueChange={handleCreditNoteChange}
+                                            data-testid="select-credit-note"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-credit-note">
+                                                <SelectValue placeholder="Select credit note" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {creditNotes.map((cn) => (
+                                                    <SelectItem key={cn.id} value={cn.id}>
+                                                        {cn.creditNoteNumber}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Date</Label>
+                                        <Input
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                            data-testid="input-date"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Transaction Type*</Label>
+                                        <Select
+                                            value={formData.transactionType}
+                                            onValueChange={(value) => setFormData({ ...formData, transactionType: value })}
+                                            data-testid="select-transaction-type"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-transaction-type">
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {transactionTypes.map((type) => (
+                                                    <SelectItem key={type.value} value={type.value}>
+                                                        {type.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Date</Label>
-                                    <Input
-                                        type="date"
-                                        value={selectedBill?.date?.split('T')[0] || formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        data-testid="input-date"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-red-500">Transaction Type*</Label>
-                                    <Select
-                                        value={formData.transactionType}
-                                        onValueChange={(value) => setFormData({ ...formData, transactionType: value })}
-                                        data-testid="select-transaction-type"
-                                    >
-                                        <SelectTrigger data-testid="select-trigger-transaction-type">
-                                            <SelectValue placeholder="Select type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {transactionTypes.map((type) => (
-                                                <SelectItem key={type.value} value={type.value}>
-                                                    {type.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
+                            )}
 
                             <div className="space-y-4">
                                 <h3 className="font-medium text-sm text-muted-foreground">Address Details</h3>
                                 <div className="grid grid-cols-4 gap-4">
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                            DISPATCH FROM <Pencil className="w-3 h-3" />
+                                            DISPATCH FROM <Pencil className="w-3 h-3 cursor-pointer text-blue-500" />
                                         </Label>
                                         <div className="text-sm space-y-0.5">
-                                            {selectedBill ? formatAddress(selectedBill.dispatchFrom).map((line, i) => (
+                                            {formatAddress(addressData.dispatchFrom).map((line, i) => (
                                                 <p key={i}>{line}</p>
-                                            )) : (
-                                                <>
-                                                    <p>Hinjewadi - Wakad road</p>
-                                                    <p>Hinjewadi</p>
-                                                    <p>Pune</p>
-                                                    <p>Maharashtra</p>
-                                                    <p>India - 411057</p>
-                                                </>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-muted-foreground">BILL FROM</Label>
                                         <div className="text-sm space-y-0.5">
-                                            {selectedBill ? formatAddress(selectedBill.billFrom).map((line, i) => (
+                                            {formatAddress(addressData.billFrom).map((line, i) => (
                                                 <p key={i}>{line}</p>
-                                            )) : (
-                                                <>
-                                                    <p>Hinjewadi - Wakad road</p>
-                                                    <p>Hinjewadi</p>
-                                                    <p>Pune</p>
-                                                    <p>Maharashtra</p>
-                                                    <p>India - 411057</p>
-                                                </>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-muted-foreground">BILL TO</Label>
                                         <div className="text-sm space-y-0.5">
-                                            {selectedBill ? formatAddress(selectedBill.billTo).map((line, i) => (
+                                            {formatAddress(addressData.billTo).map((line, i) => (
                                                 <p key={i}>{line}</p>
-                                            )) : (
-                                                <>
-                                                    <p>flat No. 605, B wing, Ganesh</p>
-                                                    <p>Galaxy, Dattanagar</p>
-                                                    <p>Varodi Daymukh</p>
-                                                    <p>Maharashtra</p>
-                                                    <p>India - 411046</p>
-                                                </>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-muted-foreground">SHIP TO</Label>
                                         <div className="text-sm space-y-0.5">
-                                            {selectedBill ? formatAddress(selectedBill.shipTo).map((line, i) => (
+                                            {formatAddress(addressData.shipTo).map((line, i) => (
                                                 <p key={i}>{line}</p>
-                                            )) : (
-                                                <>
-                                                    <p>flat No. 605, B wing, Ganesh</p>
-                                                    <p>Galaxy, Dattanagar</p>
-                                                    <p>Varodi Daymukh</p>
-                                                    <p>Maharashtra</p>
-                                                    <p>India - 411046</p>
-                                                </>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
@@ -678,7 +885,7 @@ export default function EWayBills() {
                             <div className="space-y-2">
                                 <Label className="text-red-500">Place of Delivery*</Label>
                                 <Select
-                                    value={selectedBill?.placeOfDelivery || formData.placeOfDelivery}
+                                    value={formData.placeOfDelivery}
                                     onValueChange={(value) => setFormData({ ...formData, placeOfDelivery: value })}
                                     data-testid="select-place-of-delivery"
                                 >
@@ -691,6 +898,9 @@ export default function EWayBills() {
                                         <SelectItem value="[KA] - Karnataka">[KA] - Karnataka</SelectItem>
                                         <SelectItem value="[TN] - Tamil Nadu">[TN] - Tamil Nadu</SelectItem>
                                         <SelectItem value="[DL] - Delhi">[DL] - Delhi</SelectItem>
+                                        <SelectItem value="[RJ] - Rajasthan">[RJ] - Rajasthan</SelectItem>
+                                        <SelectItem value="[UP] - Uttar Pradesh">[UP] - Uttar Pradesh</SelectItem>
+                                        <SelectItem value="[WB] - West Bengal">[WB] - West Bengal</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

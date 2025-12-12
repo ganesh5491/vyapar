@@ -20,6 +20,7 @@ const BILLS_FILE = path.join(DATA_DIR, "bills.json");
 const SALESPERSONS_FILE = path.join(DATA_DIR, "salespersons.json");
 const CREDIT_NOTES_FILE = path.join(DATA_DIR, "creditNotes.json");
 const PAYMENTS_RECEIVED_FILE = path.join(DATA_DIR, "paymentsReceived.json");
+const EWAY_BILLS_FILE = path.join(DATA_DIR, "ewayBills.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -141,6 +142,25 @@ function writePaymentsReceivedData(data: any) {
 
 function generatePaymentNumber(num: number): string {
   return String(num);
+}
+
+function readEWayBillsData() {
+  ensureDataDir();
+  if (!fs.existsSync(EWAY_BILLS_FILE)) {
+    const defaultData = { ewayBills: [], nextEWayBillNumber: 1 };
+    fs.writeFileSync(EWAY_BILLS_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(EWAY_BILLS_FILE, "utf-8"));
+}
+
+function writeEWayBillsData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(EWAY_BILLS_FILE, JSON.stringify(data, null, 2));
+}
+
+function generateEWayBillNumber(num: number): string {
+  return `EWB-${String(num).padStart(6, '0')}`;
 }
 
 function numberToWords(num: number): string {
@@ -3476,6 +3496,296 @@ export async function registerRoutes(
       res.json({ success: true, data: unpaidInvoices });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch unpaid invoices" });
+    }
+  });
+
+  // E-Way Bills Routes
+  app.get("/api/eway-bills", (req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const { transactionType, status, period } = req.query;
+      
+      let filteredBills = data.ewayBills || [];
+      
+      if (transactionType && transactionType !== 'all') {
+        filteredBills = filteredBills.filter((bill: any) => bill.documentType === transactionType);
+      }
+      
+      if (status && status !== 'all') {
+        filteredBills = filteredBills.filter((bill: any) => bill.status === status);
+      }
+      
+      if (period && period !== 'all') {
+        const now = new Date();
+        let startDate = new Date();
+        
+        switch (period) {
+          case 'this_month':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            break;
+          case 'last_month':
+            startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            break;
+          case 'this_year':
+            startDate = new Date(now.getFullYear(), 0, 1);
+            break;
+        }
+        
+        filteredBills = filteredBills.filter((bill: any) => 
+          new Date(bill.date) >= startDate
+        );
+      }
+      
+      res.json({ success: true, data: filteredBills });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch e-way bills" });
+    }
+  });
+
+  app.get("/api/eway-bills/next-number", (_req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const nextNumber = generateEWayBillNumber(data.nextEWayBillNumber);
+      res.json({ success: true, data: { nextNumber } });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to get next e-way bill number" });
+    }
+  });
+
+  app.get("/api/eway-bills/:id", (req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const ewayBill = data.ewayBills.find((b: any) => b.id === req.params.id);
+      
+      if (!ewayBill) {
+        return res.status(404).json({ success: false, message: "E-Way Bill not found" });
+      }
+      
+      res.json({ success: true, data: ewayBill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch e-way bill" });
+    }
+  });
+
+  app.post("/api/eway-bills", (req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const now = new Date().toISOString();
+      const ewayBillNumber = generateEWayBillNumber(data.nextEWayBillNumber);
+      
+      // Calculate expiry date (15 days from now for most cases)
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 15);
+      
+      const newEWayBill = {
+        id: `ewb-${Date.now()}`,
+        ewayBillNumber,
+        documentType: req.body.documentType || 'invoices',
+        transactionSubType: req.body.transactionSubType || 'supply',
+        customerId: req.body.customerId,
+        customerName: req.body.customerName,
+        customerGstin: req.body.customerGstin || '',
+        documentNumber: req.body.documentNumber,
+        documentId: req.body.documentId,
+        date: req.body.date || now.split('T')[0],
+        expiryDate: expiryDate.toISOString().split('T')[0],
+        transactionType: req.body.transactionType || 'regular',
+        dispatchFrom: req.body.dispatchFrom || {},
+        billFrom: req.body.billFrom || {},
+        billTo: req.body.billTo || {},
+        shipTo: req.body.shipTo || {},
+        placeOfDelivery: req.body.placeOfDelivery || '',
+        transporter: req.body.transporter || '',
+        distance: req.body.distance || 0,
+        modeOfTransportation: req.body.modeOfTransportation || 'road',
+        vehicleType: req.body.vehicleType || 'regular',
+        vehicleNo: req.body.vehicleNo || '',
+        transporterDocNo: req.body.transporterDocNo || '',
+        transporterDocDate: req.body.transporterDocDate || '',
+        items: req.body.items || [],
+        total: req.body.total || 0,
+        status: req.body.status || 'NOT_GENERATED',
+        createdAt: now,
+        updatedAt: now
+      };
+
+      data.ewayBills.push(newEWayBill);
+      data.nextEWayBillNumber++;
+      writeEWayBillsData(data);
+
+      res.json({ success: true, data: newEWayBill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to create e-way bill" });
+    }
+  });
+
+  app.put("/api/eway-bills/:id", (req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "E-Way Bill not found" });
+      }
+
+      const updatedEWayBill = {
+        ...data.ewayBills[index],
+        ...req.body,
+        updatedAt: new Date().toISOString()
+      };
+
+      data.ewayBills[index] = updatedEWayBill;
+      writeEWayBillsData(data);
+
+      res.json({ success: true, data: updatedEWayBill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update e-way bill" });
+    }
+  });
+
+  app.patch("/api/eway-bills/:id/generate", (req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "E-Way Bill not found" });
+      }
+
+      const ewayBill = data.ewayBills[index];
+      ewayBill.status = 'GENERATED';
+      ewayBill.generatedAt = new Date().toISOString();
+      
+      // Set expiry date to 15 days from now
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 15);
+      ewayBill.expiryDate = expiryDate.toISOString().split('T')[0];
+      
+      data.ewayBills[index] = ewayBill;
+      writeEWayBillsData(data);
+
+      res.json({ success: true, data: ewayBill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to generate e-way bill" });
+    }
+  });
+
+  app.patch("/api/eway-bills/:id/cancel", (req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "E-Way Bill not found" });
+      }
+
+      const ewayBill = data.ewayBills[index];
+      ewayBill.status = 'CANCELLED';
+      ewayBill.cancelledAt = new Date().toISOString();
+      ewayBill.cancelReason = req.body.reason || '';
+      
+      data.ewayBills[index] = ewayBill;
+      writeEWayBillsData(data);
+
+      res.json({ success: true, data: ewayBill });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to cancel e-way bill" });
+    }
+  });
+
+  app.delete("/api/eway-bills/:id", (req: Request, res: Response) => {
+    try {
+      const data = readEWayBillsData();
+      const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "E-Way Bill not found" });
+      }
+
+      data.ewayBills.splice(index, 1);
+      writeEWayBillsData(data);
+
+      res.json({ success: true, message: "E-Way Bill deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete e-way bill" });
+    }
+  });
+
+  // Get pending invoices for e-way bill generation
+  app.get("/api/eway-bills/pending-invoices", (_req: Request, res: Response) => {
+    try {
+      const invoicesData = readInvoicesData();
+      const ewayBillsData = readEWayBillsData();
+      
+      // Get invoice IDs that already have e-way bills
+      const invoicesWithEWayBills = new Set(
+        ewayBillsData.ewayBills
+          .filter((b: any) => b.documentType === 'invoices')
+          .map((b: any) => b.documentId)
+      );
+      
+      // Filter invoices that don't have e-way bills yet
+      const pendingInvoices = invoicesData.invoices.filter((inv: any) => 
+        !invoicesWithEWayBills.has(inv.id) && 
+        inv.status !== 'DRAFT' &&
+        inv.status !== 'CANCELLED'
+      );
+      
+      res.json({ success: true, data: pendingInvoices });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch pending invoices" });
+    }
+  });
+
+  // Get pending credit notes for e-way bill generation
+  app.get("/api/eway-bills/pending-credit-notes", (_req: Request, res: Response) => {
+    try {
+      const creditNotesData = readCreditNotesData();
+      const ewayBillsData = readEWayBillsData();
+      
+      // Get credit note IDs that already have e-way bills
+      const creditNotesWithEWayBills = new Set(
+        ewayBillsData.ewayBills
+          .filter((b: any) => b.documentType === 'credit_notes')
+          .map((b: any) => b.documentId)
+      );
+      
+      // Filter credit notes that don't have e-way bills yet
+      const pendingCreditNotes = creditNotesData.creditNotes.filter((cn: any) => 
+        !creditNotesWithEWayBills.has(cn.id) && 
+        cn.status !== 'DRAFT' &&
+        cn.status !== 'CANCELLED'
+      );
+      
+      res.json({ success: true, data: pendingCreditNotes });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch pending credit notes" });
+    }
+  });
+
+  // Get pending delivery challans for e-way bill generation
+  app.get("/api/eway-bills/pending-delivery-challans", (_req: Request, res: Response) => {
+    try {
+      const deliveryChallansData = readDeliveryChallansData();
+      const ewayBillsData = readEWayBillsData();
+      
+      // Get delivery challan IDs that already have e-way bills
+      const challansWithEWayBills = new Set(
+        ewayBillsData.ewayBills
+          .filter((b: any) => b.documentType === 'delivery_challans')
+          .map((b: any) => b.documentId)
+      );
+      
+      // Filter delivery challans that don't have e-way bills yet
+      const pendingChallans = deliveryChallansData.deliveryChallans.filter((dc: any) => 
+        !challansWithEWayBills.has(dc.id) && 
+        dc.status !== 'DRAFT' &&
+        dc.status !== 'CANCELLED'
+      );
+      
+      res.json({ success: true, data: pendingChallans });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch pending delivery challans" });
     }
   });
 
