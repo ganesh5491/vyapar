@@ -19,3 +19,5 @@
 [x] 19. Session restart - reinstalled cross-env and verified application running (Dec 12, 2025)
 [x] 20. Session restart - reinstalled cross-env and verified application running (Dec 12, 2025 - current session)
 [x] 21. Fixed customer creation to save data to server/data/customers.json via API call (Dec 12, 2025)
+[x] 22. Implemented Payments Received section under Sales with list view, detail panel, create/edit dialog (Dec 12, 2025)
+[x] 23. Fixed Bills detail view layout - improved responsive sizing for detail panel (Dec 12, 2025)

@@ -1,0 +1,43 @@
+{
+  "paymentsReceived": [
+    {
+      "id": "pr-001",
+      "paymentNumber": "1",
+      "date": "2025-12-12",
+      "referenceNumber": "",
+      "customerId": "cust-001",
+      "customerName": "A SQUARE ARCHITECTS",
+      "customerEmail": "aabhacontraceptives@gmail.com",
+      "invoices": [],
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "amount": 21313.00,
+      "unusedAmount": 21313.00,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "",
+      "attachments": [],
+      "sendThankYou": true,
+      "status": "PAID",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "[MH] - Maharashtra",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Twenty-One Thousand Three Hundred Thirteen Only",
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 21313.00,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 21313.00
+        }
+      ],
+      "createdAt": "2025-12-12T10:00:00.000Z"
+    }
+  ],
+  "nextPaymentNumber": 2
+}

@@ -615,7 +615,7 @@ export default function Bills() {
 
   return (
     <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300">
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${selectedBill ? 'max-w-md' : ''}`}>
+      <div className={`flex flex-col overflow-hidden transition-all duration-300 ${selectedBill ? 'flex-1 min-w-[400px]' : 'flex-1'}`}>
         <div className="flex items-center justify-between p-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-slate-900">All Bills</h1>
@@ -799,7 +799,7 @@ export default function Bills() {
       </div>
 
       {selectedBill && (
-        <div className="w-[600px] flex-shrink-0">
+        <div className="w-full max-w-[600px] lg:w-[600px] flex-shrink-0 border-l border-slate-200">
           <BillDetailPanel
             bill={selectedBill}
             onClose={handleClosePanel}

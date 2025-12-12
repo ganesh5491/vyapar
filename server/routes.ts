@@ -19,6 +19,7 @@ const PURCHASE_ORDERS_FILE = path.join(DATA_DIR, "purchaseOrders.json");
 const BILLS_FILE = path.join(DATA_DIR, "bills.json");
 const SALESPERSONS_FILE = path.join(DATA_DIR, "salespersons.json");
 const CREDIT_NOTES_FILE = path.join(DATA_DIR, "creditNotes.json");
+const PAYMENTS_RECEIVED_FILE = path.join(DATA_DIR, "paymentsReceived.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -121,6 +122,66 @@ function readSalespersonsData() {
 function writeSalespersonsData(data: any) {
   ensureDataDir();
   fs.writeFileSync(SALESPERSONS_FILE, JSON.stringify(data, null, 2));
+}
+
+function readPaymentsReceivedData() {
+  ensureDataDir();
+  if (!fs.existsSync(PAYMENTS_RECEIVED_FILE)) {
+    const defaultData = { paymentsReceived: [], nextPaymentNumber: 1 };
+    fs.writeFileSync(PAYMENTS_RECEIVED_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(PAYMENTS_RECEIVED_FILE, "utf-8"));
+}
+
+function writePaymentsReceivedData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(PAYMENTS_RECEIVED_FILE, JSON.stringify(data, null, 2));
+}
+
+function generatePaymentNumber(num: number): string {
+  return String(num);
+}
+
+function numberToWords(num: number): string {
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+    'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  if (num === 0) return 'Zero';
+
+  const convertLessThanThousand = (n: number): string => {
+    if (n === 0) return '';
+    if (n < 20) return ones[n];
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+    return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' ' + convertLessThanThousand(n % 100) : '');
+  };
+
+  const intPart = Math.floor(num);
+  const rupees = intPart;
+  
+  if (rupees >= 10000000) {
+    const crores = Math.floor(rupees / 10000000);
+    const remaining = rupees % 10000000;
+    let result = convertLessThanThousand(crores) + ' Crore';
+    if (remaining > 0) result += ' ' + numberToWords(remaining).replace('Indian Rupee ', '').replace(' Only', '');
+    return 'Indian Rupee ' + result + ' Only';
+  }
+  if (rupees >= 100000) {
+    const lakhs = Math.floor(rupees / 100000);
+    const remaining = rupees % 100000;
+    let result = convertLessThanThousand(lakhs) + ' Lakh';
+    if (remaining > 0) result += ' ' + numberToWords(remaining).replace('Indian Rupee ', '').replace(' Only', '');
+    return 'Indian Rupee ' + result + ' Only';
+  }
+  if (rupees >= 1000) {
+    const thousands = Math.floor(rupees / 1000);
+    const remaining = rupees % 1000;
+    let result = convertLessThanThousand(thousands) + ' Thousand';
+    if (remaining > 0) result += ' ' + convertLessThanThousand(remaining);
+    return 'Indian Rupee ' + result + ' Only';
+  }
+  return 'Indian Rupee ' + convertLessThanThousand(rupees) + ' Only';
 }
 
 function readCreditNotesData() {
@@ -3283,6 +3344,138 @@ export async function registerRoutes(
       }
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to delete salesperson" });
+    }
+  });
+
+  // Payments Received API
+  app.get("/api/payments-received", (_req: Request, res: Response) => {
+    try {
+      const data = readPaymentsReceivedData();
+      res.json({ success: true, data: data.paymentsReceived });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch payments received" });
+    }
+  });
+
+  app.get("/api/payments-received/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsReceivedData();
+      const payment = data.paymentsReceived.find((p: any) => p.id === req.params.id);
+      
+      if (!payment) {
+        return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+      
+      res.json({ success: true, data: payment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch payment" });
+    }
+  });
+
+  app.post("/api/payments-received", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsReceivedData();
+      const now = new Date().toISOString();
+      const paymentNumber = generatePaymentNumber(data.nextPaymentNumber);
+      
+      const newPayment = {
+        id: `pr-${Date.now()}`,
+        paymentNumber,
+        ...req.body,
+        amountInWords: numberToWords(req.body.amount || 0),
+        createdAt: now,
+        status: req.body.status || 'PAID'
+      };
+
+      data.paymentsReceived.push(newPayment);
+      data.nextPaymentNumber++;
+      writePaymentsReceivedData(data);
+
+      res.json({ success: true, data: newPayment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to create payment" });
+    }
+  });
+
+  app.put("/api/payments-received/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsReceivedData();
+      const index = data.paymentsReceived.findIndex((p: any) => p.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+
+      const updatedPayment = {
+        ...data.paymentsReceived[index],
+        ...req.body,
+        amountInWords: numberToWords(req.body.amount || data.paymentsReceived[index].amount),
+        updatedAt: new Date().toISOString()
+      };
+
+      data.paymentsReceived[index] = updatedPayment;
+      writePaymentsReceivedData(data);
+
+      res.json({ success: true, data: updatedPayment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update payment" });
+    }
+  });
+
+  app.delete("/api/payments-received/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsReceivedData();
+      const index = data.paymentsReceived.findIndex((p: any) => p.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+
+      data.paymentsReceived.splice(index, 1);
+      writePaymentsReceivedData(data);
+
+      res.json({ success: true, message: "Payment deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete payment" });
+    }
+  });
+
+  app.patch("/api/payments-received/:id/refund", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsReceivedData();
+      const index = data.paymentsReceived.findIndex((p: any) => p.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+
+      const payment = data.paymentsReceived[index];
+      payment.status = 'REFUNDED';
+      payment.refundedAt = new Date().toISOString();
+      payment.refundAmount = req.body.refundAmount || payment.amount;
+      
+      data.paymentsReceived[index] = payment;
+      writePaymentsReceivedData(data);
+
+      res.json({ success: true, data: payment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to refund payment" });
+    }
+  });
+
+  // Get unpaid invoices for a customer
+  app.get("/api/customers/:customerId/unpaid-invoices", (req: Request, res: Response) => {
+    try {
+      const invoicesData = readInvoicesData();
+      const unpaidInvoices = invoicesData.invoices.filter((inv: any) => 
+        inv.customerId === req.params.customerId && 
+        inv.status !== 'PAID' && 
+        inv.balanceDue > 0
+      );
+      
+      res.json({ success: true, data: unpaidInvoices });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch unpaid invoices" });
     }
   });
 
