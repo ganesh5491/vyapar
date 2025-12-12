@@ -530,7 +530,7 @@ export default function CreditNotes() {
             </DropdownMenu>
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={() => setLocation('/credit-notes/new')} className="gap-2" data-testid="button-new-credit-note">
+            <Button onClick={() => setLocation('/credit-notes/create')} className="gap-2" data-testid="button-new-credit-note">
               <Plus className="h-4 w-4" /> New
             </Button>
             <Button variant="ghost" size="icon" data-testid="button-more-actions">

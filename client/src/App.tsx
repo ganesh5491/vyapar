@@ -73,7 +73,7 @@ function Router() {
         <Route path="/delivery-challans/new" component={DeliveryChallanCreate} />
         <Route path="/delivery-challans/:id/edit" component={DeliveryChallanEdit} />
         <Route path="/credit-notes" component={CreditNotes} />
-        <Route path="/credit-notes/new" component={CreditNoteCreate} />
+        <Route path="/credit-notes/create" component={CreditNoteCreate} />
         <Route path="/customers" component={Customers} />
         <Route path="/customers/new" component={CustomerCreate} />
         <Route path="/customers/:id/edit" component={CustomerEdit} />
