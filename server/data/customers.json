@@ -39,7 +39,7 @@
     {
       "id": "2",
       "name": "Ashtvinayak Education Society",
-      "email": "",
+      "email": "ganeshkale030303@gmail.com",
       "phone": "",
       "billingAddress": {
         "street": "",
@@ -57,7 +57,20 @@
       },
       "createdAt": "2024-01-01T00:00:00.000Z",
       "status": "active",
-      "updatedAt": "2025-12-12T04:06:27.595Z"
+      "updatedAt": "2025-12-12T06:01:29.775Z",
+      "displayName": "Ashtvinayak Education Society",
+      "companyName": "Ashtvinayak Education Society",
+      "workPhone": "",
+      "mobile": "",
+      "gstTreatment": "",
+      "placeOfSupply": "",
+      "gstin": "",
+      "pan": "",
+      "taxPreference": "taxable",
+      "currency": "INR",
+      "paymentTerms": "",
+      "customerType": "business",
+      "contactPersons": []
     },
     {
       "id": "3",

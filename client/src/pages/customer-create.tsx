@@ -165,10 +165,12 @@ export default function CustomerCreate() {
       pincode: data.shippingAddress.pincode || "",
     };
 
-    const newCustomer = addCustomer({
+    const customerPayload = {
+      name: data.displayName,
       displayName: data.displayName,
       companyName: data.companyName || data.displayName,
       email: data.email || "",
+      phone: data.workPhone || "",
       workPhone: data.workPhone || "",
       mobile: data.mobile || "",
       gstTreatment: gstTreatmentLabels[data.gstTreatment] || data.gstTreatment,
@@ -184,21 +186,49 @@ export default function CustomerCreate() {
       placeOfSupply: placeOfSupplyLabels[data.placeOfSupply] || data.placeOfSupply,
       taxPreference: data.taxPreference,
       portalStatus: data.enablePortal ? "enabled" : "disabled",
-      comments: [],
-      createdAt: new Date().toISOString(),
-    });
+      contactPersons: data.contactPersons || [],
+    };
 
-    toast({
-      title: "Customer Created",
-      description: "The customer has been successfully added.",
-    });
-    setIsSubmitting(false);
+    try {
+      const response = await fetch("/api/customers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(customerPayload),
+      });
 
-    if (returnTo === "invoice") {
-      setPendingCustomerId(newCustomer.id);
-      setLocation("/invoices/create");
-    } else {
-      setLocation("/customers");
+      if (!response.ok) {
+        throw new Error("Failed to create customer");
+      }
+
+      const result = await response.json();
+      const newCustomer = result.data;
+
+      addCustomer({
+        ...customerPayload,
+        id: newCustomer.id,
+      });
+
+      toast({
+        title: "Customer Created",
+        description: "The customer has been successfully added.",
+      });
+      setIsSubmitting(false);
+
+      if (returnTo === "invoice") {
+        setPendingCustomerId(newCustomer.id);
+        setLocation("/invoices/create");
+      } else {
+        setLocation("/customers");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create customer. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
     }
   };
 

@@ -18,3 +18,4 @@
 [x] 18. Session restart - reinstalled cross-env and verified application running (Dec 11, 2025)
 [x] 19. Session restart - reinstalled cross-env and verified application running (Dec 12, 2025)
 [x] 20. Session restart - reinstalled cross-env and verified application running (Dec 12, 2025 - current session)
+[x] 21. Fixed customer creation to save data to server/data/customers.json via API call (Dec 12, 2025)
