@@ -18,6 +18,7 @@ const REPORTS_FILE = path.join(DATA_DIR, "reports.json");
 const PURCHASE_ORDERS_FILE = path.join(DATA_DIR, "purchaseOrders.json");
 const BILLS_FILE = path.join(DATA_DIR, "bills.json");
 const SALESPERSONS_FILE = path.join(DATA_DIR, "salespersons.json");
+const CREDIT_NOTES_FILE = path.join(DATA_DIR, "creditNotes.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -120,6 +121,25 @@ function readSalespersonsData() {
 function writeSalespersonsData(data: any) {
   ensureDataDir();
   fs.writeFileSync(SALESPERSONS_FILE, JSON.stringify(data, null, 2));
+}
+
+function readCreditNotesData() {
+  ensureDataDir();
+  if (!fs.existsSync(CREDIT_NOTES_FILE)) {
+    const defaultData = { creditNotes: [], nextCreditNoteNumber: 1 };
+    fs.writeFileSync(CREDIT_NOTES_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(CREDIT_NOTES_FILE, "utf-8"));
+}
+
+function writeCreditNotesData(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(CREDIT_NOTES_FILE, JSON.stringify(data, null, 2));
+}
+
+function generateCreditNoteNumber(num: number): string {
+  return `CN-${String(num).padStart(5, '0')}`;
 }
 
 
@@ -2957,6 +2977,193 @@ export async function registerRoutes(
       res.json({ success: true, message: 'Bill deleted successfully' });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to delete bill' });
+    }
+  });
+
+  // Credit Notes API
+  app.get("/api/credit-notes", (_req: Request, res: Response) => {
+    try {
+      const data = readCreditNotesData();
+      res.json({ success: true, data: data.creditNotes });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch credit notes" });
+    }
+  });
+
+  app.get("/api/credit-notes/next-number", (_req: Request, res: Response) => {
+    try {
+      const data = readCreditNotesData();
+      const nextNumber = generateCreditNoteNumber(data.nextCreditNoteNumber || 1);
+      res.json({ success: true, data: nextNumber });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to get next credit note number" });
+    }
+  });
+
+  app.get("/api/credit-notes/:id", (req: Request, res: Response) => {
+    try {
+      const data = readCreditNotesData();
+      const creditNote = data.creditNotes.find((cn: any) => cn.id === req.params.id);
+      if (!creditNote) {
+        return res.status(404).json({ success: false, message: "Credit note not found" });
+      }
+      res.json({ success: true, data: creditNote });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch credit note" });
+    }
+  });
+
+  app.post("/api/credit-notes", (req: Request, res: Response) => {
+    try {
+      const data = readCreditNotesData();
+      const now = new Date().toISOString();
+      const creditNoteNumber = generateCreditNoteNumber(data.nextCreditNoteNumber || 1);
+
+      const newCreditNote = {
+        id: String(Date.now()),
+        creditNoteNumber,
+        referenceNumber: req.body.referenceNumber || "",
+        date: req.body.date || new Date().toISOString().split('T')[0],
+        customerId: req.body.customerId || "",
+        customerName: req.body.customerName || "",
+        invoiceId: req.body.invoiceId || "",
+        invoiceNumber: req.body.invoiceNumber || "",
+        reason: req.body.reason || "",
+        salesperson: req.body.salesperson || "",
+        subject: req.body.subject || "",
+        billingAddress: req.body.billingAddress || { street: "", city: "", state: "", country: "India", pincode: "" },
+        gstin: req.body.gstin || "",
+        placeOfSupply: req.body.placeOfSupply || "",
+        items: req.body.items || [],
+        subTotal: req.body.subTotal || 0,
+        shippingCharges: req.body.shippingCharges || 0,
+        tdsType: req.body.tdsType || "",
+        tdsAmount: req.body.tdsAmount || 0,
+        cgst: req.body.cgst || 0,
+        sgst: req.body.sgst || 0,
+        igst: req.body.igst || 0,
+        adjustment: req.body.adjustment || 0,
+        total: req.body.total || 0,
+        creditsRemaining: req.body.total || 0,
+        customerNotes: req.body.customerNotes || "",
+        termsAndConditions: req.body.termsAndConditions || "",
+        status: req.body.status || "OPEN",
+        pdfTemplate: req.body.pdfTemplate || "Standard Template",
+        createdAt: now,
+        updatedAt: now,
+        createdBy: req.body.createdBy || "Admin User",
+        activityLogs: [
+          {
+            id: "1",
+            timestamp: now,
+            action: "created",
+            description: `Credit Note created for ₹${(req.body.total || 0).toLocaleString('en-IN')}`,
+            user: req.body.createdBy || "Admin User"
+          }
+        ]
+      };
+
+      data.creditNotes.unshift(newCreditNote);
+      data.nextCreditNoteNumber = (data.nextCreditNoteNumber || 1) + 1;
+      writeCreditNotesData(data);
+
+      res.json({ success: true, data: newCreditNote });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to create credit note" });
+    }
+  });
+
+  app.put("/api/credit-notes/:id", (req: Request, res: Response) => {
+    try {
+      const data = readCreditNotesData();
+      const index = data.creditNotes.findIndex((cn: any) => cn.id === req.params.id);
+
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Credit note not found" });
+      }
+
+      const now = new Date().toISOString();
+      const existingCreditNote = data.creditNotes[index];
+
+      const updatedCreditNote = {
+        ...existingCreditNote,
+        ...req.body,
+        id: existingCreditNote.id,
+        creditNoteNumber: existingCreditNote.creditNoteNumber,
+        createdAt: existingCreditNote.createdAt,
+        updatedAt: now
+      };
+
+      updatedCreditNote.activityLogs = existingCreditNote.activityLogs || [];
+      updatedCreditNote.activityLogs.push({
+        id: String(updatedCreditNote.activityLogs.length + 1),
+        timestamp: now,
+        action: "updated",
+        description: "Credit Note has been updated",
+        user: req.body.updatedBy || "Admin User"
+      });
+
+      data.creditNotes[index] = updatedCreditNote;
+      writeCreditNotesData(data);
+
+      res.json({ success: true, data: updatedCreditNote });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update credit note" });
+    }
+  });
+
+  app.patch("/api/credit-notes/:id/status", (req: Request, res: Response) => {
+    try {
+      const data = readCreditNotesData();
+      const index = data.creditNotes.findIndex((cn: any) => cn.id === req.params.id);
+
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Credit note not found" });
+      }
+
+      const now = new Date().toISOString();
+      const creditNote = data.creditNotes[index];
+      const newStatus = req.body.status;
+
+      let actionDescription = `Status changed to ${newStatus}`;
+      if (newStatus === 'CLOSED') actionDescription = 'Credit Note has been closed';
+      if (newStatus === 'VOID') actionDescription = 'Credit Note has been voided';
+
+      creditNote.status = newStatus;
+      creditNote.updatedAt = now;
+      creditNote.activityLogs = creditNote.activityLogs || [];
+      creditNote.activityLogs.push({
+        id: String(creditNote.activityLogs.length + 1),
+        timestamp: now,
+        action: newStatus.toLowerCase(),
+        description: actionDescription,
+        user: req.body.updatedBy || "Admin User"
+      });
+
+      data.creditNotes[index] = creditNote;
+      writeCreditNotesData(data);
+
+      res.json({ success: true, data: creditNote });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update credit note status" });
+    }
+  });
+
+  app.delete("/api/credit-notes/:id", (req: Request, res: Response) => {
+    try {
+      const data = readCreditNotesData();
+      const index = data.creditNotes.findIndex((cn: any) => cn.id === req.params.id);
+
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Credit note not found" });
+      }
+
+      data.creditNotes.splice(index, 1);
+      writeCreditNotesData(data);
+
+      res.json({ success: true, message: "Credit note deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete credit note" });
     }
   });
 

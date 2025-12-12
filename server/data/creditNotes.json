@@ -1,0 +1,60 @@
+{
+  "creditNotes": [
+    {
+      "id": "1",
+      "creditNoteNumber": "CN-00001",
+      "referenceNumber": "1234",
+      "date": "2025-12-12",
+      "customerId": "4",
+      "customerName": "AABHA CONTRACEPTIVES PRIVATE LIMITED",
+      "invoiceId": "",
+      "invoiceNumber": "",
+      "reason": "",
+      "salesperson": "Sujay",
+      "subject": "",
+      "billingAddress": {
+        "street": "Plot No 2, Kaftol Bassord, Maharashtra Industrial Development Corporation Area, Bassord",
+        "city": "",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411134"
+      },
+      "gstin": "27A6GA4009Q1Z6",
+      "placeOfSupply": "Maharashtra (27)",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Antivirus",
+          "description": "RTC005T",
+          "account": "Sales",
+          "quantity": 1,
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "CGST 9%",
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "tdsType": "TDS",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "creditsRemaining": 0,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "CLOSED",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T00:00:00.000Z",
+      "updatedAt": "2025-12-12T00:00:00.000Z",
+      "createdBy": "Admin User"
+    }
+  ],
+  "nextCreditNoteNumber": 2
+}
