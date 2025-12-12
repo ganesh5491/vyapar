@@ -11,15 +11,15 @@
       "invoices": [],
       "mode": "Cash",
       "depositTo": "Petty Cash",
-      "amount": 21313.00,
-      "unusedAmount": 21313.00,
+      "amount": 21313,
+      "unusedAmount": 21313,
       "bankCharges": 0,
       "tax": "",
       "taxAmount": 0,
       "notes": "",
       "attachments": [],
       "sendThankYou": true,
-      "status": "PAID",
+      "status": "REFUNDED",
       "paymentType": "invoice_payment",
       "placeOfSupply": "[MH] - Maharashtra",
       "descriptionOfSupply": "",
@@ -27,17 +27,95 @@
       "journalEntries": [
         {
           "account": "Petty Cash",
-          "debit": 21313.00,
+          "debit": 21313,
           "credit": 0
         },
         {
           "account": "Unearned Revenue",
           "debit": 0,
-          "credit": 21313.00
+          "credit": 21313
         }
       ],
-      "createdAt": "2025-12-12T10:00:00.000Z"
+      "createdAt": "2025-12-12T10:00:00.000Z",
+      "refundedAt": "2025-12-12T09:17:29.714Z",
+      "refundAmount": 21313
+    },
+    {
+      "id": "pr-1765531135940",
+      "paymentNumber": "1",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "customerEmail": "",
+      "amount": 14175,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-18",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 14175,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 14175,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 14175
+        }
+      ],
+      "amountInWords": "Indian Rupee Fourteen Thousand One Hundred Seventy Five Only",
+      "createdAt": "2025-12-12T09:18:55.940Z"
+    },
+    {
+      "id": "pr-1765531135962",
+      "paymentNumber": "",
+      "customerId": "",
+      "customerName": "",
+      "customerEmail": "",
+      "amount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-12",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 0,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 0,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 0
+        }
+      ],
+      "amountInWords": "Zero",
+      "createdAt": "2025-12-12T09:18:55.962Z"
     }
   ],
-  "nextPaymentNumber": 2
+  "nextPaymentNumber": 4
 }
