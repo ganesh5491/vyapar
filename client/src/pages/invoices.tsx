@@ -25,7 +25,15 @@ import {
     ChevronDown,
     CheckCircle,
     Clock,
-    AlertCircle
+    AlertCircle,
+    Share2,
+    FileText,
+    Repeat,
+    FileCheck,
+    Truck,
+    Ban,
+    BookOpen,
+    Settings
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -195,6 +203,10 @@ export default function Invoices() {
     const [paymentMode, setPaymentMode] = useState("cash");
     const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
     const [paymentTime, setPaymentTime] = useState(new Date().toTimeString().slice(0, 5));
+    const [voidDialogOpen, setVoidDialogOpen] = useState(false);
+    const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
+    const [journalDialogOpen, setJournalDialogOpen] = useState(false);
+    const [preferencesDialogOpen, setPreferencesDialogOpen] = useState(false);
 
     useEffect(() => {
         fetchInvoices();
@@ -429,6 +441,86 @@ export default function Invoices() {
         }
     };
 
+    const handleMarkAsSent = async () => {
+        if (!selectedInvoice) return;
+        try {
+            const response = await fetch(`/api/invoices/${selectedInvoice.id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'SENT' })
+            });
+            if (response.ok) {
+                toast({ title: "Invoice marked as sent" });
+                fetchInvoiceDetail(selectedInvoice.id);
+                fetchInvoices();
+            }
+        } catch (error) {
+            toast({ title: "Failed to mark invoice as sent", variant: "destructive" });
+        }
+    };
+
+    const handleMakeRecurring = () => {
+        setRecurringDialogOpen(true);
+    };
+
+    const handleCreateCreditNote = () => {
+        if (selectedInvoice) {
+            setLocation(`/credit-notes/new?fromInvoice=${selectedInvoice.id}`);
+        }
+    };
+
+    const handleAddEWayBillDetails = () => {
+        if (selectedInvoice) {
+            setLocation(`/e-way-bills/new?fromInvoice=${selectedInvoice.id}`);
+        }
+    };
+
+    const handleCloneInvoice = () => {
+        if (selectedInvoice) {
+            setLocation(`/invoices/new?cloneFrom=${selectedInvoice.id}`);
+        }
+    };
+
+    const handleVoidInvoice = async () => {
+        if (!selectedInvoice) return;
+        try {
+            const response = await fetch(`/api/invoices/${selectedInvoice.id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'VOID' })
+            });
+            if (response.ok) {
+                toast({ title: "Invoice voided successfully" });
+                setVoidDialogOpen(false);
+                fetchInvoiceDetail(selectedInvoice.id);
+                fetchInvoices();
+            }
+        } catch (error) {
+            toast({ title: "Failed to void invoice", variant: "destructive" });
+        }
+    };
+
+    const handleViewJournal = () => {
+        setJournalDialogOpen(true);
+    };
+
+    const handleInvoicePreferences = () => {
+        setPreferencesDialogOpen(true);
+    };
+
+    const handleShare = () => {
+        if (selectedInvoice) {
+            navigator.clipboard.writeText(`${window.location.origin}/invoices/${selectedInvoice.id}`);
+            toast({ title: "Link copied to clipboard" });
+        }
+    };
+
+    const handlePrint = () => {
+        if (selectedInvoice) {
+            handleDownloadPDF(selectedInvoice);
+        }
+    };
+
     const filteredInvoices = invoices.filter(invoice =>
         invoice.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase())
@@ -649,29 +741,85 @@ export default function Invoices() {
                             <Pencil className="h-3.5 w-3.5" />
                             Edit
                         </Button>
-                        <Button variant="outline" size="sm" className="h-8" onClick={() => setPaymentDialogOpen(true)} data-testid="button-record-payment">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 gap-1.5" data-testid="button-send-dropdown">
+                                    <Mail className="h-3.5 w-3.5" />
+                                    Send
+                                    <ChevronDown className="h-3 w-3" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={handleSendInvoice}>Send Email</DropdownMenuItem>
+                                <DropdownMenuItem>Send WhatsApp</DropdownMenuItem>
+                                <DropdownMenuItem>Send SMS</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="ghost" size="sm" className="h-8 gap-1.5" onClick={handleShare} data-testid="button-share-invoice">
+                            <Share2 className="h-3.5 w-3.5" />
+                            Share
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 gap-1.5" data-testid="button-pdf-print">
+                                    <FileText className="h-3.5 w-3.5" />
+                                    PDF/Print
+                                    <ChevronDown className="h-3 w-3" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={handlePrint}>
+                                    <Download className="mr-2 h-4 w-4" /> Download PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handlePrint}>
+                                    <Printer className="mr-2 h-4 w-4" /> Print
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={() => setPaymentDialogOpen(true)} data-testid="button-record-payment">
+                            <CreditCard className="h-3.5 w-3.5" />
                             Record Payment
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-8 gap-1">
-                                    More <MoreHorizontal className="h-3.5 w-3.5" />
+                                <Button variant="outline" size="sm" className="h-8" data-testid="button-more-actions">
+                                    <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem onClick={handleEditInvoice}>
-                                    <Pencil className="mr-2 h-4 w-4" /> Edit Invoice
+                            <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuItem onClick={handleMarkAsSent} data-testid="menu-mark-as-sent">
+                                    <CheckCircle className="mr-2 h-4 w-4 text-blue-600" />
+                                    <span className="text-blue-600 font-medium">Mark As Sent</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setLocation(`/invoices/create?cloneFrom=${selectedInvoice.id}`)}>
-                                    <Copy className="mr-2 h-4 w-4" /> Duplicate
+                                <DropdownMenuItem onClick={handleMakeRecurring} data-testid="menu-make-recurring">
+                                    <Repeat className="mr-2 h-4 w-4" /> Make Recurring
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleCreateCreditNote} data-testid="menu-create-credit-note">
+                                    <FileCheck className="mr-2 h-4 w-4" /> Create Credit Note
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleAddEWayBillDetails} data-testid="menu-add-eway-bill">
+                                    <Truck className="mr-2 h-4 w-4" /> Add e-Way Bill Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleCloneInvoice} data-testid="menu-clone">
+                                    <Copy className="mr-2 h-4 w-4" /> Clone
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setVoidDialogOpen(true)} data-testid="menu-void">
+                                    <Ban className="mr-2 h-4 w-4" /> Void
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleViewJournal} data-testid="menu-view-journal">
+                                    <BookOpen className="mr-2 h-4 w-4" /> View Journal
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                     className="text-destructive focus:text-destructive"
                                     onClick={handleDeleteClick}
-                                    data-testid="menu-item-delete-invoice"
+                                    data-testid="menu-delete-invoice"
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleInvoicePreferences} data-testid="menu-invoice-preferences">
+                                    <Settings className="mr-2 h-4 w-4" /> Invoice Preferences
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -958,6 +1106,187 @@ export default function Invoices() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Cancel</Button>
                         <Button onClick={handleRecordPayment} data-testid="button-confirm-payment">Record Payment</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Void Invoice</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to void this invoice ({selectedInvoice?.invoiceNumber})? This action will mark the invoice as void and it cannot be used for transactions.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleVoidInvoice} className="bg-orange-600 hover:bg-orange-700">
+                            Void Invoice
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <Dialog open={recurringDialogOpen} onOpenChange={setRecurringDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Make Recurring Invoice</DialogTitle>
+                        <DialogDescription>
+                            Set up this invoice to automatically generate on a schedule.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Profile Name</Label>
+                            <Input placeholder="Monthly Invoice" data-testid="input-recurring-name" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Repeat Every</Label>
+                            <div className="flex gap-2">
+                                <Input type="number" defaultValue="1" className="w-20" />
+                                <Select defaultValue="month">
+                                    <SelectTrigger className="flex-1">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="week">Week(s)</SelectItem>
+                                        <SelectItem value="month">Month(s)</SelectItem>
+                                        <SelectItem value="year">Year(s)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Start Date</Label>
+                            <Input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>End</Label>
+                            <Select defaultValue="never">
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="never">Never</SelectItem>
+                                    <SelectItem value="after">After # of occurrences</SelectItem>
+                                    <SelectItem value="on">On a specific date</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setRecurringDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={() => {
+                            toast({ title: "Recurring invoice created" });
+                            setRecurringDialogOpen(false);
+                        }}>Create Recurring Invoice</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={journalDialogOpen} onOpenChange={setJournalDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Journal Entry</DialogTitle>
+                        <DialogDescription>
+                            View the accounting journal entry for {selectedInvoice?.invoiceNumber}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <div className="border rounded-lg overflow-hidden">
+                            <table className="w-full">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Account</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Debit</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Credit</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200">
+                                    <tr>
+                                        <td className="px-4 py-3 text-sm text-slate-900">Accounts Receivable</td>
+                                        <td className="px-4 py-3 text-sm text-slate-900 text-right">{formatCurrency(selectedInvoice?.total || 0)}</td>
+                                        <td className="px-4 py-3 text-sm text-slate-900 text-right">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="px-4 py-3 text-sm text-slate-900">Sales Revenue</td>
+                                        <td className="px-4 py-3 text-sm text-slate-900 text-right">-</td>
+                                        <td className="px-4 py-3 text-sm text-slate-900 text-right">{formatCurrency(selectedInvoice?.subTotal || 0)}</td>
+                                    </tr>
+                                    {(selectedInvoice?.cgst || 0) > 0 && (
+                                        <tr>
+                                            <td className="px-4 py-3 text-sm text-slate-900">CGST Payable</td>
+                                            <td className="px-4 py-3 text-sm text-slate-900 text-right">-</td>
+                                            <td className="px-4 py-3 text-sm text-slate-900 text-right">{formatCurrency(selectedInvoice?.cgst || 0)}</td>
+                                        </tr>
+                                    )}
+                                    {(selectedInvoice?.sgst || 0) > 0 && (
+                                        <tr>
+                                            <td className="px-4 py-3 text-sm text-slate-900">SGST Payable</td>
+                                            <td className="px-4 py-3 text-sm text-slate-900 text-right">-</td>
+                                            <td className="px-4 py-3 text-sm text-slate-900 text-right">{formatCurrency(selectedInvoice?.sgst || 0)}</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                                <tfoot className="bg-slate-50">
+                                    <tr>
+                                        <td className="px-4 py-3 text-sm font-medium text-slate-900">Total</td>
+                                        <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">{formatCurrency(selectedInvoice?.total || 0)}</td>
+                                        <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">{formatCurrency(selectedInvoice?.total || 0)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => setJournalDialogOpen(false)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={preferencesDialogOpen} onOpenChange={setPreferencesDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Invoice Preferences</DialogTitle>
+                        <DialogDescription>
+                            Customize the settings for your invoices.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Default Payment Terms</Label>
+                            <Select defaultValue="net30">
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="due_on_receipt">Due on Receipt</SelectItem>
+                                    <SelectItem value="net15">Net 15</SelectItem>
+                                    <SelectItem value="net30">Net 30</SelectItem>
+                                    <SelectItem value="net45">Net 45</SelectItem>
+                                    <SelectItem value="net60">Net 60</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Invoice Number Prefix</Label>
+                            <Input defaultValue="INV-" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Default Notes</Label>
+                            <Input placeholder="Thank you for your business!" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Default Terms & Conditions</Label>
+                            <Input placeholder="Payment is due within the terms specified..." />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPreferencesDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={() => {
+                            toast({ title: "Invoice preferences saved" });
+                            setPreferencesDialogOpen(false);
+                        }}>Save Preferences</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

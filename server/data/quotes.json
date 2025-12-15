@@ -1,6 +1,89 @@
 {
   "quotes": [
     {
+      "id": "1765795311503",
+      "quoteNumber": "QT-000016",
+      "referenceNumber": "43242",
+      "date": "2025-12-15",
+      "expiryDate": "2025-12-03",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 555,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 555
+        },
+        {
+          "id": "1765795301523",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 555,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 555
+        }
+      ],
+      "subTotal": 1110,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1110,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "DRAFT",
+      "emailRecipients": [],
+      "createdAt": "2025-12-15T10:41:51.503Z",
+      "updatedAt": "2025-12-15T10:41:51.503Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T10:41:51.503Z",
+          "action": "created",
+          "description": "Quote created for ₹1,110",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765789781056",
       "quoteNumber": "QT-000015",
       "referenceNumber": "1234",
@@ -1085,5 +1168,5 @@
       "convertedTo": "invoice"
     }
   ],
-  "nextQuoteNumber": 16
+  "nextQuoteNumber": 17
 }
