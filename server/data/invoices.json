@@ -1,6 +1,176 @@
 {
   "invoices": [
     {
+      "id": "1765783987984",
+      "invoiceNumber": "INV-00019",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "billingAddress": {
+        "street": "Pune\nPune\nMaharashtra\nIndia\n411057",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 7,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 1512,
+          "taxName": "GST18",
+          "amount": 9912
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 5,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        }
+      ],
+      "subTotal": 9600,
+      "shippingCharges": 0,
+      "cgst": 864,
+      "sgst": 864,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 11328,
+      "amountPaid": 0,
+      "balanceDue": 11328,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T07:33:07.984Z",
+      "updatedAt": "2025-12-15T07:33:07.984Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T07:33:07.984Z",
+          "action": "created",
+          "description": "Invoice created for ₹11,328",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765783987939",
+      "invoiceNumber": "INV-00018",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "billingAddress": {
+        "street": "Pune\nPune\nMaharashtra\nIndia\n411057",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 7,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 1512,
+          "taxName": "GST18",
+          "amount": 9912
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 5,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        }
+      ],
+      "subTotal": 9600,
+      "shippingCharges": 0,
+      "cgst": 864,
+      "sgst": 864,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 11328,
+      "amountPaid": 0,
+      "balanceDue": 11328,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T07:33:07.939Z",
+      "updatedAt": "2025-12-15T07:33:07.939Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T07:33:07.939Z",
+          "action": "created",
+          "description": "Invoice created for ₹11,328",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765780000748",
       "invoiceNumber": "INV-00017",
       "referenceNumber": "",
@@ -1619,5 +1789,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 18
+  "nextInvoiceNumber": 20
 }

@@ -478,7 +478,24 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
         </DropdownMenu>
       </div>
 
-      {quote.status !== 'CONVERTED' && (
+      {quote.status !== 'CONVERTED' && quote.status !== 'SENT' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 px-6 py-3 flex items-center justify-between border-b border-blue-100 dark:border-blue-800">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-blue-700 dark:text-blue-400 font-medium">WHAT'S NEXT?</span>
+            <span className="text-slate-600 dark:text-slate-400">Send this quote to your customer.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" className="h-7 bg-blue-600 hover:bg-blue-700" onClick={handleSendQuote} data-testid="button-send-quote-action">
+              <Send className="h-3 w-3 mr-1" />
+              Send Quote
+            </Button>
+            <Button variant="outline" size="sm" className="h-7">
+              Create Project
+            </Button>
+          </div>
+        </div>
+      )}
+      {quote.status === 'SENT' && (
         <div className="bg-blue-50 dark:bg-blue-900/20 px-6 py-3 flex items-center justify-between border-b border-blue-100 dark:border-blue-800">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-blue-700 dark:text-blue-400 font-medium">WHAT'S NEXT?</span>

@@ -65,6 +65,14 @@ const getTaxRate = (taxValue: string): number => {
   return rates[taxValue] || 0;
 };
 
+interface AttachedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  data: string;
+}
+
 export default function QuoteCreatePage() {
   const [location, setLocation] = useLocation();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -73,6 +81,7 @@ export default function QuoteCreatePage() {
   const [nextQuoteNumber, setNextQuoteNumber] = useState("QT-000005");
   const [showManageSalespersons, setShowManageSalespersons] = useState(false);
   const [salespersons, setSalespersons] = useState<{ id: string; name: string }[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
 
   const [formData, setFormData] = useState({
     customerId: "",
@@ -346,7 +355,8 @@ export default function QuoteCreatePage() {
         customerNotes: formData.customerNotes,
         termsAndConditions: formData.termsAndConditions,
         status,
-        createdBy: "Admin User"
+        createdBy: "Admin User",
+        attachments: attachedFiles.map(f => ({ id: f.id, name: f.name, size: f.size, type: f.type }))
       };
 
       const response = await fetch('/api/quotes', {
@@ -369,6 +379,51 @@ export default function QuoteCreatePage() {
 
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const maxFiles = 5;
+    const maxSize = 10 * 1024 * 1024;
+
+    if (attachedFiles.length + files.length > maxFiles) {
+      alert(`You can only upload a maximum of ${maxFiles} files`);
+      return;
+    }
+
+    Array.from(files).forEach(file => {
+      if (file.size > maxSize) {
+        alert(`File ${file.name} exceeds 10MB limit`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const newFile: AttachedFile = {
+          id: String(Date.now() + Math.random()),
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data: reader.result as string
+        };
+        setAttachedFiles(prev => [...prev, newFile]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    event.target.value = '';
+  };
+
+  const removeFile = (fileId: string) => {
+    setAttachedFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   return (
@@ -712,12 +767,43 @@ export default function QuoteCreatePage() {
             <div className="space-y-2">
               <Label>Attach File(s) to Quote</Label>
               <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center">
-                <Button variant="outline" className="gap-2">
-                  <Upload className="h-4 w-4" />
-                  Upload File
-                </Button>
+                <input
+                  type="file"
+                  id="file-upload"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                  data-testid="input-file-upload"
+                />
+                <label htmlFor="file-upload">
+                  <Button variant="outline" className="gap-2" type="button" onClick={() => document.getElementById('file-upload')?.click()}>
+                    <Upload className="h-4 w-4" />
+                    Upload File
+                  </Button>
+                </label>
                 <p className="text-xs text-slate-500 mt-2">You can upload a maximum of 5 files, 10MB each</p>
               </div>
+              {attachedFiles.length > 0 && (
+                <div className="space-y-2 mt-3">
+                  {attachedFiles.map(file => (
+                    <div key={file.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2" data-testid={`file-item-${file.id}`}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                          <Upload className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">{file.name}</p>
+                          <p className="text-xs text-slate-500">{formatFileSize(file.size)}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile(file.id)} data-testid={`button-remove-file-${file.id}`}>
+                        <X className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
