@@ -1,6 +1,75 @@
 {
   "quotes": [
     {
+      "id": "1765789781056",
+      "quoteNumber": "QT-000015",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "expiryDate": "",
+      "customerId": "",
+      "customerName": "",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 555,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 555
+        }
+      ],
+      "subTotal": 555,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 555,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "SENT",
+      "emailRecipients": [],
+      "createdAt": "2025-12-15T09:09:41.056Z",
+      "updatedAt": "2025-12-15T09:09:41.056Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T09:09:41.056Z",
+          "action": "created",
+          "description": "Quote created for ₹555",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765784456361",
       "quoteNumber": "QT-000014",
       "referenceNumber": "2355",
@@ -1007,5 +1076,5 @@
       "convertedTo": "invoice"
     }
   ],
-  "nextQuoteNumber": 15
+  "nextQuoteNumber": 16
 }
