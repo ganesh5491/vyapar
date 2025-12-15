@@ -20,6 +20,7 @@ interface QuoteListItem {
   referenceNumber: string;
   customerName: string;
   status: string;
+  convertedTo?: string;
   total: number;
 }
 
@@ -81,6 +82,18 @@ const getStatusColor = (status: string) => {
     default:
       return 'text-slate-500';
   }
+};
+
+const getStatusDisplayText = (status: string, convertedTo?: string) => {
+  if (status.toUpperCase() === 'CONVERTED') {
+    if (convertedTo === 'invoice') {
+      return 'Converted to Invoice';
+    } else if (convertedTo === 'sales-order') {
+      return 'Converted to Sales Order';
+    }
+    return 'CONVERTED';
+  }
+  return status;
 };
 
 const formatDate = (dateString: string) => {
@@ -239,7 +252,7 @@ export default function QuotesPage() {
                   </div>
                   <div className="ml-6 mt-1">
                     <span className={`text-sm font-medium ${getStatusColor(quote.status)}`}>
-                      {quote.status}
+                      {getStatusDisplayText(quote.status, quote.convertedTo)}
                     </span>
                   </div>
                 </div>
@@ -290,7 +303,7 @@ export default function QuotesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`text-sm font-medium ${getStatusColor(quote.status)}`}>
-                        {quote.status}
+                        {getStatusDisplayText(quote.status, quote.convertedTo)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right font-medium">

@@ -794,6 +794,7 @@ export async function registerRoutes(
         referenceNumber: quote.referenceNumber,
         customerName: quote.customerName,
         status: quote.status,
+        convertedTo: quote.convertedTo,
         total: quote.total
       }));
       res.json({ success: true, data: quotes });
@@ -1550,6 +1551,7 @@ export async function registerRoutes(
 
       // Update quote status
       quote.status = 'CONVERTED';
+      quote.convertedTo = 'invoice';
       quote.updatedAt = now;
       quote.activityLogs.push({
         id: String(quote.activityLogs.length + 1),
@@ -1640,6 +1642,7 @@ export async function registerRoutes(
 
       // Update quote status
       quote.status = 'CONVERTED';
+      quote.convertedTo = 'sales-order';
       quote.updatedAt = now;
       quote.activityLogs.push({
         id: String(quote.activityLogs.length + 1),
