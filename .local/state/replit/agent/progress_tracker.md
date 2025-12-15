@@ -39,4 +39,8 @@
 [x] 39. Updated Invoice detail view with comprehensive action menu (Dec 15, 2025):
     - Added Edit, Send dropdown, Share, PDF/Print dropdown, Record Payment buttons
     - Added More (...) menu with: Mark As Sent, Make Recurring, Create Credit Note, Add e-Way Bill Details, Clone, Void, View Journal, Delete, Invoice Preferences
-    - All menu items are fully functional with proper dialogs and API integrations
+    - All menu items fully functional with proper dialogs and API integrations
+[x] 40. Fixed 404 navigation errors in Invoice menu actions (Dec 15, 2025):
+    - Changed /credit-notes/new to /credit-notes/create (matches existing route)
+    - Changed /e-way-bills/new to /e-way-bills (matches existing route)
+    - Verified Credit Notes page loads correctly without 404 error

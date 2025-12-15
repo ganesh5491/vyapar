@@ -1,41 +1,25 @@
-# Task Progress - December 15, 2025
+# Persisted State - December 15, 2025
 
-## Completed Tasks - File Upload Functionality
+## Task COMPLETED
+Updated Invoice detail view with dropdown menu containing all these actions - ALL WORKING:
+- Mark As Sent - PATCH to /api/invoices/{id}/status
+- Make Recurring - Opens recurring dialog
+- Create Credit Note - Navigates to /credit-notes/create (fixed from /credit-notes/new)
+- Add e-Way Bill Details - Navigates to /e-way-bills (fixed from /e-way-bills/new)
+- Clone - Navigates to /invoices/new?cloneFrom={id}
+- Void - PATCH to /api/invoices/{id}/status with status: 'VOID'
+- View Journal - Opens journal dialog showing accounting entries
+- Delete - DELETE to /api/invoices/{id}
+- Invoice Preferences - Opens preferences dialog
 
-All three file upload tasks have been completed successfully:
+## Files Modified
+- `client/src/pages/invoices.tsx` - Added all menu items, handlers, dialogs
 
-### Task 1: Quote Edit Page - COMPLETED
-- File: `client/src/modules/sales/pages/QuoteEditPage.tsx`
-- Added AttachedFile interface, attachedFiles state, fileInputRef
-- Added handleFileUpload, removeFile, formatFileSize functions  
-- Updated fetchQuoteData to load existing attachments
-- Updated handleSubmit to include attachments in save
-- Updated UI with working file upload and display existing files
+## Verified Working
+- Credit Notes page loads without 404
+- All navigation paths corrected
+- All dialogs implemented
 
-### Task 2: Customer Create Page - COMPLETED
-- File: `client/src/pages/customer-create.tsx`
-- Added AttachedFile interface, documents state, fileInputRef
-- Added handleFileUpload, removeFile, formatFileSize functions
-- Replaced static Documents section with working file upload UI
-- Added View button to open files in new tab
-- Added Delete button to remove files
-- All data-testid attributes added for testing
-
-### Task 3: Customer Edit Page - COMPLETED
-- File: `client/src/pages/customer-edit.tsx`
-- Added useRef import and Upload, FileText, Trash2 icons
-- Added AttachedFile interface, documents state, fileInputRef
-- Added handleFileUpload, removeFile, formatFileSize functions
-- Added new Documents tab to the TabsList
-- Added Documents TabsContent with file upload UI
-- Added View and Delete buttons for uploaded files
-- All data-testid attributes added for testing
-
-## Implementation Pattern Used
-All three pages use the same consistent pattern:
-- AttachedFile interface with id, name, size, type, data fields
-- FileReader API to read files as base64 data URLs
-- Max 10 files, max 10MB per file validation
-- View button opens file.data in new browser tab
-- Delete button filters file from state array
-- Proper data-testid attributes on all interactive elements
+## Session Info
+- cross-env package installed
+- Workflow "Start application" running on port 5000

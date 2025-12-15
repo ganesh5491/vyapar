@@ -465,13 +465,13 @@ export default function Invoices() {
 
     const handleCreateCreditNote = () => {
         if (selectedInvoice) {
-            setLocation(`/credit-notes/new?fromInvoice=${selectedInvoice.id}`);
+            setLocation(`/credit-notes/create?fromInvoice=${selectedInvoice.id}`);
         }
     };
 
     const handleAddEWayBillDetails = () => {
         if (selectedInvoice) {
-            setLocation(`/e-way-bills/new?fromInvoice=${selectedInvoice.id}`);
+            setLocation(`/e-way-bills?fromInvoice=${selectedInvoice.id}`);
         }
     };
 
