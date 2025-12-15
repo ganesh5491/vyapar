@@ -748,15 +748,28 @@ export default function CustomerCreate() {
                               <p className="text-xs text-slate-400">{formatFileSize(file.size)}</p>
                             </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeFile(file.id)}
-                            data-testid={`button-remove-file-${file.id}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-slate-400" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            {file.data && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.open(file.data, '_blank')}
+                                data-testid={`button-view-file-${file.id}`}
+                              >
+                                View
+                              </Button>
+                            )}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeFile(file.id)}
+                              data-testid={`button-remove-file-${file.id}`}
+                            >
+                              <Trash2 className="h-4 w-4 text-slate-400" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
