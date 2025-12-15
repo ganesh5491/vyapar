@@ -209,25 +209,48 @@
       "igst": 0,
       "adjustment": 0,
       "total": 11328,
-      "amountPaid": 0,
-      "balanceDue": 11328,
+      "amountPaid": 100,
+      "balanceDue": 11228,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "PENDING",
+      "status": "PARTIALLY_PAID",
       "sourceType": null,
       "sourceId": null,
       "sourceNumber": null,
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T07:33:07.984Z",
-      "updatedAt": "2025-12-15T07:33:07.984Z",
+      "updatedAt": "2025-12-15T11:56:18.802Z",
       "createdBy": "Admin User",
-      "payments": [],
+      "payments": [
+        {
+          "id": "1765799778802",
+          "date": "2025-12-15T11:56:00.000Z",
+          "amount": 100,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
       "activityLogs": [
         {
           "id": "1",
           "timestamp": "2025-12-15T07:33:07.984Z",
           "action": "created",
           "description": "Invoice created for ₹11,328",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T11:56:04.904Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T11:56:18.802Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹100 recorded",
           "user": "Admin User"
         }
       ]

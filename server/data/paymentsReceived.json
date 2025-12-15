@@ -118,7 +118,7 @@
     },
     {
       "id": "pr-1765780549238",
-      "paymentNumber": "1000",
+      "paymentNumber": "10",
       "customerId": "2",
       "customerName": "Ashtvinayak Education Society",
       "customerEmail": "ganeshkale030303@gmail.com",
@@ -135,7 +135,7 @@
       "placeOfSupply": "",
       "descriptionOfSupply": "",
       "paymentType": "invoice_payment",
-      "status": "REFUNDED",
+      "status": "PAID",
       "unusedAmount": 100,
       "invoices": [],
       "attachments": [],
@@ -154,7 +154,8 @@
       "amountInWords": "Indian Rupee One Hundred Only",
       "createdAt": "2025-12-15T06:35:49.238Z",
       "refundedAt": "2025-12-15T06:37:00.279Z",
-      "refundAmount": 100
+      "refundAmount": 100,
+      "updatedAt": "2025-12-15T11:56:43.732Z"
     },
     {
       "id": "pr-1765792552438",
@@ -301,7 +302,43 @@
       "amountInWords": "Indian Rupee Three Hundred Only",
       "journalEntries": [],
       "createdAt": "2025-12-15T11:50:35.678Z"
+    },
+    {
+      "id": "pr-1765799778808",
+      "paymentNumber": "9",
+      "date": "2025-12-15",
+      "referenceNumber": "",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1765783987984",
+          "invoiceNumber": "INV-00019",
+          "invoiceDate": "2025-12-15",
+          "invoiceAmount": 11328,
+          "amountDue": 11228,
+          "paymentAmount": 100
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 100,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00019",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "PAID",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee One Hundred Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-15T11:56:18.802Z"
     }
   ],
-  "nextPaymentNumber": 9
+  "nextPaymentNumber": 10
 }
