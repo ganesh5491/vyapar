@@ -31,3 +31,6 @@
 [x] 31. Reinstalled cross-env package and restarted workflow successfully (Dec 15, 2025)
 [x] 32. Updated Quotes status to show "Converted to Invoice" or "Converted to Sales Order" instead of just "CONVERTED" (Dec 15, 2025)
 [x] 33. Session restart - reinstalled cross-env and verified application running (Dec 15, 2025 - current session)
+[x] 34. Removed activity logs timeline from invoice detail Comments & History tab, kept only Payment History table (Dec 15, 2025)
+[x] 35. Fixed Quote file attachment functionality - users can now upload, view and remove files (Dec 15, 2025)
+[x] 36. Updated Quote What's Next section - shows "Send Quote" for DRAFT quotes, "Convert" for SENT quotes (Dec 15, 2025)
