@@ -1,6 +1,99 @@
 {
   "quotes": [
     {
+      "id": "1765784456361",
+      "quoteNumber": "QT-000014",
+      "referenceNumber": "2355",
+      "date": "2025-12-15",
+      "expiryDate": "2025-12-12",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "nilraj",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "3",
+          "name": "EMPLOYEE ACTIVITY MONITORING APP",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 2000.12,
+          "discount": 50,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 1000.06
+        }
+      ],
+      "subTotal": 1000.06,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 25.001499999999997,
+      "sgst": 25.001499999999997,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1050.0629999999999,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-15T07:40:56.361Z",
+      "updatedAt": "2025-12-15T07:43:02.174Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T07:40:56.361Z",
+          "action": "created",
+          "description": "Quote created for ₹1,050.063",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T07:41:17.308Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T07:42:38.708Z",
+          "action": "sent",
+          "description": "Quote has been sent to customer",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-15T07:43:02.174Z",
+          "action": "converted",
+          "description": "Converted to Invoice INV-00020",
+          "user": "Admin User",
+          "link": "/invoices/1765784582175"
+        }
+      ],
+      "updatedBy": "Admin User",
+      "convertedTo": "invoice"
+    },
+    {
       "id": "1765780968336",
       "quoteNumber": "QT-000013",
       "referenceNumber": "",
@@ -914,5 +1007,5 @@
       "convertedTo": "invoice"
     }
   ],
-  "nextQuoteNumber": 14
+  "nextQuoteNumber": 15
 }

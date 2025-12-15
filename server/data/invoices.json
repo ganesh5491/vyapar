@@ -1,6 +1,108 @@
 {
   "invoices": [
     {
+      "id": "1765784582175",
+      "invoiceNumber": "INV-00020",
+      "referenceNumber": "2355",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "nilraj",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "3",
+          "name": "EMPLOYEE ACTIVITY MONITORING APP",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 2000.12,
+          "discount": 50,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 1000.06
+        }
+      ],
+      "subTotal": 1000.06,
+      "shippingCharges": 0,
+      "cgst": 25.001499999999997,
+      "sgst": 25.001499999999997,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1050.0629999999999,
+      "amountPaid": 700,
+      "balanceDue": 350.0629999999999,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": "quote",
+      "sourceId": "1765784456361",
+      "sourceNumber": "QT-000014",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T07:43:02.174Z",
+      "updatedAt": "2025-12-15T07:43:24.219Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765784593725",
+          "date": "2025-12-15T07:43:00.000Z",
+          "amount": 500,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765784604219",
+          "date": "2025-12-15T07:43:00.000Z",
+          "amount": 200,
+          "paymentMode": "cheque",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T07:43:02.174Z",
+          "action": "created",
+          "description": "Invoice created from Quote QT-000014",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T07:43:13.725Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹500 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T07:43:24.219Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹200 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765783987984",
       "invoiceNumber": "INV-00019",
       "referenceNumber": "",
@@ -1789,5 +1891,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 20
+  "nextInvoiceNumber": 21
 }
