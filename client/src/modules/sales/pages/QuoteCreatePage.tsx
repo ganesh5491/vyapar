@@ -469,6 +469,7 @@ export default function QuoteCreatePage() {
                   <th className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase w-28">Rate (₹)</th>
                   <th className="px-4 py-2 text-center text-xs font-medium text-slate-500 uppercase w-28">Discount</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase w-32">Tax</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase w-24">Tax Amt</th>
                   <th className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase w-28">Amount</th>
                   <th className="px-4 py-2 w-10"></th>
                 </tr>
@@ -543,8 +544,13 @@ export default function QuoteCreatePage() {
                         </SelectContent>
                       </Select>
                     </td>
+                    <td className="px-4 py-2 text-right text-xs text-slate-500">
+                      {getTaxRate(item.tax) > 0 ? (
+                        <span>{formatCurrency(item.amount * getTaxRate(item.tax) / 100)} ({getTaxRate(item.tax)}%)</span>
+                      ) : '-'}
+                    </td>
                     <td className="px-4 py-2 text-right font-medium">
-                      {formatCurrency(item.amount)}
+                      {formatCurrency(item.amount + (item.amount * getTaxRate(item.tax) / 100))}
                     </td>
                     <td className="px-4 py-2">
                       <Button
