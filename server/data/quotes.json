@@ -3,11 +3,11 @@
     {
       "id": "1765789781056",
       "quoteNumber": "QT-000015",
-      "referenceNumber": "",
+      "referenceNumber": "1234",
       "date": "2025-12-15",
       "expiryDate": "",
-      "customerId": "",
-      "customerName": "",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
       "billingAddress": {
         "street": "",
         "city": "",
@@ -57,7 +57,7 @@
       "status": "SENT",
       "emailRecipients": [],
       "createdAt": "2025-12-15T09:09:41.056Z",
-      "updatedAt": "2025-12-15T09:09:41.056Z",
+      "updatedAt": "2025-12-15T09:53:34.002Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -66,8 +66,17 @@
           "action": "created",
           "description": "Quote created for ₹555",
           "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T09:53:34.002Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
         }
-      ]
+      ],
+      "updatedBy": "Admin User",
+      "attachments": []
     },
     {
       "id": "1765784456361",

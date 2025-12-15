@@ -155,7 +155,45 @@
       "createdAt": "2025-12-15T06:35:49.238Z",
       "refundedAt": "2025-12-15T06:37:00.279Z",
       "refundAmount": 100
+    },
+    {
+      "id": "pr-1765792552438",
+      "paymentNumber": "",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED ",
+      "customerEmail": "rohan@cybaemtech.com",
+      "amount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-15",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 0,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 0,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 0
+        }
+      ],
+      "amountInWords": "Zero",
+      "createdAt": "2025-12-15T09:55:52.438Z"
     }
   ],
-  "nextPaymentNumber": 5
+  "nextPaymentNumber": 6
 }
