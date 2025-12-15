@@ -179,7 +179,7 @@ export default function QuoteEditPage() {
       if (response.ok) {
         const data = await response.json();
         const quote = data.data;
-        
+
         setFormData({
           customerId: quote.customerId || "",
           customerName: quote.customerName || "",
@@ -523,7 +523,8 @@ export default function QuoteEditPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          {/* Project Name field hidden as per requirements */}
+          {/* <div className="space-y-2">
             <Label>Project Name</Label>
             <Select value={formData.projectName} onValueChange={(v) => setFormData(prev => ({ ...prev, projectName: v }))}>
               <SelectTrigger data-testid="select-project">
@@ -533,7 +534,7 @@ export default function QuoteEditPage() {
                 <SelectItem value="default">Default Project</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
         </div>
 
         <div className="space-y-2">

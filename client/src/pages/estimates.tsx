@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { 
-  Plus, 
-  ChevronDown, 
-  MoreHorizontal, 
+import {
+  Plus,
+  ChevronDown,
+  MoreHorizontal,
   Search,
   X,
   FileText,
@@ -66,6 +66,7 @@ interface Quote {
   customerName: string;
   total: number;
   status: string;
+  convertedTo?: string; // 'invoice' | 'sales-order'
   salesperson?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -91,13 +92,17 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
-const getStatusBadge = (status: string) => {
+const getStatusBadge = (status: string, convertedTo?: string) => {
   const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
     DRAFT: { label: "Draft", variant: "secondary" },
     SENT: { label: "Sent", variant: "default" },
     ACCEPTED: { label: "Accepted", variant: "default" },
     DECLINED: { label: "Declined", variant: "destructive" },
-    CONVERTED: { label: "Converted", variant: "outline" },
+    CONVERTED: {
+      label: convertedTo === 'invoice' ? "Converted to Invoice" :
+        convertedTo === 'sales-order' ? "Converted to Sales Order" : "Converted",
+      variant: "outline"
+    },
     EXPIRED: { label: "Expired", variant: "destructive" },
   };
   const config = statusMap[status] || { label: status, variant: "secondary" as const };
@@ -110,9 +115,10 @@ interface QuoteDetailPanelProps {
   onEdit: () => void;
   onDelete: () => void;
   onConvert: (type: string) => void;
+  onClone: () => void;
 }
 
-function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert }: QuoteDetailPanelProps) {
+function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert, onClone }: QuoteDetailPanelProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
 
@@ -165,6 +171,9 @@ function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert }: Quote
               <DropdownMenuItem data-testid="menu-item-download">
                 <Download className="mr-2 h-4 w-4" /> Download PDF
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={onClone} data-testid="menu-item-clone">
+                <Copy className="mr-2 h-4 w-4" /> Clone
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem data-testid="menu-item-accept">
                 <CheckCircle className="mr-2 h-4 w-4" /> Mark as Accepted
@@ -187,15 +196,15 @@ function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert }: Quote
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center px-6 border-b border-slate-200 dark:border-slate-700">
           <TabsList className="h-auto p-0 bg-transparent">
-            <TabsTrigger 
-              value="overview" 
+            <TabsTrigger
+              value="overview"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
               data-testid="tab-overview"
             >
               Overview
             </TabsTrigger>
-            <TabsTrigger 
-              value="activity" 
+            <TabsTrigger
+              value="activity"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
               data-testid="tab-activity"
             >
@@ -213,7 +222,7 @@ function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert }: Quote
               </div>
               <div>
                 <p className="text-sm text-slate-500">Status</p>
-                <div className="mt-1">{getStatusBadge(quote.status)}</div>
+                <div className="mt-1">{getStatusBadge(quote.status, quote.convertedTo)}</div>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Quote Date</p>
@@ -375,14 +384,52 @@ export default function Estimates() {
 
   const handleConvert = async (type: string) => {
     if (!selectedQuote) return;
-    toast({ 
-      title: "Converting quote...", 
-      description: `Converting to ${type === 'sales-order' ? 'Sales Order' : 'Invoice'}` 
-    });
+
+    try {
+      const endpoint = type === 'invoice'
+        ? `/api/quotes/${selectedQuote.id}/convert-to-invoice`
+        : `/api/quotes/${selectedQuote.id}/convert-to-sales-order`;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const targetType = type === 'invoice' ? 'Invoice' : 'Sales Order';
+        const targetNumber = type === 'invoice'
+          ? result.data?.invoice?.invoiceNumber || result.data?.invoiceNumber
+          : result.data?.salesOrder?.orderNumber || result.data?.orderNumber;
+
+        toast({
+          title: "Quote Converted",
+          description: `Quote converted to ${targetType}${targetNumber ? ' ' + targetNumber : ''}`,
+        });
+
+        // Refresh quotes to show updated status
+        fetchQuotes();
+        handleClosePanel();
+      } else {
+        throw new Error('Failed to convert');
+      }
+    } catch (error) {
+      console.error('Error converting quote:', error);
+      toast({
+        title: "Conversion Failed",
+        description: `Failed to convert quote to ${type === 'invoice' ? 'Invoice' : 'Sales Order'}`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleClone = async () => {
+    if (!selectedQuote) return;
+    setLocation(`/quotes/create?cloneFrom=${selectedQuote.id}`);
   };
 
   const filteredQuotes = quotes.filter(quote => {
-    const matchesSearch = 
+    const matchesSearch =
       quote.quoteNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quote.customerName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
@@ -412,8 +459,8 @@ export default function Estimates() {
             </DropdownMenu>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => setLocation("/estimates/create")} 
+            <Button
+              onClick={() => setLocation("/estimates/create")}
               className="bg-blue-600 hover:bg-blue-700 gap-1.5 h-9"
               data-testid="button-new-quote"
             >
@@ -434,8 +481,8 @@ export default function Estimates() {
                 <FileText className="h-8 w-8 text-slate-400" />
               </div>
               <p className="mb-4">No quotes found.</p>
-              <Button 
-                onClick={() => setLocation("/estimates/create")} 
+              <Button
+                onClick={() => setLocation("/estimates/create")}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="h-4 w-4 mr-2" /> Create your first quote
@@ -446,7 +493,7 @@ export default function Estimates() {
               <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
                 <tr className="border-b border-slate-200 dark:border-slate-700">
                   <th className="w-10 px-3 py-3 text-left">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedQuotes.length === filteredQuotes.length && filteredQuotes.length > 0}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -469,16 +516,15 @@ export default function Estimates() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {filteredQuotes.map((quote) => (
-                  <tr 
-                    key={quote.id} 
-                    className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
-                      selectedQuote?.id === quote.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                    }`}
+                  <tr
+                    key={quote.id}
+                    className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${selectedQuote?.id === quote.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
                     onClick={() => handleQuoteClick(quote)}
                     data-testid={`row-quote-${quote.id}`}
                   >
                     <td className="px-3 py-3">
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedQuotes.includes(quote.id)}
                         onClick={(e) => toggleSelectQuote(quote.id, e)}
                       />
@@ -496,7 +542,7 @@ export default function Estimates() {
                       {quote.customerName}
                     </td>
                     <td className="px-3 py-3">
-                      {getStatusBadge(quote.status)}
+                      {getStatusBadge(quote.status, quote.convertedTo)}
                     </td>
                     <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
                       {formatCurrency(quote.total)}
@@ -531,6 +577,7 @@ export default function Estimates() {
             onEdit={handleEditQuote}
             onDelete={handleDeleteClick}
             onConvert={handleConvert}
+            onClone={handleClone}
           />
         </div>
       )}

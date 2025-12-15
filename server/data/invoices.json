@@ -1,6 +1,287 @@
 {
   "invoices": [
     {
+      "id": "1765777200188",
+      "invoiceNumber": "INV-00016",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 0,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 0
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "amountPaid": 0,
+      "balanceDue": 0,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": "quote",
+      "sourceId": "1765280697873",
+      "sourceNumber": "QT-000005",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T05:40:00.188Z",
+      "updatedAt": "2025-12-15T05:40:00.188Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T05:40:00.188Z",
+          "action": "created",
+          "description": "Invoice created from Quote QT-000005",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765776580239",
+      "invoiceNumber": "INV-00015",
+      "referenceNumber": "12312",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "Sujay",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "3",
+          "name": "EMPLOYEE ACTIVITY MONITORING APP",
+          "description": "",
+          "quantity": 11,
+          "unit": "",
+          "rate": 500,
+          "discount": 10,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 4950
+        }
+      ],
+      "subTotal": 4950,
+      "shippingCharges": 0,
+      "cgst": 123.75,
+      "sgst": 123.75,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 5197.5,
+      "amountPaid": 5100,
+      "balanceDue": 97.5,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "SENT",
+      "sourceType": "quote",
+      "sourceId": "1765776571748",
+      "sourceNumber": "QT-000011",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T05:29:40.239Z",
+      "updatedAt": "2025-12-15T05:33:19.362Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765776721528",
+          "date": "2025-12-24T05:34:00.000Z",
+          "amount": 5000,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765776766043",
+          "date": "2025-12-12T05:32:00.000Z",
+          "amount": 100,
+          "paymentMode": "cheque",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T05:29:40.239Z",
+          "action": "created",
+          "description": "Invoice created from Quote QT-000011",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T05:32:01.528Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹5,000 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T05:32:46.043Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹100 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-15T05:33:19.362Z",
+          "action": "sent",
+          "description": "Invoice has been sent",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765774757151",
+      "invoiceNumber": "INV-00014",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "billingAddress": {
+        "street": "Pune\nPune\nMaharashtra\nIndia\n411057",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 1440,
+      "shippingCharges": 0,
+      "cgst": 129.6,
+      "sgst": 129.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1699.2,
+      "amountPaid": 500,
+      "balanceDue": 1199.2,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T04:59:17.151Z",
+      "updatedAt": "2025-12-15T05:34:09.468Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765776849468",
+          "date": "2025-12-05T16:35:00.000Z",
+          "amount": 500,
+          "paymentMode": "bank_transfer",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T04:59:17.151Z",
+          "action": "created",
+          "description": "Invoice created for ₹1,699.2",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T05:34:09.468Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹500 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765538226327",
       "invoiceNumber": "INV-00013",
       "referenceNumber": "",
@@ -588,19 +869,28 @@
       "igst": 0,
       "adjustment": 0,
       "total": 0,
-      "amountPaid": 0,
+      "amountPaid": 500,
       "balanceDue": 0,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "SENT",
+      "status": "PAID",
       "sourceType": "quote",
       "sourceId": "1765434998603",
       "sourceNumber": "QT-000006",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-11T07:38:18.924Z",
-      "updatedAt": "2025-12-11T13:08:15.805Z",
+      "updatedAt": "2025-12-15T05:56:43.894Z",
       "createdBy": "Admin User",
-      "payments": [],
+      "payments": [
+        {
+          "id": "1765778203894",
+          "date": "2025-12-15T05:56:00.000Z",
+          "amount": 500,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
       "activityLogs": [
         {
           "id": "1",
@@ -614,6 +904,13 @@
           "timestamp": "2025-12-11T13:08:15.805Z",
           "action": "sent",
           "description": "Invoice has been sent",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T05:56:43.894Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹500 recorded",
           "user": "Admin User"
         }
       ]
@@ -1146,5 +1443,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 14
+  "nextInvoiceNumber": 17
 }

@@ -66,7 +66,7 @@ const getTaxRate = (taxValue: string): number => {
 };
 
 export default function QuoteCreatePage() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
@@ -425,7 +425,8 @@ export default function QuoteCreatePage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          {/* Project Name field hidden as per requirements */}
+          {/* <div className="space-y-2">
             <Label>Project Name</Label>
             <Select value={formData.projectName} onValueChange={(v) => setFormData(prev => ({ ...prev, projectName: v }))}>
               <SelectTrigger>
@@ -436,7 +437,7 @@ export default function QuoteCreatePage() {
               </SelectContent>
             </Select>
             <p className="text-xs text-slate-500">Select a customer to associate a project.</p>
-          </div>
+          </div> */}
         </div>
 
         <div className="space-y-2">
@@ -601,7 +602,8 @@ export default function QuoteCreatePage() {
                 className="w-32 text-right"
               />
             </div>
-            <div className="flex justify-between items-center">
+            {/* TDS and TCS fields hidden as per requirements */}
+            {/* <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Checkbox id="tds" />
                 <Label htmlFor="tds" className="text-slate-600">TDS</Label>
@@ -619,7 +621,7 @@ export default function QuoteCreatePage() {
                 </Select>
                 <span className="text-slate-500">- 0.00</span>
               </div>
-            </div>
+            </div> */}
             <div className="flex justify-between items-center">
               <span className="text-slate-600">Adjustment</span>
               <Input
@@ -678,7 +680,7 @@ export default function QuoteCreatePage() {
             onClick={() => handleSubmit('SENT')}
             disabled={loading}
           >
-            Save and Send
+            Send
           </Button>
           <Button
             variant="ghost"

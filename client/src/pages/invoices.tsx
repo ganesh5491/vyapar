@@ -193,6 +193,8 @@ export default function Invoices() {
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
     const [paymentAmount, setPaymentAmount] = useState("");
     const [paymentMode, setPaymentMode] = useState("cash");
+    const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [paymentTime, setPaymentTime] = useState(new Date().toTimeString().slice(0, 5));
 
     useEffect(() => {
         fetchInvoices();
@@ -377,18 +379,24 @@ export default function Invoices() {
     const handleRecordPayment = async () => {
         if (!selectedInvoice || !paymentAmount) return;
         try {
+            // Combine date and time into a single timestamp
+            const paymentDateTime = new Date(`${paymentDate}T${paymentTime}`);
+
             const response = await fetch(`/api/invoices/${selectedInvoice.id}/record-payment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     amount: parseFloat(paymentAmount),
-                    paymentMode: paymentMode
+                    paymentMode: paymentMode,
+                    date: paymentDateTime.toISOString()
                 })
             });
             if (response.ok) {
                 toast({ title: "Payment recorded successfully" });
                 setPaymentDialogOpen(false);
                 setPaymentAmount("");
+                setPaymentDate(new Date().toISOString().split('T')[0]);
+                setPaymentTime(new Date().toTimeString().slice(0, 5));
                 fetchInvoiceDetail(selectedInvoice.id);
                 fetchInvoices();
             }
@@ -653,7 +661,7 @@ export default function Invoices() {
                                 <DropdownMenuItem onClick={handleEditInvoice}>
                                     <Pencil className="mr-2 h-4 w-4" /> Edit Invoice
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setLocation(`/invoices/create?cloneFrom=${selectedInvoice.id}`)}>
                                     <Copy className="mr-2 h-4 w-4" /> Duplicate
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -685,13 +693,7 @@ export default function Invoices() {
                                     <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
                                     Comments & History
                                 </TabsTrigger>
-                                <TabsTrigger
-                                    value="payments"
-                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-0 py-3"
-                                >
-                                    <CreditCard className="h-3.5 w-3.5 mr-1.5" />
-                                    Payments
-                                </TabsTrigger>
+                                {/* Payments tab removed - merged into Comments & History */}
                             </TabsList>
                         </div>
 
@@ -835,52 +837,64 @@ export default function Invoices() {
                             </TabsContent>
 
                             <TabsContent value="comments" className="m-0 p-6">
-                                <div className="space-y-4">
-                                    {(selectedInvoice.activityLogs || [])
-                                        .slice()
-                                        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                                        .map((log: any) => (
-                                            <div key={log.id} className="flex gap-4">
-                                                <div className="text-sm text-slate-500 w-40 flex-shrink-0">
-                                                    {formatDateTime(log.timestamp)}
-                                                </div>
-                                                <div className="flex items-start gap-3">
-                                                    <div className="mt-1">{getActivityIcon(log.action)}</div>
-                                                    <div>
-                                                        <p className="text-sm text-slate-900">{log.description}</p>
-                                                        <p className="text-sm text-slate-500">by {log.user}</p>
+                                <div className="space-y-6">
+                                    {/* Activity Logs shown first without heading */}
+                                    <div className="space-y-4">
+                                        {(selectedInvoice.activityLogs || [])
+                                            .slice()
+                                            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                                            .map((log: any) => (
+                                                <div key={log.id} className="flex gap-4">
+                                                    <div className="text-sm text-slate-500 w-40 flex-shrink-0">
+                                                        {formatDateTime(log.timestamp)}
+                                                    </div>
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="mt-1">{getActivityIcon(log.action)}</div>
+                                                        <div>
+                                                            <p className="text-sm text-slate-900">{log.description}</p>
+                                                            <p className="text-sm text-slate-500">by {log.user}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            ))}
+                                    </div>
+
+                                    {/* Payment History Section shown below */}
+                                    {(selectedInvoice.payments || []).length > 0 && (
+                                        <div>
+                                            <h3 className="text-sm font-semibold text-slate-700 mb-3">Payment History</h3>
+                                            <div className="border border-slate-200 rounded-lg overflow-hidden">
+                                                <table className="w-full">
+                                                    <thead className="bg-slate-50">
+                                                        <tr>
+                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">System Activity</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Payment Mode</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Actual Payment Date & Time</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-200">
+                                                        {(selectedInvoice.payments || []).map((payment: any) => (
+                                                            <tr key={payment.id} className="hover:bg-slate-50">
+                                                                <td className="px-4 py-3 text-sm text-slate-900">
+                                                                    Payment of {formatCurrency(payment.amount)} recorded
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-slate-900">
+                                                                    {payment.paymentMode?.toUpperCase() || 'N/A'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-slate-900">
+                                                                    {formatDateTime(payment.date || payment.timestamp)}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
                                             </div>
-                                        ))}
+                                        </div>
+                                    )}
                                 </div>
                             </TabsContent>
 
-                            <TabsContent value="payments" className="m-0 p-6">
-                                {(selectedInvoice.payments || []).length === 0 ? (
-                                    <div className="text-center py-8 text-slate-500">
-                                        <CreditCard className="h-8 w-8 mx-auto mb-2 text-slate-300" />
-                                        <p className="text-sm">No payments recorded yet</p>
-                                        <Button className="mt-4" onClick={() => setPaymentDialogOpen(true)}>
-                                            Record Payment
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {(selectedInvoice.payments || []).map((payment: any) => (
-                                            <div key={payment.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100">
-                                                <div className="flex items-center gap-3">
-                                                    <CheckCircle className="h-5 w-5 text-green-600" />
-                                                    <div>
-                                                        <p className="font-medium text-slate-900">{formatCurrency(payment.amount)}</p>
-                                                        <p className="text-sm text-slate-500">{payment.paymentMode} - {formatDate(payment.date)}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </TabsContent>
+                            {/* Payments tab removed - content merged into Comments & History */}
                         </ScrollArea>
                     </Tabs>
                 </div>
@@ -939,6 +953,26 @@ export default function Invoices() {
                                     <SelectItem value="credit_card">Credit Card</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Payment Date</Label>
+                                <Input
+                                    type="date"
+                                    value={paymentDate}
+                                    onChange={(e) => setPaymentDate(e.target.value)}
+                                    data-testid="input-payment-date"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Payment Time</Label>
+                                <Input
+                                    type="time"
+                                    value={paymentTime}
+                                    onChange={(e) => setPaymentTime(e.target.value)}
+                                    data-testid="input-payment-time"
+                                />
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

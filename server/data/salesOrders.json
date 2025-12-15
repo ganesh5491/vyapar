@@ -254,11 +254,20 @@
           "status": "DRAFT",
           "amount": 0,
           "balanceDue": 0
+        },
+        {
+          "id": "INV-00019",
+          "invoiceNumber": "INV-00019",
+          "date": "2025-12-15",
+          "dueDate": "2025-12-15",
+          "status": "DRAFT",
+          "amount": 0,
+          "balanceDue": 0
         }
       ],
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-11T13:05:52.635Z",
-      "updatedAt": "2025-12-11T13:06:12.129Z",
+      "updatedAt": "2025-12-15T05:41:13.483Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -280,6 +289,13 @@
           "timestamp": "2025-12-11T13:06:12.129Z",
           "action": "invoiced",
           "description": "Invoice INV-00016 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-15T05:41:13.483Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00019 created",
           "user": "Admin User"
         }
       ]
@@ -1148,5 +1164,5 @@
     }
   ],
   "nextSalesOrderNumber": 12,
-  "nextInvoiceNumber": 19
+  "nextInvoiceNumber": 20
 }

@@ -226,7 +226,43 @@
       ],
       "createdAt": "2025-12-12T10:39:00.014Z",
       "updatedAt": "2025-12-12T10:39:00.014Z"
+    },
+    {
+      "id": "8",
+      "name": "CYBAEM TECH PRIVATE LIMITED  (Copy)",
+      "email": "rohan@cybaemtech.com",
+      "phone": "",
+      "billingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "createdAt": "2025-12-15T05:36:28.560Z",
+      "displayName": "CYBAEM TECH PRIVATE LIMITED ",
+      "companyName": "CYBAEM TECH PRIVATE LIMITED  1",
+      "workPhone": "",
+      "mobile": "",
+      "gstTreatment": "",
+      "placeOfSupply": "",
+      "gstin": "",
+      "pan": "",
+      "taxPreference": "taxable",
+      "currency": "INR",
+      "paymentTerms": "",
+      "customerType": "business",
+      "contactPersons": [],
+      "updatedAt": "2025-12-15T05:36:28.560Z",
+      "status": "inactive"
     }
   ],
-  "nextCustomerId": 8
+  "nextCustomerId": 9
 }

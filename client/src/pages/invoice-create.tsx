@@ -83,7 +83,7 @@ const TERMS_OPTIONS = [
 ];
 
 export default function InvoiceCreate() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const { addInvoice, invoices, customers, contactPersons, addContactPerson, pendingCustomerId, setPendingCustomerId } = useAppStore();
 
@@ -148,7 +148,61 @@ export default function InvoiceCreate() {
 
   useEffect(() => {
     fetchSalespersons();
-  }, []);
+    // Handle clone parameter
+    const params = new URLSearchParams(location.split('?')[1]);
+    const cloneFromId = params.get('cloneFrom');
+    if (cloneFromId) {
+      fetchInvoiceToClone(cloneFromId);
+    }
+  }, [location]);
+
+  const fetchInvoiceToClone = async (invoiceId: string) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoiceId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const invoice = data.data;
+
+        // Pre-populate form with cloned invoice data
+        setSelectedCustomerId(invoice.customerId);
+        setDate(new Date());
+        setDueDate(new Date(new Date().setDate(new Date().getDate() + 30)));
+        setSelectedTerms(invoice.paymentTerms || 'net30');
+        setBillingAddress(invoice.billingAddress?.street || '');
+        setSelectedSalesperson(invoice.salesperson || '');
+        setHasShipping(invoice.shippingCharges > 0);
+        setShippingAmount(invoice.shippingCharges || 0);
+        setAdjustment(invoice.adjustment || 0);
+
+        // Pre-populate items
+        if (invoice.items && invoice.items.length > 0) {
+          const clonedItems = invoice.items.map((item: any, index: number) => ({
+            id: Math.random(),
+            name: item.name,
+            description: item.description || '',
+            qty: item.quantity,
+            rate: item.rate,
+            discountType: item.discountType || 'percentage',
+            discountValue: item.discount || 0,
+            gstRate: item.tax && item.tax > 0 ? (item.tax / (item.rate * item.quantity - (item.discount || 0))) * 100 : 18
+          }));
+          setItems(clonedItems);
+        }
+
+        toast({
+          title: "Invoice Cloned",
+          description: "Invoice data has been pre-filled. Edit as needed and save.",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch invoice for cloning:', error);
+      toast({
+        title: "Clone Failed",
+        description: "Could not load invoice data for duplication.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const fetchSalespersons = async () => {
     try {
