@@ -467,7 +467,7 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(quote.quoteNumber)}>
+            <DropdownMenuItem onClick={() => setLocation(`/quotes/create?cloneFrom=${quote.id}`)} data-testid="menu-item-duplicate">
               <Copy className="h-4 w-4 mr-2" /> Duplicate
             </DropdownMenuItem>
             <DropdownMenuSeparator />

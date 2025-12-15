@@ -112,7 +112,60 @@ export default function QuoteCreatePage() {
     fetchItems();
     fetchNextQuoteNumber();
     fetchSalespersons();
-  }, []);
+    
+    // Handle clone parameter
+    const params = new URLSearchParams(location.split('?')[1]);
+    const cloneFromId = params.get('cloneFrom');
+    if (cloneFromId) {
+      fetchQuoteToClone(cloneFromId);
+    }
+  }, [location]);
+
+  const fetchQuoteToClone = async (quoteId: string) => {
+    try {
+      const response = await fetch(`/api/quotes/${quoteId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const quote = data.data;
+
+        // Pre-populate form with cloned quote data
+        setFormData(prev => ({
+          ...prev,
+          customerId: quote.customerId || "",
+          customerName: quote.customerName || "",
+          referenceNumber: quote.referenceNumber || "",
+          quoteDate: new Date().toISOString().split('T')[0],
+          expiryDate: quote.expiryDate ? new Date(quote.expiryDate).toISOString().split('T')[0] : "",
+          salesperson: quote.salesperson || "",
+          projectName: quote.projectName || "",
+          subject: quote.subject || "",
+          customerNotes: quote.customerNotes || "Looking forward for your business.",
+          termsAndConditions: quote.termsAndConditions || "",
+          shippingCharges: quote.shippingCharges || 0,
+          adjustment: quote.adjustment || 0,
+        }));
+
+        // Pre-populate items
+        if (quote.items && quote.items.length > 0) {
+          const clonedItems = quote.items.map((item: any, index: number) => ({
+            id: String(Date.now() + index),
+            itemId: item.itemId || "",
+            name: item.name || "",
+            description: item.description || "",
+            quantity: item.quantity || 1,
+            rate: item.rate || 0,
+            discount: item.discount || 0,
+            discountType: item.discountType || "percentage",
+            tax: item.taxName || "none",
+            amount: item.amount || 0,
+          }));
+          setQuoteItems(clonedItems);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch quote for cloning:', error);
+    }
+  };
 
   const fetchSalespersons = async () => {
     try {

@@ -1,6 +1,121 @@
 {
   "invoices": [
     {
+      "id": "1765780000748",
+      "invoiceNumber": "INV-00017",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "billingAddress": {
+        "street": "Pune\nPune\nMaharashtra\nIndia\n411057",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 1200,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "GST12",
+          "amount": 0
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 50,
+          "discountType": "flat",
+          "tax": 0,
+          "taxName": "Non-taxable",
+          "amount": 190
+        },
+        {
+          "id": "0.24821225258872892",
+          "itemId": "0.24821225258872892",
+          "name": "",
+          "description": "",
+          "quantity": 10,
+          "unit": "pcs",
+          "rate": 29,
+          "discount": 29,
+          "discountType": "percentage",
+          "tax": 73.08000000000001,
+          "taxName": "GST28",
+          "amount": 334.08000000000004
+        }
+      ],
+      "subTotal": 451,
+      "shippingCharges": 0,
+      "cgst": 36.540000000000006,
+      "sgst": 36.540000000000006,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 524.08,
+      "amountPaid": 200,
+      "balanceDue": 324.08000000000004,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T06:26:40.748Z",
+      "updatedAt": "2025-12-15T06:30:38.919Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765780238919",
+          "date": "2025-12-15T06:30:00.000Z",
+          "amount": 200,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T06:26:40.748Z",
+          "action": "created",
+          "description": "Invoice created for ₹524.08",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T06:30:38.919Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹200 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765777200188",
       "invoiceNumber": "INV-00016",
       "referenceNumber": "",
@@ -48,25 +163,41 @@
       "igst": 0,
       "adjustment": 0,
       "total": 0,
-      "amountPaid": 0,
+      "amountPaid": 200,
       "balanceDue": 0,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "PENDING",
+      "status": "PAID",
       "sourceType": "quote",
       "sourceId": "1765280697873",
       "sourceNumber": "QT-000005",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T05:40:00.188Z",
-      "updatedAt": "2025-12-15T05:40:00.188Z",
+      "updatedAt": "2025-12-15T06:27:00.973Z",
       "createdBy": "Admin User",
-      "payments": [],
+      "payments": [
+        {
+          "id": "1765780020973",
+          "date": "2025-12-24T21:26:00.000Z",
+          "amount": 200,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
       "activityLogs": [
         {
           "id": "1",
           "timestamp": "2025-12-15T05:40:00.188Z",
           "action": "created",
           "description": "Invoice created from Quote QT-000005",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T06:27:00.973Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹200 recorded",
           "user": "Admin User"
         }
       ]
@@ -1443,5 +1574,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 17
+  "nextInvoiceNumber": 18
 }

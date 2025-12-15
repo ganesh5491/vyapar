@@ -36,13 +36,37 @@ import { ManageSalespersonsDialog } from "@/components/ManageSalespersonsDialog"
 
 interface InvoiceItem {
   id: string;
+  itemId: string;
   name: string;
   description: string;
   quantity: number;
   rate: number;
   discount: number;
+  discountType: 'percentage' | 'flat';
+  tax: string;
+  originalTaxName: string;
+  taxAmount: number;
   amount: number;
+  isModified?: boolean;
+  taxModified?: boolean;
 }
+
+interface ItemOption {
+  id: string;
+  name: string;
+  description?: string;
+  rate: string;
+  sku?: string;
+}
+
+const TAX_OPTIONS = [
+  { label: "Non-taxable", value: "none", rate: 0 },
+  { label: "GST0 [0%]", value: "GST0", rate: 0 },
+  { label: "GST5 [5%]", value: "GST5", rate: 5 },
+  { label: "GST12 [12%]", value: "GST12", rate: 12 },
+  { label: "GST18 [18%]", value: "GST18", rate: 18 },
+  { label: "GST28 [28%]", value: "GST28", rate: 28 },
+];
 
 const TERMS_OPTIONS = [
   { value: "Due on Receipt", label: "Due on Receipt", days: 0 },
@@ -51,6 +75,11 @@ const TERMS_OPTIONS = [
   { value: "Net 45", label: "Net 45", days: 45 },
   { value: "Net 60", label: "Net 60", days: 60 },
 ];
+
+const getTaxRate = (taxValue: string): number => {
+  const option = TAX_OPTIONS.find(t => t.value === taxValue);
+  return option?.rate || 0;
+};
 
 export default function InvoiceEdit() {
   const [, setLocation] = useLocation();
@@ -69,6 +98,7 @@ export default function InvoiceEdit() {
   const [customerNotes, setCustomerNotes] = useState("");
   const [termsAndConditions, setTermsAndConditions] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [itemOptions, setItemOptions] = useState<ItemOption[]>([]);
   const [shippingCharges, setShippingCharges] = useState(0);
   const [adjustment, setAdjustment] = useState(0);
   const [selectedSalesperson, setSelectedSalesperson] = useState("");
@@ -78,6 +108,7 @@ export default function InvoiceEdit() {
   useEffect(() => {
     fetchInvoice();
     fetchSalespersons();
+    fetchItems();
   }, [params.id]);
 
   const fetchSalespersons = async () => {
@@ -89,6 +120,18 @@ export default function InvoiceEdit() {
       }
     } catch (error) {
       console.error('Failed to fetch salespersons:', error);
+    }
+  };
+
+  const fetchItems = async () => {
+    try {
+      const response = await fetch('/api/items');
+      if (response.ok) {
+        const data = await response.json();
+        setItemOptions(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
     }
   };
 
@@ -108,15 +151,26 @@ export default function InvoiceEdit() {
         setBillingAddress(invoice.billingAddress?.street || '');
         setCustomerNotes(invoice.customerNotes || '');
         setTermsAndConditions(invoice.termsAndConditions || '');
-        setItems(invoice.items.map((item: any, index: number) => ({
-          id: item.id || String(index + 1),
-          name: item.name,
-          description: item.description || '',
-          quantity: item.quantity,
-          rate: item.rate,
-          discount: item.discount || 0,
-          amount: item.amount
-        })));
+        setItems(invoice.items.map((item: any, index: number) => {
+          const storedTaxName = item.taxName || 'GST18';
+          const knownTax = TAX_OPTIONS.find(t => t.value === storedTaxName);
+          return {
+            id: item.id || String(index + 1),
+            itemId: item.itemId || '',
+            name: item.name,
+            description: item.description || '',
+            quantity: item.quantity,
+            rate: item.rate,
+            discount: item.discount || 0,
+            discountType: item.discountType || 'flat',
+            tax: knownTax ? storedTaxName : 'custom',
+            originalTaxName: storedTaxName,
+            taxAmount: item.tax || 0,
+            amount: item.amount,
+            isModified: false,
+            taxModified: false
+          };
+        }));
         setShippingCharges(invoice.shippingCharges || 0);
         setAdjustment(invoice.adjustment || 0);
         setSelectedSalesperson(invoice.salesperson || "");
@@ -133,11 +187,29 @@ export default function InvoiceEdit() {
     }
   };
 
-  const calculateLineItem = (item: InvoiceItem) => {
+  const calculateLineItem = (item: InvoiceItem, forceRecalc: boolean = false) => {
     const baseAmount = item.quantity * item.rate;
-    const discountAmount = item.discount || 0;
+    let discountAmount = 0;
+    if (item.discountType === 'percentage') {
+      discountAmount = baseAmount * (Math.min(item.discount, 100) / 100);
+    } else {
+      discountAmount = item.discount;
+    }
+    discountAmount = Math.min(discountAmount, baseAmount);
     const taxableAmount = baseAmount - discountAmount;
-    const taxAmount = taxableAmount * 0.18;
+    
+    if (!item.isModified && !forceRecalc) {
+      return {
+        baseAmount,
+        discountAmount,
+        taxableAmount,
+        taxAmount: item.taxAmount,
+        total: item.amount
+      };
+    }
+    
+    const taxRate = getTaxRate(item.tax);
+    const taxAmount = taxableAmount * (taxRate / 100);
     return {
       baseAmount,
       discountAmount,
@@ -158,14 +230,40 @@ export default function InvoiceEdit() {
 
   const finalTotal = totals.grandTotal + shippingCharges + adjustment;
 
+  const handleItemChange = (index: number, itemId: string) => {
+    const selectedItem = itemOptions.find(i => i.id === itemId);
+    if (selectedItem) {
+      const rate = parseFloat(selectedItem.rate.replace(/[₹,]/g, '')) || 0;
+      const newItems = [...items];
+      newItems[index] = {
+        ...newItems[index],
+        itemId,
+        name: selectedItem.name,
+        description: selectedItem.description || '',
+        rate,
+        isModified: true,
+        taxModified: newItems[index].taxModified
+      };
+      const calc = calculateLineItem(newItems[index], true);
+      newItems[index].taxAmount = calc.taxAmount;
+      newItems[index].amount = calc.total;
+      setItems(newItems);
+    }
+  };
+
   const handleUpdateItem = (index: number, field: keyof InvoiceItem, value: any) => {
     const newItems = [...items];
     newItems[index] = {
       ...newItems[index],
       [field]: value
     };
-    if (field === 'quantity' || field === 'rate' || field === 'discount') {
-      const calc = calculateLineItem(newItems[index]);
+    if (field === 'quantity' || field === 'rate' || field === 'discount' || field === 'discountType' || field === 'tax') {
+      newItems[index].isModified = true;
+      if (field === 'tax') {
+        newItems[index].taxModified = true;
+      }
+      const calc = calculateLineItem(newItems[index], true);
+      newItems[index].taxAmount = calc.taxAmount;
       newItems[index].amount = calc.total;
     }
     setItems(newItems);
@@ -174,12 +272,19 @@ export default function InvoiceEdit() {
   const handleAddItem = () => {
     setItems([...items, {
       id: String(Date.now()),
+      itemId: '',
       name: '',
       description: '',
       quantity: 1,
       rate: 0,
       discount: 0,
-      amount: 0
+      discountType: 'percentage',
+      tax: 'GST18',
+      originalTaxName: 'GST18',
+      taxAmount: 0,
+      amount: 0,
+      isModified: true,
+      taxModified: true
     }]);
   };
 
@@ -192,18 +297,21 @@ export default function InvoiceEdit() {
     try {
       const invoiceItems = items.map(item => {
         const lineCalc = calculateLineItem(item);
+        const effectiveTaxName = item.taxModified 
+          ? (item.tax === 'custom' ? item.originalTaxName : item.tax)
+          : item.originalTaxName;
         return {
           id: item.id,
-          itemId: item.id,
+          itemId: item.itemId,
           name: item.name,
           description: item.description,
           quantity: item.quantity,
           unit: 'pcs',
           rate: item.rate,
           discount: item.discount,
-          discountType: 'flat',
+          discountType: item.discountType,
           tax: lineCalc.taxAmount,
-          taxName: 'GST18',
+          taxName: effectiveTaxName,
           amount: lineCalc.total
         };
       });
@@ -275,94 +383,92 @@ export default function InvoiceEdit() {
   if (loading) {
     return (
       <div className="p-8 text-center">
-        <p className="text-slate-500">Loading invoice...</p>
+        <p className="text-muted-foreground">Loading invoice...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 pb-24">
+    <div className="max-w-6xl mx-auto p-6 pb-24">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => setLocation('/invoices')} data-testid="button-back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Edit Invoice</h1>
-            <p className="text-sm text-slate-500">{invoiceNumber}</p>
+            <h1 className="text-2xl font-semibold">Edit Invoice</h1>
+            <p className="text-sm text-muted-foreground">{invoiceNumber}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Invoice Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Invoice Number</Label>
-                <Input value={invoiceNumber} disabled className="bg-slate-50" data-testid="input-invoice-number" />
-              </div>
-              <div className="space-y-2">
-                <Label>Customer</Label>
-                <Input value={customerName} disabled className="bg-slate-50" data-testid="input-customer-name" />
-              </div>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Invoice Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Customer Name</Label>
+              <Input value={customerName} disabled className="bg-muted/50" data-testid="input-customer-name" />
+            </div>
+            <div className="space-y-2">
+              <Label>Invoice #</Label>
+              <Input value={invoiceNumber} disabled className="bg-muted/50" data-testid="input-invoice-number" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Invoice Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
+                    data-testid="button-invoice-date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "dd/MM/yyyy") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} />
+                </PopoverContent>
+              </Popover>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Invoice Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-                      data-testid="button-invoice-date"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "dd/MM/yyyy") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} />
-                  </PopoverContent>
-                </Popover>
-              </div>
+            <div className="space-y-2">
+              <Label>Terms</Label>
+              <Select value={paymentTerms} onValueChange={setPaymentTerms}>
+                <SelectTrigger data-testid="select-payment-terms">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TERMS_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="space-y-2">
-                <Label>Payment Terms</Label>
-                <Select value={paymentTerms} onValueChange={setPaymentTerms}>
-                  <SelectTrigger data-testid="select-payment-terms">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TERMS_OPTIONS.map(opt => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Due Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}
-                      data-testid="button-due-date"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dueDate ? format(dueDate, "dd/MM/yyyy") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={dueDate} onSelect={(d) => d && setDueDate(d)} />
-                  </PopoverContent>
-                </Popover>
-              </div>
+            <div className="space-y-2">
+              <Label>Due Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}
+                    data-testid="button-due-date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "dd/MM/yyyy") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dueDate} onSelect={(d) => d && setDueDate(d)} />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
@@ -378,21 +484,13 @@ export default function InvoiceEdit() {
                   <SelectValue placeholder="Select salesperson" />
                 </SelectTrigger>
                 <SelectContent>
-                  <div className="relative mb-2">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      className="w-full pl-8 pr-2 py-1.5 text-sm border-b bg-transparent outline-none"
-                      placeholder="Search"
-                    />
-                  </div>
                   {salespersons.map((sp) => (
                     <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
                   ))}
+                  <Separator className="my-1" />
                   <div
-                    className="flex items-center gap-2 px-2 py-1.5 text-sm text-blue-600 cursor-pointer hover:bg-slate-100"
-                    onClick={() => {
-                      setShowManageSalespersons(true);
-                    }}
+                    className="flex items-center gap-2 px-2 py-1.5 text-sm text-blue-600 cursor-pointer hover:bg-accent"
+                    onClick={() => setShowManageSalespersons(true)}
                   >
                     <Settings className="h-4 w-4" />
                     Manage Salespersons
@@ -400,44 +498,234 @@ export default function InvoiceEdit() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+        </CardContent>
+      </Card>
 
-            <div className="space-y-2">
-              <Label>Billing Address</Label>
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <CardTitle>Item Table</CardTitle>
+          <Button variant="outline" size="sm" onClick={handleAddItem} data-testid="button-add-item">
+            <Plus className="h-4 w-4 mr-1" /> Add Item
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-lg overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/30">
+                <TableRow>
+                  <TableHead className="w-[30%] min-w-[200px]">Item Details</TableHead>
+                  <TableHead className="w-[10%] min-w-[80px]">Qty</TableHead>
+                  <TableHead className="w-[12%] min-w-[100px]">Rate</TableHead>
+                  <TableHead className="w-[15%] min-w-[120px]">Discount</TableHead>
+                  <TableHead className="w-[13%] min-w-[100px]">Tax</TableHead>
+                  <TableHead className="w-[10%] min-w-[80px]">Tax Amt</TableHead>
+                  <TableHead className="w-[10%] min-w-[100px] text-right">Amount</TableHead>
+                  <TableHead className="w-[5%] min-w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item, index) => {
+                  const lineCalc = calculateLineItem(item);
+                  return (
+                    <TableRow key={item.id} className="align-top">
+                      <TableCell className="py-3">
+                        <div className="space-y-2">
+                          <Select
+                            value={item.itemId || "custom"}
+                            onValueChange={(val) => {
+                              if (val === "custom") {
+                                handleUpdateItem(index, 'itemId', '');
+                              } else {
+                                handleItemChange(index, val);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="h-9" data-testid={`select-item-${index}`}>
+                              <SelectValue placeholder="Select item">
+                                {item.name || "Select item"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {itemOptions.map((opt) => (
+                                <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+                              ))}
+                              <Separator className="my-1" />
+                              <SelectItem value="custom">Custom Item</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {(!item.itemId || item.itemId === '') && (
+                            <Input
+                              value={item.name}
+                              onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
+                              placeholder="Item name"
+                              className="h-8 text-sm"
+                              data-testid={`input-item-name-${index}`}
+                            />
+                          )}
+                          <Textarea
+                            placeholder="Description (optional)"
+                            value={item.description}
+                            onChange={(e) => handleUpdateItem(index, 'description', e.target.value)}
+                            className="min-h-[40px] resize-none text-xs"
+                            data-testid={`textarea-item-desc-${index}`}
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={item.quantity}
+                          onChange={(e) => handleUpdateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                          className="h-9"
+                          data-testid={`input-item-qty-${index}`}
+                        />
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={item.rate}
+                          onChange={(e) => handleUpdateItem(index, 'rate', parseFloat(e.target.value) || 0)}
+                          className="h-9"
+                          data-testid={`input-item-rate-${index}`}
+                        />
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <div className="flex shadow-sm rounded-md">
+                          <Input
+                            type="number"
+                            min="0"
+                            max={item.discountType === 'percentage' ? 100 : undefined}
+                            value={item.discount}
+                            onChange={(e) => handleUpdateItem(index, 'discount', parseFloat(e.target.value) || 0)}
+                            className="h-9 rounded-r-none border-r-0"
+                            data-testid={`input-item-discount-${index}`}
+                          />
+                          <Select
+                            value={item.discountType}
+                            onValueChange={(val: 'percentage' | 'flat') => handleUpdateItem(index, 'discountType', val)}
+                          >
+                            <SelectTrigger className="h-9 w-[55px] rounded-l-none border-l-0 bg-muted/30">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentage">%</SelectItem>
+                              <SelectItem value="flat">Rs</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <Select
+                          value={item.tax}
+                          onValueChange={(val) => handleUpdateItem(index, 'tax', val)}
+                        >
+                          <SelectTrigger className="h-9" data-testid={`select-item-tax-${index}`}>
+                            <SelectValue placeholder="Tax" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TAX_OPTIONS.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="py-3 text-sm text-muted-foreground">
+                        {formatCurrency(lineCalc.taxAmount)}
+                      </TableCell>
+                      <TableCell className="py-3 text-right font-medium">
+                        {formatCurrency(lineCalc.total)}
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleRemoveItem(index)} 
+                          className="text-muted-foreground hover:text-destructive"
+                          data-testid={`button-remove-item-${index}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
               <Textarea 
-                value={billingAddress} 
-                onChange={(e) => setBillingAddress(e.target.value)}
-                placeholder="Enter billing address"
-                rows={3}
-                data-testid="textarea-billing-address"
+                value={customerNotes} 
+                onChange={(e) => setCustomerNotes(e.target.value)}
+                placeholder="Notes visible to customer..."
+                rows={4}
+                data-testid="textarea-customer-notes"
               />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Terms & Conditions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea 
+                value={termsAndConditions} 
+                onChange={(e) => setTermsAndConditions(e.target.value)}
+                placeholder="Terms and conditions..."
+                rows={4}
+                data-testid="textarea-terms"
+              />
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card>
+        <Card className="h-fit">
           <CardHeader>
             <CardTitle>Summary</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Subtotal</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Tax (18%)</span>
+                <span className="text-muted-foreground">Tax</span>
                 <span>{formatCurrency(totals.totalTax)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Shipping</span>
-                <span>{formatCurrency(shippingCharges)}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Shipping Charges</span>
+                <Input
+                  type="number"
+                  value={shippingCharges}
+                  onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)}
+                  className="w-24 h-8 text-right"
+                  data-testid="input-shipping"
+                />
               </div>
-              {adjustment !== 0 && (
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Adjustment</span>
-                  <span>{formatCurrency(adjustment)}</span>
-                </div>
-              )}
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Adjustment</span>
+                <Input
+                  type="number"
+                  value={adjustment}
+                  onChange={(e) => setAdjustment(parseFloat(e.target.value) || 0)}
+                  className="w-24 h-8 text-right"
+                  data-testid="input-adjustment"
+                />
+              </div>
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
@@ -448,110 +736,8 @@ export default function InvoiceEdit() {
         </Card>
       </div>
 
-      <Card className="mb-8">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Line Items</CardTitle>
-          <Button variant="outline" size="sm" onClick={handleAddItem} data-testid="button-add-item">
-            <Plus className="h-4 w-4 mr-1" /> Add Item
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">#</TableHead>
-                <TableHead>Item</TableHead>
-                <TableHead className="w-24">Qty</TableHead>
-                <TableHead className="w-28">Rate</TableHead>
-                <TableHead className="w-28">Discount</TableHead>
-                <TableHead className="w-28 text-right">Amount</TableHead>
-                <TableHead className="w-12"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item, index) => (
-                <TableRow key={item.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>
-                    <Input
-                      value={item.name}
-                      onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
-                      placeholder="Item name"
-                      data-testid={`input-item-name-${index}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => handleUpdateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      data-testid={`input-item-qty-${index}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={item.rate}
-                      onChange={(e) => handleUpdateItem(index, 'rate', parseFloat(e.target.value) || 0)}
-                      data-testid={`input-item-rate-${index}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={item.discount}
-                      onChange={(e) => handleUpdateItem(index, 'discount', parseFloat(e.target.value) || 0)}
-                      data-testid={`input-item-discount-${index}`}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(calculateLineItem(item).total)}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)} data-testid={`button-remove-item-${index}`}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea 
-              value={customerNotes} 
-              onChange={(e) => setCustomerNotes(e.target.value)}
-              placeholder="Notes to customer..."
-              rows={4}
-              data-testid="textarea-customer-notes"
-            />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Terms & Conditions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea 
-              value={termsAndConditions} 
-              onChange={(e) => setTermsAndConditions(e.target.value)}
-              placeholder="Terms and conditions..."
-              rows={4}
-              data-testid="textarea-terms"
-            />
-          </CardContent>
-        </Card>
-      </div>
-
       <div className="fixed bottom-0 left-0 md:left-64 right-0 bg-card/80 backdrop-blur-md border-t border-border/60 p-4 z-40">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <Button variant="ghost" onClick={() => setLocation("/invoices")} data-testid="button-cancel">
             Cancel
           </Button>

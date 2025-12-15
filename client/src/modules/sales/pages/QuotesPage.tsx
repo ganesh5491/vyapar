@@ -304,10 +304,10 @@ export default function QuotesPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Clone</DropdownMenuItem>
-                          <DropdownMenuItem>Send</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/quotes/${quote.id}/edit`); }}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setLocation(`/quotes/create?cloneFrom=${quote.id}`); }}>Clone</DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => e.stopPropagation()}>Send</DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => e.stopPropagation()} className="text-red-600">Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
