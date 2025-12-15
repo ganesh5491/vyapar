@@ -193,7 +193,115 @@
       ],
       "amountInWords": "Zero",
       "createdAt": "2025-12-15T09:55:52.438Z"
+    },
+    {
+      "id": "pr-1765799377015",
+      "paymentNumber": "6",
+      "date": "2025-12-15",
+      "referenceNumber": "",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1765784582175",
+          "invoiceNumber": "INV-00020",
+          "invoiceDate": "2025-12-15",
+          "invoiceAmount": 1050.0629999999999,
+          "amountDue": 300.0629999999999,
+          "paymentAmount": 50
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 50,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00020",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "RECEIVED",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Fifty Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-15T11:49:37.000Z"
+    },
+    {
+      "id": "pr-1765799435648",
+      "paymentNumber": "7",
+      "date": "2025-12-15",
+      "referenceNumber": "",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1765784582175",
+          "invoiceNumber": "INV-00020",
+          "invoiceDate": "2025-12-15",
+          "invoiceAmount": 1050.0629999999999,
+          "amountDue": 0.0029999999999290594,
+          "paymentAmount": 300.06
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 300.06,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00020",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "RECEIVED",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Three Hundred Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-15T11:50:35.647Z"
+    },
+    {
+      "id": "pr-1765799435683",
+      "paymentNumber": "8",
+      "date": "2025-12-15",
+      "referenceNumber": "",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1765784582175",
+          "invoiceNumber": "INV-00020",
+          "invoiceDate": "2025-12-15",
+          "invoiceAmount": 1050.0629999999999,
+          "amountDue": 0,
+          "paymentAmount": 300.06
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 300.06,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00020",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "RECEIVED",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Three Hundred Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-15T11:50:35.678Z"
     }
   ],
-  "nextPaymentNumber": 6
+  "nextPaymentNumber": 9
 }

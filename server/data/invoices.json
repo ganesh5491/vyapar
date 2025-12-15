@@ -48,17 +48,17 @@
       "igst": 0,
       "adjustment": 0,
       "total": 1050.0629999999999,
-      "amountPaid": 700,
-      "balanceDue": 350.0629999999999,
+      "amountPaid": 1350.12,
+      "balanceDue": 0,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "PARTIALLY_PAID",
+      "status": "PAID",
       "sourceType": "quote",
       "sourceId": "1765784456361",
       "sourceNumber": "QT-000014",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T07:43:02.174Z",
-      "updatedAt": "2025-12-15T07:43:24.219Z",
+      "updatedAt": "2025-12-15T11:50:35.678Z",
       "createdBy": "Admin User",
       "payments": [
         {
@@ -74,6 +74,30 @@
           "date": "2025-12-15T07:43:00.000Z",
           "amount": 200,
           "paymentMode": "cheque",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765799377000",
+          "date": "2025-12-15T11:47:00.000Z",
+          "amount": 50,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765799435647",
+          "date": "2025-12-15T11:50:00.000Z",
+          "amount": 300.06,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765799435679",
+          "date": "2025-12-15T11:50:00.000Z",
+          "amount": 300.06,
+          "paymentMode": "cash",
           "reference": "",
           "notes": ""
         }
@@ -98,6 +122,27 @@
           "timestamp": "2025-12-15T07:43:24.219Z",
           "action": "payment_recorded",
           "description": "Payment of ₹200 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-15T11:49:37.000Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹50 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-15T11:50:35.647Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹300.06 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-15T11:50:35.678Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹300.06 recorded",
           "user": "Admin User"
         }
       ]

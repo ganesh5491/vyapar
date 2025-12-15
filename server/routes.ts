@@ -1492,7 +1492,7 @@ export async function registerRoutes(
         notes: req.body.notes || `Payment for ${existingInvoice.invoiceNumber}`,
         attachments: [],
         sendThankYou: false,
-        status: 'RECEIVED',
+        status: 'PAID',
         paymentType: 'invoice_payment',
         placeOfSupply: existingInvoice.placeOfSupply || '',
         descriptionOfSupply: '',
