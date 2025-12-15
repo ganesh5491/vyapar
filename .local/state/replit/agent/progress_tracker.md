@@ -27,3 +27,4 @@
 [x] 27. Updated e-way-bills.tsx form with proper fields matching reference image (Document Type, Transaction Sub Type, Customer, Credit Note#, Address Details, Transportation Details, Part B)
 [x] 28. Connected e-Way Bills to related sections (customers, credit notes, invoices, delivery challans)
 [x] 29. Added e-Way Bills route to App.tsx router
+[x] 30. Session restart - reinstalled cross-env and verified application running (Dec 15, 2025)
