@@ -839,28 +839,7 @@ export default function Invoices() {
 
                             <TabsContent value="comments" className="m-0 p-6">
                                 <div className="space-y-6">
-                                    {/* Activity Logs shown first without heading */}
-                                    <div className="space-y-4">
-                                        {(selectedInvoice.activityLogs || [])
-                                            .slice()
-                                            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                                            .map((log: any) => (
-                                                <div key={log.id} className="flex gap-4">
-                                                    <div className="text-sm text-slate-500 w-40 flex-shrink-0">
-                                                        {formatDateTime(log.timestamp)}
-                                                    </div>
-                                                    <div className="flex items-start gap-3">
-                                                        <div className="mt-1">{getActivityIcon(log.action)}</div>
-                                                        <div>
-                                                            <p className="text-sm text-slate-900">{log.description}</p>
-                                                            <p className="text-sm text-slate-500">by {log.user}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-
-                                    {/* Payment History Section shown below */}
+                                    {/* Payment History Section */}
                                     {(selectedInvoice.payments || []).length > 0 && (
                                         <div>
                                             <h3 className="text-sm font-semibold text-slate-700 mb-3">Payment History</h3>
