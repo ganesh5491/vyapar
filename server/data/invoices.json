@@ -76,23 +76,39 @@
       "igst": 0,
       "adjustment": 0,
       "total": 524.08,
-      "amountPaid": 200,
-      "balanceDue": 324.08000000000004,
+      "amountPaid": 525.08,
+      "balanceDue": 0,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "PARTIALLY_PAID",
+      "status": "PAID",
       "sourceType": null,
       "sourceId": null,
       "sourceNumber": null,
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T06:26:40.748Z",
-      "updatedAt": "2025-12-15T06:30:38.919Z",
+      "updatedAt": "2025-12-15T06:34:38.887Z",
       "createdBy": "Admin User",
       "payments": [
         {
           "id": "1765780238919",
           "date": "2025-12-15T06:30:00.000Z",
           "amount": 200,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765780454913",
+          "date": "2025-12-15T06:33:00.000Z",
+          "amount": 300,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765780478887",
+          "date": "2025-12-15T06:34:00.000Z",
+          "amount": 25.08,
           "paymentMode": "cash",
           "reference": "",
           "notes": ""
@@ -111,6 +127,20 @@
           "timestamp": "2025-12-15T06:30:38.919Z",
           "action": "payment_recorded",
           "description": "Payment of ₹200 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T06:34:14.913Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹300 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-15T06:34:38.887Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹25.08 recorded",
           "user": "Admin User"
         }
       ]
@@ -250,17 +280,17 @@
       "igst": 0,
       "adjustment": 0,
       "total": 5197.5,
-      "amountPaid": 5100,
-      "balanceDue": 97.5,
+      "amountPaid": 5197.5,
+      "balanceDue": 0,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "SENT",
+      "status": "PAID",
       "sourceType": "quote",
       "sourceId": "1765776571748",
       "sourceNumber": "QT-000011",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T05:29:40.239Z",
-      "updatedAt": "2025-12-15T05:33:19.362Z",
+      "updatedAt": "2025-12-15T06:41:21.724Z",
       "createdBy": "Admin User",
       "payments": [
         {
@@ -276,6 +306,14 @@
           "date": "2025-12-12T05:32:00.000Z",
           "amount": 100,
           "paymentMode": "cheque",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765780881724",
+          "date": "2025-12-15T06:41:00.000Z",
+          "amount": 97.5,
+          "paymentMode": "cash",
           "reference": "",
           "notes": ""
         }
@@ -307,6 +345,13 @@
           "timestamp": "2025-12-15T05:33:19.362Z",
           "action": "sent",
           "description": "Invoice has been sent",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-15T06:41:21.724Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹97.5 recorded",
           "user": "Admin User"
         }
       ]

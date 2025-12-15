@@ -115,7 +115,47 @@
       ],
       "amountInWords": "Zero",
       "createdAt": "2025-12-12T09:18:55.962Z"
+    },
+    {
+      "id": "pr-1765780549238",
+      "paymentNumber": "1000",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "customerEmail": "ganeshkale030303@gmail.com",
+      "amount": 100,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-15",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "REFUNDED",
+      "unusedAmount": 100,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 100,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 100
+        }
+      ],
+      "amountInWords": "Indian Rupee One Hundred Only",
+      "createdAt": "2025-12-15T06:35:49.238Z",
+      "refundedAt": "2025-12-15T06:37:00.279Z",
+      "refundAmount": 100
     }
   ],
-  "nextPaymentNumber": 4
+  "nextPaymentNumber": 5
 }
