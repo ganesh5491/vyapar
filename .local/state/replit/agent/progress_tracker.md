@@ -45,3 +45,8 @@
     - Changed /e-way-bills/new to /e-way-bills (matches existing route)
     - Verified Credit Notes page loads correctly without 404 error
 [x] 41. Session restart - reinstalled cross-env and verified application running (Dec 15, 2025 - latest session)
+[x] 42. Record Payment now saves to Payments Received section (Dec 15, 2025):
+    - Updated /api/invoices/:id/record-payment endpoint to also create a payment record in paymentsReceived.json
+    - Payment includes invoice details (number, amount, balance due, payment amount)
+    - Tracks customer info, payment mode, date, and payment reference
+    - Users can now see recorded payments in the Payments Received section under Sales

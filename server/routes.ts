@@ -1428,10 +1428,11 @@ export async function registerRoutes(
       const now = new Date().toISOString();
       const existingInvoice = data.invoices[invoiceIndex];
       const paymentAmount = req.body.amount || 0;
+      const paymentDate = req.body.date || new Date().toISOString();
 
       const payment = {
         id: String(Date.now()),
-        date: req.body.date || new Date().toISOString().split('T')[0],
+        date: paymentDate,
         amount: paymentAmount,
         paymentMode: req.body.paymentMode || 'Cash',
         reference: req.body.reference || '',
@@ -1461,7 +1462,50 @@ export async function registerRoutes(
       data.invoices[invoiceIndex] = existingInvoice;
       writeInvoicesData(data);
 
-      res.json({ success: true, data: existingInvoice });
+      // Also create a record in Payments Received
+      const paymentsData = readPaymentsReceivedData();
+      const paymentNumber = generatePaymentNumber(paymentsData.nextPaymentNumber);
+      
+      const newPaymentReceived = {
+        id: `pr-${Date.now()}`,
+        paymentNumber,
+        date: paymentDate.split('T')[0],
+        referenceNumber: req.body.reference || '',
+        customerId: existingInvoice.customerId || '',
+        customerName: existingInvoice.customerName || '',
+        customerEmail: existingInvoice.customerEmail || '',
+        invoices: [{
+          invoiceId: existingInvoice.id,
+          invoiceNumber: existingInvoice.invoiceNumber,
+          invoiceDate: existingInvoice.date,
+          invoiceAmount: existingInvoice.total,
+          amountDue: existingInvoice.balanceDue,
+          paymentAmount: paymentAmount
+        }],
+        mode: req.body.paymentMode || 'Cash',
+        depositTo: 'Petty Cash',
+        amount: paymentAmount,
+        unusedAmount: 0,
+        bankCharges: 0,
+        tax: '',
+        taxAmount: 0,
+        notes: req.body.notes || `Payment for ${existingInvoice.invoiceNumber}`,
+        attachments: [],
+        sendThankYou: false,
+        status: 'RECEIVED',
+        paymentType: 'invoice_payment',
+        placeOfSupply: existingInvoice.placeOfSupply || '',
+        descriptionOfSupply: '',
+        amountInWords: numberToWords(paymentAmount),
+        journalEntries: [],
+        createdAt: now
+      };
+
+      paymentsData.paymentsReceived.push(newPaymentReceived);
+      paymentsData.nextPaymentNumber++;
+      writePaymentsReceivedData(paymentsData);
+
+      res.json({ success: true, data: existingInvoice, paymentReceived: newPaymentReceived });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to record payment' });
     }
