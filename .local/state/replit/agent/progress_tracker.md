@@ -44,3 +44,4 @@
     - Changed /credit-notes/new to /credit-notes/create (matches existing route)
     - Changed /e-way-bills/new to /e-way-bills (matches existing route)
     - Verified Credit Notes page loads correctly without 404 error
+[x] 41. Session restart - reinstalled cross-env and verified application running (Dec 15, 2025 - latest session)
