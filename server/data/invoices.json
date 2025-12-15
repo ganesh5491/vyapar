@@ -1,6 +1,546 @@
 {
   "invoices": [
     {
+      "id": "1765538226327",
+      "invoiceNumber": "INV-00013",
+      "referenceNumber": "",
+      "date": "2025-12-12",
+      "dueDate": "2025-12-12",
+      "customerId": "1765535940025",
+      "customerName": "Cybaemtech",
+      "billingAddress": {
+        "street": "Street 1: 21/4 Grain Market Road, Street 2: Near Central Warehouse\nKolhapur\nMaharashtra\nIndia\n416012",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "PAID",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 1440,
+      "shippingCharges": 0,
+      "cgst": 129.6,
+      "sgst": 129.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1699.2,
+      "amountPaid": 1699,
+      "balanceDue": 0.20000000000004547,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T11:17:06.327Z",
+      "updatedAt": "2025-12-12T11:50:50.156Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765540250156",
+          "date": "2025-12-12",
+          "amount": 1699,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T11:17:06.327Z",
+          "action": "created",
+          "description": "Invoice created for ₹1,699.2",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T11:50:50.156Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹1,699 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765538132481",
+      "invoiceNumber": "INV-00012",
+      "referenceNumber": "1008",
+      "date": "2025-12-12",
+      "dueDate": "2026-01-11",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "nilraj",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 10,
+          "unit": "",
+          "rate": 60,
+          "discount": 10,
+          "discountType": "amount",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 590
+        }
+      ],
+      "subTotal": 590,
+      "shippingCharges": 0,
+      "cgst": 14.75,
+      "sgst": 14.75,
+      "igst": 0,
+      "adjustment": 0.5,
+      "total": 620,
+      "amountPaid": 610,
+      "balanceDue": 10,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "make payment for 45 days",
+      "status": "PARTIALLY_PAID",
+      "sourceType": "quote",
+      "sourceId": "1765538032483",
+      "sourceNumber": "QT-000010",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T11:15:32.481Z",
+      "updatedAt": "2025-12-12T11:21:57.018Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765538448028",
+          "date": "2025-12-12",
+          "amount": 20,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765538462522",
+          "date": "2025-12-12",
+          "amount": 10,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765538462535",
+          "date": "2025-12-12",
+          "amount": 10,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765538475305",
+          "date": "2025-12-12",
+          "amount": 100,
+          "paymentMode": "upi",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765538490369",
+          "date": "2025-12-12",
+          "amount": 200,
+          "paymentMode": "cheque",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765538502553",
+          "date": "2025-12-12",
+          "amount": 10,
+          "paymentMode": "bank_transfer",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765538517018",
+          "date": "2025-12-12",
+          "amount": 260,
+          "paymentMode": "credit_card",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T11:15:32.481Z",
+          "action": "created",
+          "description": "Invoice created from Quote QT-000010",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T11:20:48.027Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹20 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-12T11:21:02.522Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹10 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-12T11:21:02.535Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹10 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-12T11:21:15.305Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹100 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-12T11:21:30.369Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹200 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "7",
+          "timestamp": "2025-12-12T11:21:42.553Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹10 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "8",
+          "timestamp": "2025-12-12T11:21:57.018Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹260 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765536949596",
+      "invoiceNumber": "INV-00011",
+      "referenceNumber": "98776",
+      "date": "2025-12-12",
+      "dueDate": "2026-01-11",
+      "customerId": "7",
+      "customerName": "Cybaemtech",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "Sujay",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 10,
+          "unit": "",
+          "rate": 60,
+          "discount": 5,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 570
+        },
+        {
+          "id": "1765536428018",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 3,
+          "unit": "",
+          "rate": 555,
+          "discount": 10,
+          "discountType": "percentage",
+          "tax": 28,
+          "taxName": "GST28",
+          "amount": 1498.5
+        }
+      ],
+      "subTotal": 2068.5,
+      "shippingCharges": 150,
+      "cgst": 261.09,
+      "sgst": 261.09,
+      "igst": 0,
+      "adjustment": 0.32,
+      "total": 2741,
+      "amountPaid": 0,
+      "balanceDue": 2741,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "payment to be done in first 30 days ",
+      "status": "PENDING",
+      "sourceType": "quote",
+      "sourceId": "1765536625856",
+      "sourceNumber": "QT-000009",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T10:55:49.596Z",
+      "updatedAt": "2025-12-12T10:55:49.596Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T10:55:49.596Z",
+          "action": "created",
+          "description": "Invoice created from Quote QT-000009",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765536890845",
+      "invoiceNumber": "INV-00010",
+      "referenceNumber": "",
+      "date": "2025-12-12",
+      "dueDate": "2026-01-11",
+      "customerId": "1765535940025",
+      "customerName": "Cybaemtech",
+      "billingAddress": {
+        "street": "Street 1: 21/4 Grain Market Road, Street 2: Near Central Warehouse\nKolhapur\nMaharashtra\nIndia\n416012",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 1440,
+      "shippingCharges": 0,
+      "cgst": 129.6,
+      "sgst": 129.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1699.2,
+      "amountPaid": 0,
+      "balanceDue": 1699.2,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "SENT",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T10:54:50.845Z",
+      "updatedAt": "2025-12-12T11:50:11.481Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T10:54:50.845Z",
+          "action": "created",
+          "description": "Invoice created for ₹1,699.2",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T11:50:11.481Z",
+          "action": "sent",
+          "description": "Invoice has been sent",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765536854270",
+      "invoiceNumber": "INV-00009",
+      "referenceNumber": "",
+      "date": "2025-12-12",
+      "dueDate": "2026-01-11",
+      "customerId": "1765535940025",
+      "customerName": "Cybaemtech",
+      "billingAddress": {
+        "street": "Street 1: 21/4 Grain Market Road, Street 2: Near Central Warehouse\nKolhapur\nMaharashtra\nIndia\n416012",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Web Design Services",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 1200,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 216,
+          "taxName": "GST18",
+          "amount": 1416
+        },
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 1440,
+      "shippingCharges": 0,
+      "cgst": 129.6,
+      "sgst": 129.6,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1699.2,
+      "amountPaid": 0,
+      "balanceDue": 1699.2,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T10:54:14.270Z",
+      "updatedAt": "2025-12-12T10:54:14.270Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T10:54:14.270Z",
+          "action": "created",
+          "description": "Invoice created for ₹1,699.2",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765438698924",
       "invoiceNumber": "INV-00007",
       "referenceNumber": "",
@@ -606,5 +1146,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 9
+  "nextInvoiceNumber": 14
 }

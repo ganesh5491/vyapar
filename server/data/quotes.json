@@ -1,6 +1,210 @@
 {
   "quotes": [
     {
+      "id": "1765538032483",
+      "quoteNumber": "QT-000010",
+      "referenceNumber": "1008",
+      "date": "2025-12-12",
+      "expiryDate": "",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "nilraj",
+      "projectName": "default",
+      "subject": "This quotation only for rice",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 10,
+          "unit": "",
+          "rate": 60,
+          "discount": 10,
+          "discountType": "amount",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 590
+        }
+      ],
+      "subTotal": 590,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 14.75,
+      "sgst": 14.75,
+      "igst": 0,
+      "adjustment": 0.5,
+      "total": 620,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "make payment for 45 days",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-12T11:13:52.483Z",
+      "updatedAt": "2025-12-12T11:15:32.481Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T11:13:52.483Z",
+          "action": "created",
+          "description": "Quote created for ₹620",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T11:15:32.481Z",
+          "action": "converted",
+          "description": "Converted to Invoice INV-00012",
+          "user": "Admin User",
+          "link": "/invoices/1765538132481"
+        }
+      ]
+    },
+    {
+      "id": "1765536625856",
+      "quoteNumber": "QT-000009",
+      "referenceNumber": "98776",
+      "date": "2025-12-12",
+      "expiryDate": "2025-12-19",
+      "customerId": "7",
+      "customerName": "Cybaemtech",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "Sujay",
+      "projectName": "default",
+      "subject": "Quotation for rice",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 10,
+          "unit": "",
+          "rate": 60,
+          "discount": 5,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 570
+        },
+        {
+          "id": "1765536428018",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 3,
+          "unit": "",
+          "rate": 555,
+          "discount": 10,
+          "discountType": "percentage",
+          "tax": 28,
+          "taxName": "GST28",
+          "amount": 1498.5
+        }
+      ],
+      "subTotal": 2068.5,
+      "shippingCharges": 150,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 261.09,
+      "sgst": 261.09,
+      "igst": 0,
+      "adjustment": 0.32,
+      "total": 2741,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "payment to be done in first 30 days ",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-12T10:50:25.854Z",
+      "updatedAt": "2025-12-12T10:59:29.036Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T10:50:25.854Z",
+          "action": "created",
+          "description": "Quote created for ₹2,741",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T10:51:09.824Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-12T10:51:30.190Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-12T10:51:42.723Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-12T10:55:49.596Z",
+          "action": "converted",
+          "description": "Converted to Invoice INV-00011",
+          "user": "Admin User",
+          "link": "/invoices/1765536949596"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-12T10:56:38.143Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "7",
+          "timestamp": "2025-12-12T10:59:29.036Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
+        }
+      ],
+      "updatedBy": "Admin User"
+    },
+    {
       "id": "1765435390839",
       "quoteNumber": "QT-000007",
       "referenceNumber": "",
@@ -54,10 +258,10 @@
       "total": 555,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "SENT",
+      "status": "CONVERTED",
       "emailRecipients": [],
       "createdAt": "2025-12-11T06:43:10.839Z",
-      "updatedAt": "2025-12-12T04:12:38.225Z",
+      "updatedAt": "2025-12-12T11:01:49.680Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -88,6 +292,14 @@
           "action": "sent",
           "description": "Quote has been sent to customer",
           "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-12T11:01:49.680Z",
+          "action": "converted",
+          "description": "Converted to Sales Order SO-00011",
+          "user": "Admin User",
+          "link": "/sales-orders/1765537309680"
         }
       ]
     },
@@ -569,5 +781,5 @@
       ]
     }
   ],
-  "nextQuoteNumber": 9
+  "nextQuoteNumber": 11
 }

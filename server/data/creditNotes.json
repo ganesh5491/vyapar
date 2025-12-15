@@ -1,6 +1,70 @@
 {
   "creditNotes": [
     {
+      "id": "1765534233343",
+      "creditNoteNumber": "CN-00003",
+      "referenceNumber": "23113",
+      "date": "2025-12-12",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "invoiceId": "",
+      "invoiceNumber": "",
+      "reason": "post_sale_discount",
+      "salesperson": "nilraj",
+      "subject": "",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "gstin": "",
+      "placeOfSupply": "Maharashtra",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Antivirus1",
+          "description": "",
+          "account": "service",
+          "quantity": 11,
+          "rate": 550,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 6050
+        }
+      ],
+      "subTotal": 6050,
+      "shippingCharges": 0,
+      "tdsType": "TDS",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 6050,
+      "creditsRemaining": 6050,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "OPEN",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T10:10:33.343Z",
+      "updatedAt": "2025-12-12T10:10:33.343Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T10:10:33.343Z",
+          "action": "created",
+          "description": "Credit Note created for ₹6,050",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765519677707",
       "creditNoteNumber": "CN-00002",
       "referenceNumber": "121321",
@@ -52,7 +116,7 @@
       "status": "OPEN",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-12T06:07:57.707Z",
-      "updatedAt": "2025-12-12T06:07:57.707Z",
+      "updatedAt": "2025-12-12T10:09:12.300Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -60,6 +124,13 @@
           "timestamp": "2025-12-12T06:07:57.707Z",
           "action": "created",
           "description": "Credit Note created for ₹0",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T10:09:12.300Z",
+          "action": "updated",
+          "description": "Credit Note has been updated",
           "user": "Admin User"
         }
       ]
@@ -113,12 +184,21 @@
       "creditsRemaining": 0,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "CLOSED",
+      "status": "DRAFT",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-12T00:00:00.000Z",
-      "updatedAt": "2025-12-12T00:00:00.000Z",
-      "createdBy": "Admin User"
+      "updatedAt": "2025-12-12T10:09:05.790Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T10:09:05.790Z",
+          "action": "updated",
+          "description": "Credit Note has been updated",
+          "user": "Admin User"
+        }
+      ]
     }
   ],
-  "nextCreditNoteNumber": 3
+  "nextCreditNoteNumber": 4
 }

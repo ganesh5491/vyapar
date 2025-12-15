@@ -1,6 +1,98 @@
 {
   "salesOrders": [
     {
+      "id": "1765537309680",
+      "salesOrderNumber": "SO-00011",
+      "referenceNumber": "",
+      "date": "2025-12-12",
+      "expectedShipmentDate": "",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "",
+      "salesperson": "rohan",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "2",
+          "name": "Cloud Server",
+          "description": "",
+          "quantity": 1,
+          "unit": "",
+          "rate": 555,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 555,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        }
+      ],
+      "subTotal": 555,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 555,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [
+        {
+          "id": "INV-00017",
+          "invoiceNumber": "INV-00017",
+          "date": "2025-12-12",
+          "dueDate": "2025-12-12",
+          "status": "DRAFT",
+          "amount": 555,
+          "balanceDue": 555
+        }
+      ],
+      "sourceType": "quote",
+      "sourceId": "1765435390839",
+      "sourceNumber": "QT-000007",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-12T11:01:49.680Z",
+      "updatedAt": "2025-12-12T11:05:30.155Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-12T11:01:49.680Z",
+          "action": "created",
+          "description": "Sales Order created from Quote QT-000007",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-12T11:05:30.155Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00017 created",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765518014969",
       "salesOrderNumber": "SO-00010",
       "referenceNumber": "",
@@ -867,11 +959,20 @@
           "status": "DRAFT",
           "amount": 16698,
           "balanceDue": 16698
+        },
+        {
+          "id": "INV-00018",
+          "invoiceNumber": "INV-00018",
+          "date": "2025-12-12",
+          "dueDate": "2025-12-12",
+          "status": "DRAFT",
+          "amount": 16698,
+          "balanceDue": 16698
         }
       ],
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-11-13T15:18:00.000Z",
-      "updatedAt": "2025-12-10T04:52:26.935Z",
+      "updatedAt": "2025-12-12T11:06:53.178Z",
       "createdBy": "Rohan Bhosale",
       "activityLogs": [
         {
@@ -907,6 +1008,13 @@
           "timestamp": "2025-12-10T04:52:26.935Z",
           "action": "invoiced",
           "description": "Invoice INV-00009 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-12T11:06:53.178Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00018 created",
           "user": "Admin User"
         }
       ]
@@ -1039,6 +1147,6 @@
       ]
     }
   ],
-  "nextSalesOrderNumber": 11,
-  "nextInvoiceNumber": 17
+  "nextSalesOrderNumber": 12,
+  "nextInvoiceNumber": 19
 }

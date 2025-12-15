@@ -6,8 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { 
-    Plus, 
+import {
+    Plus,
     X,
     Settings,
     FileText,
@@ -17,7 +17,8 @@ import {
     Ship,
     ExternalLink,
     Pencil,
-    ChevronDown
+    ChevronDown,
+    Trash2
 } from "lucide-react";
 import {
     Select,
@@ -208,6 +209,188 @@ const transactionTypeFilters = [
     { value: 'all', label: 'All Types' },
 ];
 
+interface EWayBillDetailPanelProps {
+    bill: EWayBillDetail;
+    onClose: () => void;
+    onEdit: () => void;
+    onDelete: () => void;
+}
+
+function EWayBillDetailPanel({ bill, onClose, onEdit, onDelete }: EWayBillDetailPanelProps) {
+    return (
+        <div className="flex-1 flex flex-col bg-background">
+            <div className="p-4 border-b flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    <h2 className="text-lg font-semibold" data-testid="text-view-title">
+                        {bill.ewayBillNumber}
+                    </h2>
+                    <Badge className={getStatusColor(bill.status)}>
+                        {bill.status}
+                    </Badge>
+                </div>
+                <Button variant="ghost" size="icon" onClick={onClose} data-testid="button-close-view">
+                    <X className="w-4 h-4" />
+                </Button>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 border-b overflow-x-auto flex-wrap">
+                <Button variant="ghost" size="sm" className="gap-1.5" onClick={onEdit} data-testid="button-edit-eway-bill">
+                    <Pencil className="h-3.5 w-3.5" />
+                    Edit
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-destructive"
+                    onClick={onDelete}
+                    data-testid="button-delete-eway-bill"
+                >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
+                </Button>
+            </div>
+
+            <ScrollArea className="flex-1 p-6">
+                <div className="max-w-4xl space-y-6">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg border p-6 space-y-4">
+                        <h3 className="font-semibold text-lg">E-Way Bill Information</h3>
+
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span className="text-muted-foreground">E-Way Bill Number:</span>
+                                <p className="font-medium">{bill.ewayBillNumber}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Document Type:</span>
+                                <p className="font-medium capitalize">{bill.documentType.replace('_', ' ')}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Transaction Sub Type:</span>
+                                <p className="font-medium capitalize">{bill.transactionSubType.replace('_', ' ')}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Date:</span>
+                                <p className="font-medium">{formatDate(bill.date)}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Expiry Date:</span>
+                                <p className="font-medium">{formatDate(bill.expiryDate)}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Transaction Type:</span>
+                                <p className="font-medium capitalize">{bill.transactionType.replace('_', ' ')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800 rounded-lg border p-6 space-y-4">
+                        <h3 className="font-semibold text-lg">Customer Information</h3>
+
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span className="text-muted-foreground">Customer Name:</span>
+                                <p className="font-medium">{bill.customerName}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Customer GSTIN:</span>
+                                <p className="font-medium">{bill.customerGstin || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Document Number:</span>
+                                <p className="font-medium">{bill.documentNumber || '-'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800 rounded-lg border p-6 space-y-4">
+                        <h3 className="font-semibold text-lg">Address Details</h3>
+
+                        <div className="grid grid-cols-2 gap-6">
+                            <div>
+                                <h4 className="text-xs font-medium text-muted-foreground mb-2">DISPATCH FROM</h4>
+                                <div className="text-sm space-y-0.5">
+                                    {formatAddress(bill.dispatchFrom).map((line, i) => (
+                                        <p key={i}>{line}</p>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-medium text-muted-foreground mb-2">BILL FROM</h4>
+                                <div className="text-sm space-y-0.5">
+                                    {formatAddress(bill.billFrom).map((line, i) => (
+                                        <p key={i}>{line}</p>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-medium text-muted-foreground mb-2">BILL TO</h4>
+                                <div className="text-sm space-y-0.5">
+                                    {formatAddress(bill.billTo).map((line, i) => (
+                                        <p key={i}>{line}</p>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-medium text-muted-foreground mb-2">SHIP TO</h4>
+                                <div className="text-sm space-y-0.5">
+                                    {formatAddress(bill.shipTo).map((line, i) => (
+                                        <p key={i}>{line}</p>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800 rounded-lg border p-6 space-y-4">
+                        <h3 className="font-semibold text-lg">Transportation Details</h3>
+
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span className="text-muted-foreground">Place of Delivery:</span>
+                                <p className="font-medium">{bill.placeOfDelivery || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Transporter:</span>
+                                <p className="font-medium capitalize">{bill.transporter?.replace('_', ' ') || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Distance:</span>
+                                <p className="font-medium">{bill.distance || 0} km</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Mode of Transportation:</span>
+                                <p className="font-medium capitalize">{bill.modeOfTransportation?.replace('_', ' ') || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Vehicle Type:</span>
+                                <p className="font-medium capitalize">{bill.vehicleType?.replace('_', ' ') || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Vehicle Number:</span>
+                                <p className="font-medium">{bill.vehicleNo || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Transporter Doc No:</span>
+                                <p className="font-medium">{bill.transporterDocNo || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Transporter Doc Date:</span>
+                                <p className="font-medium">{bill.transporterDocDate ? formatDate(bill.transporterDocDate) : '-'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800 rounded-lg border p-6 space-y-4">
+                        <h3 className="font-semibold text-lg">Total Amount</h3>
+                        <p className="text-2xl font-bold text-blue-600">{formatCurrency(bill.total)}</p>
+                    </div>
+                </div>
+            </ScrollArea>
+        </div>
+    );
+}
+
 export default function EWayBills() {
     const { toast } = useToast();
     const [ewayBills, setEwayBills] = useState<EWayBillListItem[]>([]);
@@ -217,14 +400,15 @@ export default function EWayBills() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [billToDelete, setBillToDelete] = useState<string | null>(null);
     const [showCreateForm, setShowCreateForm] = useState(false);
-    
+    const [viewMode, setViewMode] = useState(false);
+
     const [periodFilter, setPeriodFilter] = useState('this_month');
     const [transactionTypeFilter, setTransactionTypeFilter] = useState('invoices');
     const [statusFilter, setStatusFilter] = useState('NOT_GENERATED');
 
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
-    
+
     const [formData, setFormData] = useState({
         documentType: 'credit_notes',
         transactionSubType: 'sales_return',
@@ -287,7 +471,7 @@ export default function EWayBills() {
             if (periodFilter !== 'all') params.append('period', periodFilter);
             if (transactionTypeFilter !== 'all') params.append('transactionType', transactionTypeFilter);
             if (statusFilter !== 'all') params.append('status', statusFilter);
-            
+
             const response = await fetch(`/api/eway-bills?${params.toString()}`);
             if (response.ok) {
                 const data = await response.json();
@@ -330,8 +514,8 @@ export default function EWayBills() {
             if (response.ok) {
                 const data = await response.json();
                 setSelectedBill(data.data);
-                setShowCreateForm(true);
-                
+
+
                 if (data.data) {
                     setFormData({
                         documentType: data.data.documentType || 'credit_notes',
@@ -351,7 +535,7 @@ export default function EWayBills() {
                         transporterDocNo: data.data.transporterDocNo || '',
                         transporterDocDate: data.data.transporterDocDate || '',
                     });
-                    
+
                     if (data.data.dispatchFrom || data.data.billFrom || data.data.billTo || data.data.shipTo) {
                         setAddressData({
                             dispatchFrom: data.data.dispatchFrom || addressData.dispatchFrom,
@@ -369,11 +553,14 @@ export default function EWayBills() {
 
     const handleSelectBill = (bill: EWayBillListItem) => {
         fetchBillDetail(bill.id);
+        setViewMode(true);
+        setShowCreateForm(false);
     };
 
     const handleCloseDetail = () => {
         setSelectedBill(null);
         setShowCreateForm(false);
+        setViewMode(false);
     };
 
     const handleNewEWayBill = () => {
@@ -406,7 +593,7 @@ export default function EWayBills() {
             const response = await fetch(`/api/eway-bills/${billToDelete}`, {
                 method: 'DELETE',
             });
-            
+
             if (response.ok) {
                 toast({
                     title: "E-Way Bill Deleted",
@@ -437,16 +624,16 @@ export default function EWayBills() {
                 ...addressData,
                 status: 'NOT_GENERATED',
             };
-            
+
             const url = selectedBill ? `/api/eway-bills/${selectedBill.id}` : '/api/eway-bills';
             const method = selectedBill ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            
+
             if (response.ok) {
                 toast({
                     title: "E-Way Bill Saved",
@@ -472,30 +659,30 @@ export default function EWayBills() {
                 ...addressData,
                 status: 'NOT_GENERATED',
             };
-            
+
             const url = selectedBill ? `/api/eway-bills/${selectedBill.id}` : '/api/eway-bills';
             const method = selectedBill ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
-                
+
                 const generateResponse = await fetch(`/api/eway-bills/${data.data.id}/generate`, {
                     method: 'PATCH',
                 });
-                
+
                 if (generateResponse.ok) {
                     toast({
                         title: "E-Way Bill Generated",
                         description: "The e-way bill has been generated successfully.",
                     });
                 }
-                
+
                 fetchEWayBills();
                 setShowCreateForm(false);
                 setSelectedBill(null);
@@ -522,7 +709,7 @@ export default function EWayBills() {
                 customerId: customer.id,
                 customerName: customer.displayName || customer.companyName,
             });
-            
+
             if (customer.billingAddress || customer.shippingAddress) {
                 setAddressData({
                     ...addressData,
@@ -564,7 +751,7 @@ export default function EWayBills() {
 
     return (
         <div className="flex h-full" data-testid="eway-bills-page">
-            <div className={`${showCreateForm ? 'hidden md:flex md:w-80 lg:w-96' : 'flex-1'} border-r flex flex-col bg-background transition-all duration-300`}>
+            <div className={`${(viewMode || showCreateForm) ? 'hidden md:flex md:w-80 lg:w-96' : 'flex-1'} border-r flex flex-col bg-background transition-all duration-300`}>
                 <div className="p-4 border-b space-y-4">
                     <div className="flex items-center justify-between gap-2">
                         <h1 className="text-xl font-semibold" data-testid="text-page-title">e-Way Bills</h1>
@@ -579,7 +766,7 @@ export default function EWayBills() {
                             </Button>
                         </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">Transaction Period:</span>
@@ -596,7 +783,7 @@ export default function EWayBills() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">Transaction Type:</span>
                             <Select value={transactionTypeFilter} onValueChange={setTransactionTypeFilter} data-testid="select-type-filter">
@@ -612,7 +799,7 @@ export default function EWayBills() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">e-Way Bill Status:</span>
                             <Select value={statusFilter} onValueChange={setStatusFilter} data-testid="select-status-filter">
@@ -637,7 +824,7 @@ export default function EWayBills() {
                             <thead className="bg-muted/50 sticky top-0">
                                 <tr className="border-b">
                                     <th className="p-3 text-left w-10">
-                                        <Checkbox 
+                                        <Checkbox
                                             checked={selectedBills.length === ewayBills.length && ewayBills.length > 0}
                                             onCheckedChange={handleSelectAll}
                                             data-testid="checkbox-select-all"
@@ -671,9 +858,8 @@ export default function EWayBills() {
                                     ewayBills.map((bill) => (
                                         <tr
                                             key={bill.id}
-                                            className={`border-b cursor-pointer hover-elevate ${
-                                                selectedBill?.id === bill.id ? 'bg-accent' : ''
-                                            }`}
+                                            className={`border-b cursor-pointer hover-elevate ${selectedBill?.id === bill.id ? 'bg-accent' : ''
+                                                }`}
                                             onClick={() => handleSelectBill(bill)}
                                             data-testid={`row-eway-bill-${bill.id}`}
                                         >
@@ -711,6 +897,21 @@ export default function EWayBills() {
                     </div>
                 </div>
             </div>
+
+            {viewMode && selectedBill && !showCreateForm && (
+                <EWayBillDetailPanel
+                    bill={selectedBill}
+                    onClose={handleCloseDetail}
+                    onEdit={() => {
+                        setViewMode(false);
+                        setShowCreateForm(true);
+                    }}
+                    onDelete={() => {
+                        setBillToDelete(selectedBill.id);
+                        setDeleteDialogOpen(true);
+                    }}
+                />
+            )}
 
             {showCreateForm && (
                 <div className="flex-1 flex flex-col bg-background">
@@ -913,7 +1114,7 @@ export default function EWayBills() {
 
                             <div className="space-y-4 pt-4 border-t">
                                 <h3 className="font-semibold text-sm">TRANSPORTATION DETAILS</h3>
-                                
+
                                 <div className="space-y-2">
                                     <Label>Transporter</Label>
                                     <Select
@@ -955,7 +1156,7 @@ export default function EWayBills() {
 
                                 <div className="space-y-4 pt-4">
                                     <h4 className="font-medium text-sm">PART B</h4>
-                                    
+
                                     <div className="space-y-2">
                                         <Label>Mode of Transportation</Label>
                                         <Tabs value={formData.modeOfTransportation} onValueChange={(value) => setFormData({ ...formData, modeOfTransportation: value })}>

@@ -49,11 +49,11 @@
       "total": 590,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "DRAFT",
+      "status": "OPEN",
       "invoiceStatus": "INVOICED",
       "invoiceId": "1765512535378",
       "createdAt": "2025-12-18T10:00:00.000Z",
-      "updatedAt": "2025-12-12T04:08:55.378Z",
+      "updatedAt": "2025-12-12T10:06:13.157Z",
       "activityLogs": [
         {
           "id": "1",
@@ -81,6 +81,27 @@
           "timestamp": "2025-12-12T04:08:55.378Z",
           "action": "converted",
           "description": "Converted to invoice INV-00008",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-12T10:00:22.942Z",
+          "action": "status_changed",
+          "description": "Status changed to OPEN",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-12T10:05:31.511Z",
+          "action": "status_changed",
+          "description": "Status changed to DELIVERED",
+          "user": "Admin User"
+        },
+        {
+          "id": "7",
+          "timestamp": "2025-12-12T10:06:13.157Z",
+          "action": "status_changed",
+          "description": "Status changed to OPEN",
           "user": "Admin User"
         }
       ]

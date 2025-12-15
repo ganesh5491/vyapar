@@ -179,7 +179,54 @@
       "contactPersons": [],
       "createdAt": "2025-12-12T06:54:53.423Z",
       "updatedAt": "2025-12-12T06:54:53.423Z"
+    },
+    {
+      "id": "7",
+      "name": "Cybaemtech",
+      "displayName": "Cybaemtech",
+      "companyName": "Cybaemtech",
+      "email": "ganeshkale030303@gmail.com",
+      "phone": "+919028441589",
+      "workPhone": "+919028441589",
+      "mobile": "",
+      "gstTreatment": "Registered Business - Regular",
+      "receivables": "₹0.00",
+      "avatar": "CY",
+      "pan": "",
+      "customerType": "business",
+      "status": "active",
+      "billingAddress": {
+        "street": "Street 1: 21/4 Grain Market Road, Street 2: Near Central Warehouse",
+        "city": "Kolhapur",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "416012"
+      },
+      "shippingAddress": {
+        "street": "Street 1: Plot No. 14, Industrial Estate, Street 2: Godown No. 3, Shiroli MIDC",
+        "city": "Kolhapur",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "416122"
+      },
+      "currency": "INR",
+      "paymentTerms": "Due on Receipt",
+      "placeOfSupply": "Maharashtra",
+      "taxPreference": "taxable",
+      "portalStatus": "disabled",
+      "contactPersons": [
+        {
+          "salutation": "Mr",
+          "firstName": "Ramesh",
+          "lastName": "Patil",
+          "email": "ramesh.patil@shreelakshmigrains.com",
+          "workPhone": "022-4897 1123",
+          "mobile": "+91 98231 44567"
+        }
+      ],
+      "createdAt": "2025-12-12T10:39:00.014Z",
+      "updatedAt": "2025-12-12T10:39:00.014Z"
     }
   ],
-  "nextCustomerId": 7
+  "nextCustomerId": 8
 }

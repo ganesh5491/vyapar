@@ -322,6 +322,16 @@ function CreditNoteDetailPanel({ creditNote, onClose, onEdit, onDelete }: Credit
           <Send className="h-3.5 w-3.5" />
           Email
         </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="gap-1.5 text-blue-600" 
+          onClick={() => window.location.href = `/e-way-bills?creditNoteId=${creditNote.id}`}
+          data-testid="button-add-eway-bill"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          Add e-Way Bill Details
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-1.5" data-testid="button-pdf-print">
