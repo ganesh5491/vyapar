@@ -6,6 +6,8 @@ import {
   Eye, Check, List, Grid3X3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -596,6 +598,8 @@ export default function Bills() {
     bill.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredBills, 10);
+
   const getStatusBadge = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'PAID':
@@ -707,7 +711,7 @@ export default function Bills() {
             </div>
           ) : viewMode === 'list' && selectedBill ? (
             <div className="divide-y divide-slate-100">
-              {filteredBills.map((bill) => (
+              {paginatedItems.map((bill) => (
                 <div
                   key={bill.id}
                   onClick={() => handleBillClick(bill)}
@@ -748,7 +752,7 @@ export default function Bills() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBills.map((bill) => (
+                {paginatedItems.map((bill) => (
                   <TableRow
                     key={bill.id}
                     onClick={() => handleBillClick(bill)}
@@ -794,6 +798,15 @@ export default function Bills() {
                 ))}
               </TableBody>
             </Table>
+          )}
+          {filteredBills.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={goToPage}
+            />
           )}
         </div>
       </div>

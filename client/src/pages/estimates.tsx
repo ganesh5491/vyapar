@@ -55,6 +55,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 
 interface Quote {
   id: string;
@@ -436,6 +438,8 @@ export default function Estimates() {
     return matchesSearch && matchesStatus;
   });
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredQuotes, 10);
+
   return (
     <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300">
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${selectedQuote ? 'w-80' : 'w-full'}`}>
@@ -489,6 +493,7 @@ export default function Estimates() {
               </Button>
             </div>
           ) : (
+            <>
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
                 <tr className="border-b border-slate-200 dark:border-slate-700">
@@ -515,7 +520,7 @@ export default function Estimates() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                {filteredQuotes.map((quote) => (
+                {paginatedItems.map((quote) => (
                   <tr
                     key={quote.id}
                     className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${selectedQuote?.id === quote.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
@@ -565,6 +570,14 @@ export default function Estimates() {
                 ))}
               </tbody>
             </table>
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={goToPage}
+            />
+            </>
           )}
         </div>
       </div>

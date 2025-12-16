@@ -488,17 +488,17 @@
       "igst": 0,
       "adjustment": 0,
       "total": 11328,
-      "amountPaid": 1100,
-      "balanceDue": 10228,
+      "amountPaid": 0,
+      "balanceDue": 11328,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "PARTIALLY_PAID",
+      "status": "SENT",
       "sourceType": null,
       "sourceId": null,
       "sourceNumber": null,
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T07:33:07.984Z",
-      "updatedAt": "2025-12-16T04:25:28.119Z",
+      "updatedAt": "2025-12-16T06:35:21.373Z",
       "createdBy": "Admin User",
       "payments": [
         {
@@ -512,6 +512,14 @@
         {
           "id": "1765859128119",
           "date": "2025-12-16T04:22:00.000Z",
+          "amount": 1000,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765866698990",
+          "date": "2025-12-16T06:31:00.000Z",
           "amount": 1000,
           "paymentMode": "cash",
           "reference": "",
@@ -546,8 +554,65 @@
           "action": "payment_recorded",
           "description": "Payment of ₹1,000 recorded",
           "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-16T06:31:38.990Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹1,000 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-16T06:32:00.893Z",
+          "action": "refund_recorded",
+          "description": "Refund of ₹1,000 processed",
+          "user": "Admin User"
+        },
+        {
+          "id": "7",
+          "timestamp": "2025-12-16T06:32:43.290Z",
+          "action": "refund_recorded",
+          "description": "Refund of ₹-1,000 recorded from Payment #REF-21",
+          "user": "Admin User"
+        },
+        {
+          "id": "8",
+          "timestamp": "2025-12-16T06:35:21.373Z",
+          "action": "refund_recorded",
+          "description": "Refund of ₹2,100 processed",
+          "user": "Admin User"
         }
-      ]
+      ],
+      "refunds": [
+        {
+          "id": "ref-1765866720893",
+          "paymentId": null,
+          "paymentNumber": null,
+          "amount": 1000,
+          "date": "2025-12-16T06:32:00.893Z",
+          "reason": "Refund processed",
+          "mode": "Cash"
+        },
+        {
+          "id": "ref-1765866763291",
+          "paymentId": "pr-ref-1765866720894",
+          "paymentNumber": "REF-21",
+          "amount": -1000,
+          "date": "2025-12-16T06:32:43.290Z",
+          "reason": "Payment refunded"
+        },
+        {
+          "id": "ref-1765866921373",
+          "paymentId": null,
+          "paymentNumber": null,
+          "amount": 2100,
+          "date": "2025-12-16T06:35:21.373Z",
+          "reason": "Refund processed",
+          "mode": "Cash"
+        }
+      ],
+      "amountRefunded": 2100
     },
     {
       "id": "1765783987939",

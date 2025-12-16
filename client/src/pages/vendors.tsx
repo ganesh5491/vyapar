@@ -8,6 +8,8 @@ import {
   Receipt, CreditCard, Wallet, BookOpen, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1128,6 +1130,8 @@ export default function VendorsPage() {
     }
   });
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(sortedVendors, 10);
+
   const formatCurrencyLocal = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -1235,7 +1239,7 @@ export default function VendorsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                {sortedVendors.map((vendor) => (
+                {paginatedItems.map((vendor) => (
                   <tr 
                     key={vendor.id} 
                     className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
@@ -1286,6 +1290,15 @@ export default function VendorsPage() {
                 ))}
               </tbody>
             </table>
+          )}
+          {sortedVendors.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={goToPage}
+            />
           )}
         </div>
       </div>

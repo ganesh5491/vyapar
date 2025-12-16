@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { jsPDF } from "jspdf";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -398,6 +400,8 @@ export default function DeliveryChallans() {
         challan.customerName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredChallans, 10);
+
     const toggleSelectAll = () => {
         if (selectedChallans.length === filteredChallans.length) {
             setSelectedChallans([]);
@@ -510,7 +514,7 @@ export default function DeliveryChallans() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredChallans.map((challan) => (
+                                    paginatedItems.map((challan) => (
                                         <tr
                                             key={challan.id}
                                             className={`border-b border-border/40 hover-elevate cursor-pointer ${selectedChallan?.id === challan.id ? 'bg-primary/5' : ''}`}
@@ -592,6 +596,13 @@ export default function DeliveryChallans() {
                                 )}
                             </tbody>
                         </table>
+                        <TablePagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalItems}
+                            itemsPerPage={itemsPerPage}
+                            onPageChange={goToPage}
+                        />
                     </ScrollArea>
                 </div>
             </div>

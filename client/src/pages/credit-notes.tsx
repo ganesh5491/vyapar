@@ -16,6 +16,8 @@ import {
   ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -501,6 +503,8 @@ export default function CreditNotes() {
     return matchesSearch && cn.status.toLowerCase() === activeFilter.toLowerCase();
   });
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredCreditNotes, 10);
+
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) {
@@ -583,7 +587,7 @@ export default function CreditNotes() {
                   <td colSpan={10} className="px-4 py-8 text-center text-slate-500">No credit notes found</td>
                 </tr>
               ) : (
-                filteredCreditNotes.map((cn) => (
+                paginatedItems.map((cn) => (
                   <tr 
                     key={cn.id} 
                     className={`hover-elevate cursor-pointer ${selectedCreditNote?.id === cn.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
@@ -614,6 +618,15 @@ export default function CreditNotes() {
               )}
             </tbody>
           </table>
+          {filteredCreditNotes.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={goToPage}
+            />
+          )}
         </div>
       </div>
 

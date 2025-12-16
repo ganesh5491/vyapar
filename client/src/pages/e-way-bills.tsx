@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -749,6 +751,8 @@ export default function EWayBills() {
         }
     };
 
+    const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(ewayBills, 10);
+
     return (
         <div className="flex h-full" data-testid="eway-bills-page">
             <div className={`${(viewMode || showCreateForm) ? 'hidden md:flex md:w-80 lg:w-96' : 'flex-1'} border-r flex flex-col bg-background transition-all duration-300`}>
@@ -855,7 +859,7 @@ export default function EWayBills() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    ewayBills.map((bill) => (
+                                    paginatedItems.map((bill) => (
                                         <tr
                                             key={bill.id}
                                             className={`border-b cursor-pointer hover-elevate ${selectedBill?.id === bill.id ? 'bg-accent' : ''
@@ -894,6 +898,13 @@ export default function EWayBills() {
                                 )}
                             </tbody>
                         </table>
+                        <TablePagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalItems}
+                            itemsPerPage={itemsPerPage}
+                            onPageChange={goToPage}
+                        />
                     </div>
                 </div>
             </div>

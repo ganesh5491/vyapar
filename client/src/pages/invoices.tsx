@@ -66,6 +66,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 
 interface InvoiceListItem {
     id: string;
@@ -576,6 +578,8 @@ export default function Invoices() {
         invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredInvoices, 10);
+
     const getCalculatedStatus = (invoice: InvoiceListItem) => {
         if (invoice.status === 'PAID') return { label: 'PAID', color: 'text-green-700', bgColor: 'bg-green-100' };
         if (invoice.status === 'DRAFT') return { label: 'DRAFT', color: 'text-slate-600', bgColor: 'bg-slate-100' };
@@ -683,6 +687,7 @@ export default function Invoices() {
                             })}
                         </div>
                     ) : (
+                        <>
                         <table className="w-full">
                             <thead className="bg-slate-50 sticky top-0">
                                 <tr>
@@ -700,7 +705,7 @@ export default function Invoices() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {filteredInvoices.map((invoice) => {
+                                {paginatedItems.map((invoice) => {
                                     const status = getCalculatedStatus(invoice);
                                     return (
                                         <tr
@@ -760,6 +765,14 @@ export default function Invoices() {
                                 })}
                             </tbody>
                         </table>
+                        <TablePagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalItems}
+                            itemsPerPage={itemsPerPage}
+                            onPageChange={goToPage}
+                        />
+                        </>
                     )}
                 </div>
             </div>

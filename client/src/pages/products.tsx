@@ -14,6 +14,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 
 interface Item {
   id: string;
@@ -83,6 +85,7 @@ export default function Products() {
   const [, setLocation] = useLocation();
   const [items] = useState<Item[]>(initialItems);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(items, 10);
 
   const toggleSelectAll = () => {
     if (selectedItems.length === items.length) {
@@ -206,7 +209,7 @@ export default function Products() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item) => (
+            {paginatedItems.map((item) => (
               <TableRow key={item.id} className="hover:bg-slate-50/50">
                 <TableCell>
                   <Checkbox 
@@ -241,6 +244,13 @@ export default function Products() {
             ))}
           </TableBody>
         </Table>
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+        />
       </div>
     </div>
   );

@@ -594,7 +594,119 @@
       "amountInWords": "Indian Rupee One Thousand Only",
       "journalEntries": [],
       "createdAt": "2025-12-16T04:25:28.119Z"
+    },
+    {
+      "id": "pr-1765866698999",
+      "paymentNumber": "20",
+      "date": "2025-12-16",
+      "referenceNumber": "",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1765783987984",
+          "invoiceNumber": "INV-00019",
+          "invoiceDate": "2025-12-15",
+          "invoiceAmount": 11328,
+          "amountDue": 9228,
+          "paymentAmount": 1000
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 1000,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00019",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "PAID",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee One Thousand Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-16T06:31:38.990Z"
+    },
+    {
+      "id": "pr-ref-1765866720894",
+      "paymentNumber": "REF-21",
+      "date": "2025-12-16",
+      "referenceNumber": "",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1765783987984",
+          "invoiceNumber": "INV-00019",
+          "invoiceDate": "2025-12-15",
+          "invoiceAmount": 11328,
+          "refundAmount": 1000
+        }
+      ],
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "amount": -1000,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Refund processed",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "REFUNDED",
+      "paymentType": "refund",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Refund: Indian Rupee One Thousand Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-16T06:32:00.893Z",
+      "isRefund": true,
+      "originalInvoiceId": "1765783987984",
+      "refundedAt": "2025-12-16T06:32:43.290Z",
+      "refundAmount": -1000
+    },
+    {
+      "id": "pr-ref-1765866921376",
+      "paymentNumber": "REF-22",
+      "date": "2025-12-16",
+      "referenceNumber": "",
+      "customerId": "1",
+      "customerName": "A SQUARE ARCHITECTS",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1765783987984",
+          "invoiceNumber": "INV-00019",
+          "invoiceDate": "2025-12-15",
+          "invoiceAmount": 11328,
+          "refundAmount": 2100
+        }
+      ],
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "amount": -2100,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Refund processed",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "REFUNDED",
+      "paymentType": "refund",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Refund: Indian Rupee Two Thousand One Hundred Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-16T06:35:21.373Z",
+      "isRefund": true,
+      "originalInvoiceId": "1765783987984"
     }
   ],
-  "nextPaymentNumber": 20
+  "nextPaymentNumber": 23
 }

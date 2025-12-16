@@ -47,9 +47,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import ExpenseDetailPanel from "@/modules/expenses/components/ExpenseDetailPanel";
+import { TablePagination } from "@/components/table-pagination";
 
 interface Expense {
   id: string;
@@ -442,6 +444,8 @@ export default function Expenses() {
     expense.expenseAccount?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredExpenses, 10);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -664,7 +668,7 @@ export default function Expenses() {
                           </tr>
                         </thead>
                         <tbody className="divide-y">
-                          {filteredExpenses.map((expense) => (
+                          {paginatedItems.map((expense) => (
                             <tr
                               key={expense.id}
                               className={`hover:bg-slate-50 cursor-pointer transition-colors ${selectedExpense?.id === expense.id ? 'bg-blue-50' : ''
@@ -708,6 +712,13 @@ export default function Expenses() {
                           ))}
                         </tbody>
                       </table>
+                      <TablePagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalItems}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={goToPage}
+                      />
                     </div>
                   </div>
                 )}

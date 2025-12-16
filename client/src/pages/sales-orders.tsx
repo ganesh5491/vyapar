@@ -48,6 +48,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 
 interface SalesOrderListItem {
   id: string;
@@ -805,6 +807,8 @@ export default function SalesOrdersPage() {
     (order.referenceNumber && order.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredOrders, 10);
+
   return (
     <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300 -m-4 lg:-m-6">
       <div className={`flex-1 flex flex-col overflow-hidden ${selectedOrder ? 'max-w-md' : ''}`}>
@@ -910,6 +914,7 @@ export default function SalesOrdersPage() {
               ))}
             </div>
           ) : (
+            <>
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
                 <tr>
@@ -928,7 +933,7 @@ export default function SalesOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredOrders.map((order) => (
+                {paginatedItems.map((order) => (
                   <tr 
                     key={order.id} 
                     className="hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
@@ -988,6 +993,14 @@ export default function SalesOrdersPage() {
                 ))}
               </tbody>
             </table>
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={goToPage}
+            />
+            </>
           )}
         </div>
       </div>

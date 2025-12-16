@@ -5,6 +5,8 @@ import {
   X, Send, FileText, Printer, Download, RefreshCw, Eye,
   Check, Filter
 } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -1040,6 +1042,8 @@ export default function PaymentsReceived() {
     payment.referenceNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredPayments, 10);
+
   const getStatusBadge = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'PAID':
@@ -1124,53 +1128,62 @@ export default function PaymentsReceived() {
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-50">
-                  <TableHead className="w-10"></TableHead>
-                  <TableHead className="text-xs">DATE</TableHead>
-                  <TableHead className="text-xs">PAYMENT #</TableHead>
-                  <TableHead className="text-xs">REFERENCE NUMBER</TableHead>
-                  <TableHead className="text-xs">CUSTOMER NAME</TableHead>
-                  <TableHead className="text-xs">INVOICE#</TableHead>
-                  <TableHead className="text-xs">MODE</TableHead>
-                  <TableHead className="text-xs text-right">AMOUNT</TableHead>
-                  <TableHead className="text-xs text-right">UNUSED AMOUNT</TableHead>
-                  <TableHead className="text-xs">STATUS</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPayments.map((payment) => (
-                  <TableRow
-                    key={payment.id}
-                    onClick={() => handlePaymentClick(payment)}
-                    className={`cursor-pointer hover-elevate ${selectedPayment?.id === payment.id ? 'bg-blue-50' : ''}`}
-                    data-testid={`row-payment-${payment.id}`}
-                  >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox 
-                        checked={selectedPayments.includes(payment.id)}
-                        onClick={(e) => toggleSelectPayment(payment.id, e)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-sm">{formatDate(payment.date)}</TableCell>
-                    <TableCell className="text-sm text-blue-600 font-medium">{payment.paymentNumber}</TableCell>
-                    <TableCell className="text-sm">{payment.referenceNumber || '-'}</TableCell>
-                    <TableCell className="text-sm">{payment.customerName}</TableCell>
-                    <TableCell className="text-sm">
-                      {payment.invoices?.length > 0 
-                        ? payment.invoices.map((inv: any) => inv.invoiceNumber).join(', ')
-                        : '-'
-                      }
-                    </TableCell>
-                    <TableCell className="text-sm">{payment.mode}</TableCell>
-                    <TableCell className="text-sm text-right">{formatCurrency(payment.amount)}</TableCell>
-                    <TableCell className="text-sm text-right">{formatCurrency(payment.unusedAmount)}</TableCell>
-                    <TableCell>{getStatusBadge(payment.status)}</TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-slate-50">
+                    <TableHead className="w-10"></TableHead>
+                    <TableHead className="text-xs">DATE</TableHead>
+                    <TableHead className="text-xs">PAYMENT #</TableHead>
+                    <TableHead className="text-xs">REFERENCE NUMBER</TableHead>
+                    <TableHead className="text-xs">CUSTOMER NAME</TableHead>
+                    <TableHead className="text-xs">INVOICE#</TableHead>
+                    <TableHead className="text-xs">MODE</TableHead>
+                    <TableHead className="text-xs text-right">AMOUNT</TableHead>
+                    <TableHead className="text-xs text-right">UNUSED AMOUNT</TableHead>
+                    <TableHead className="text-xs">STATUS</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedItems.map((payment) => (
+                    <TableRow
+                      key={payment.id}
+                      onClick={() => handlePaymentClick(payment)}
+                      className={`cursor-pointer hover-elevate ${selectedPayment?.id === payment.id ? 'bg-blue-50' : ''}`}
+                      data-testid={`row-payment-${payment.id}`}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox 
+                          checked={selectedPayments.includes(payment.id)}
+                          onClick={(e) => toggleSelectPayment(payment.id, e)}
+                        />
+                      </TableCell>
+                      <TableCell className="text-sm">{formatDate(payment.date)}</TableCell>
+                      <TableCell className="text-sm text-blue-600 font-medium">{payment.paymentNumber}</TableCell>
+                      <TableCell className="text-sm">{payment.referenceNumber || '-'}</TableCell>
+                      <TableCell className="text-sm">{payment.customerName}</TableCell>
+                      <TableCell className="text-sm">
+                        {payment.invoices?.length > 0 
+                          ? payment.invoices.map((inv: any) => inv.invoiceNumber).join(', ')
+                          : '-'
+                        }
+                      </TableCell>
+                      <TableCell className="text-sm">{payment.mode}</TableCell>
+                      <TableCell className="text-sm text-right">{formatCurrency(payment.amount)}</TableCell>
+                      <TableCell className="text-sm text-right">{formatCurrency(payment.unusedAmount)}</TableCell>
+                      <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={goToPage}
+              />
+            </>
           )}
         </div>
       </div>

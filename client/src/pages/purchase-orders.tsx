@@ -6,6 +6,8 @@ import {
   ClipboardList, Eye, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -523,6 +525,8 @@ export default function PurchaseOrders() {
     po.referenceNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredPOs, 10);
+
   const getStatusBadge = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'ISSUED':
@@ -612,7 +616,7 @@ export default function PurchaseOrders() {
             </div>
           ) : selectedPO ? (
             <div className="divide-y divide-slate-100">
-              {filteredPOs.map((po) => (
+              {paginatedItems.map((po) => (
                 <div 
                   key={po.id} 
                   className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
@@ -656,7 +660,7 @@ export default function PurchaseOrders() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPOs.map((po) => (
+                {paginatedItems.map((po) => (
                   <TableRow 
                     key={po.id} 
                     className="cursor-pointer hover:bg-slate-50"
@@ -683,6 +687,15 @@ export default function PurchaseOrders() {
                 ))}
               </TableBody>
             </Table>
+          )}
+          {filteredPOs.length > 0 && (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={goToPage}
+            />
           )}
         </div>
       </div>

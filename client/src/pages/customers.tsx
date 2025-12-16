@@ -76,6 +76,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/table-pagination";
 
 interface CustomerListItem {
   id: string;
@@ -1153,6 +1155,8 @@ export default function CustomersPage() {
     (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredCustomers, 10);
+
   return (
     <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300">
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${selectedCustomer ? 'w-80' : 'w-full'}`}>
@@ -1189,6 +1193,7 @@ export default function CustomersPage() {
               </Button>
             </div>
           ) : (
+            <>
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
                 <tr className="border-b border-slate-200 dark:border-slate-700">
@@ -1216,7 +1221,7 @@ export default function CustomersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                {filteredCustomers.map((customer) => (
+                {paginatedItems.map((customer) => (
                   <tr 
                     key={customer.id} 
                     className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
@@ -1270,6 +1275,14 @@ export default function CustomersPage() {
                 ))}
               </tbody>
             </table>
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={goToPage}
+            />
+            </>
           )}
         </div>
       </div>
