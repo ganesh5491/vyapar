@@ -262,7 +262,45 @@
       "contactPersons": [],
       "updatedAt": "2025-12-15T05:36:28.560Z",
       "status": "inactive"
+    },
+    {
+      "id": "9",
+      "name": "dcdv dm",
+      "displayName": "dcdv dm",
+      "companyName": "v dmv",
+      "email": "bhilarenilraj@gmail.com",
+      "phone": "+919373533564",
+      "workPhone": "+919373533564",
+      "mobile": "",
+      "gstTreatment": "Registered Business - Regular",
+      "receivables": "₹0.00",
+      "avatar": "DC",
+      "pan": "efdfvbevef",
+      "customerType": "business",
+      "status": "active",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "currency": "INR",
+      "paymentTerms": "Due on Receipt",
+      "placeOfSupply": "Maharashtra",
+      "taxPreference": "taxable",
+      "portalStatus": "disabled",
+      "contactPersons": [],
+      "createdAt": "2025-12-16T09:00:44.801Z",
+      "updatedAt": "2025-12-16T09:00:44.801Z"
     }
   ],
-  "nextCustomerId": 9
+  "nextCustomerId": 10
 }
