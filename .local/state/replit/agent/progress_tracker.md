@@ -74,4 +74,11 @@
     - Added pagination to: Customers, Products, Invoices, Estimates/Quotes, Sales Orders, Purchase Orders, Bills, Credit Notes, Delivery Challans, E-Way Bills, Payments Received, Payments Made, Vendors, Vendor Credits, Expenses
     - Each section shows 10 items per page with navigation controls (first, prev, page numbers, next, last)
     - Pagination info shows "Showing X to Y of Z entries"
-[x] 49. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025 - latest session)
+[x] 49. Fixed invoice-create page issues (Dec 16, 2025):
+    - Updated table-pagination component with centered, attractive design with gradient background
+    - Fixed customer dropdown to fetch real data from /api/customers instead of using store dummy data
+    - Fixed items dropdown to fetch real products from /api/items instead of hardcoded options
+    - Removed dummy items from invoice-create (now starts with empty state)
+    - Added loading states for customers and products while fetching
+    - Added empty state message when no items are added
+    - Improved pagination styling with better visual hierarchy and hover effects

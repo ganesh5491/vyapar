@@ -82,10 +82,36 @@ const TERMS_OPTIONS = [
   { value: "paid", label: "PAID", days: -99 },
 ];
 
+interface Customer {
+  id: string;
+  name: string;
+  displayName: string;
+  companyName: string;
+  email: string;
+  workPhone: string;
+  billingAddress?: any;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  rate: string;
+  hsnSac: string;
+  type: string;
+  taxPreference: string;
+  intraStateTax: string;
+}
+
 export default function InvoiceCreate() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  const { addInvoice, invoices, customers, contactPersons, addContactPerson, pendingCustomerId, setPendingCustomerId } = useAppStore();
+  const { addInvoice, invoices, contactPersons, addContactPerson, pendingCustomerId, setPendingCustomerId } = useAppStore();
+
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [customersLoading, setCustomersLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   const [date, setDate] = useState<Date>(new Date());
   const [dueDate, setDueDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() + 30)));
@@ -93,7 +119,7 @@ export default function InvoiceCreate() {
   const [shippingAmount, setShippingAmount] = useState(0);
   const [paymentReceived, setPaymentReceived] = useState(false);
   const [adjustment, setAdjustment] = useState(0);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(customers[0]?.id || "");
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
 
   const [selectedTerms, setSelectedTerms] = useState<string>("net30");
   const [termsSearchQuery, setTermsSearchQuery] = useState("");
@@ -148,6 +174,8 @@ export default function InvoiceCreate() {
 
   useEffect(() => {
     fetchSalespersons();
+    fetchCustomers();
+    fetchProducts();
     // Handle clone parameter
     const params = new URLSearchParams(location.split('?')[1]);
     const cloneFromId = params.get('cloneFrom');
@@ -155,6 +183,36 @@ export default function InvoiceCreate() {
       fetchInvoiceToClone(cloneFromId);
     }
   }, [location]);
+
+  const fetchCustomers = async () => {
+    try {
+      setCustomersLoading(true);
+      const response = await fetch('/api/customers');
+      if (response.ok) {
+        const data = await response.json();
+        setCustomers(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customers:', error);
+    } finally {
+      setCustomersLoading(false);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setProductsLoading(true);
+      const response = await fetch('/api/items');
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
 
   const fetchInvoiceToClone = async (invoiceId: string) => {
     try {
@@ -364,28 +422,7 @@ export default function InvoiceCreate() {
     }
   };
 
-  const [items, setItems] = useState<InvoiceItem[]>([
-    {
-      id: 1,
-      name: "Web Design Services",
-      description: "",
-      qty: 1,
-      rate: 1200,
-      discountType: 'percentage',
-      discountValue: 0,
-      gstRate: 18
-    },
-    {
-      id: 2,
-      name: "Hosting - Annual Plan",
-      description: "",
-      qty: 1,
-      rate: 240,
-      discountType: 'flat',
-      discountValue: 0,
-      gstRate: 18
-    },
-  ]);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
 
   // Calculations
   const calculateLineItem = (item: InvoiceItem) => {
@@ -523,15 +560,21 @@ export default function InvoiceCreate() {
                   <div className="space-y-2">
                     <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Customer</Label>
                     <Select value={selectedCustomerId} onValueChange={handleCustomerChange}>
-                      <SelectTrigger className="w-full h-11 bg-white border-border/60 focus:ring-primary/20">
-                        <SelectValue placeholder="Select or search customer" />
+                      <SelectTrigger className="w-full h-11 bg-white border-border/60 focus:ring-primary/20" data-testid="select-customer">
+                        <SelectValue placeholder={customersLoading ? "Loading customers..." : "Select or search customer"} />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border border-slate-200 shadow-lg z-[100]">
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.displayName}
-                          </SelectItem>
-                        ))}
+                      <SelectContent className="bg-white border border-slate-200 shadow-lg z-[100] max-h-60 overflow-y-auto">
+                        {customersLoading ? (
+                          <div className="p-2 text-sm text-muted-foreground">Loading customers...</div>
+                        ) : customers.length === 0 ? (
+                          <div className="p-2 text-sm text-muted-foreground">No customers found</div>
+                        ) : (
+                          customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id} data-testid={`customer-option-${customer.id}`}>
+                              {customer.displayName || customer.name}
+                            </SelectItem>
+                          ))
+                        )}
                         <Separator className="my-1" />
                         <SelectItem value="add_new_customer" className="text-primary font-medium">
                           <div className="flex items-center gap-2">
@@ -755,6 +798,19 @@ export default function InvoiceCreate() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                      {items.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                            <div className="flex flex-col items-center gap-2">
+                              <Plus className="h-8 w-8 text-muted-foreground/50" />
+                              <p>No items added yet</p>
+                              <Button variant="outline" size="sm" onClick={addItem} className="mt-2 gap-2" data-testid="button-add-first-item">
+                                <Plus className="h-4 w-4" /> Add Item
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
                       {items.map((item) => {
                         const lineCalc = calculateLineItem(item);
                         return (
@@ -767,19 +823,37 @@ export default function InvoiceCreate() {
 
                               <div className="space-y-2">
                                 <Select
-                                  value={item.name ? "web" : ""}
+                                  value={item.name || ""}
                                   onValueChange={(val) => {
-                                    // Mock update
-                                    updateItem(item.id, "name", "Web Design");
+                                    const selectedProduct = products.find(p => p.name === val);
+                                    if (selectedProduct) {
+                                      const rateNum = parseFloat(selectedProduct.rate.replace(/[^\d.]/g, '')) || 0;
+                                      const gstRate = selectedProduct.intraStateTax?.includes('18') ? 18 : 
+                                                     selectedProduct.intraStateTax?.includes('12') ? 12 :
+                                                     selectedProduct.intraStateTax?.includes('5') ? 5 :
+                                                     selectedProduct.intraStateTax?.includes('28') ? 28 : 0;
+                                      updateItem(item.id, "name", selectedProduct.name);
+                                      updateItem(item.id, "description", selectedProduct.description || "");
+                                      updateItem(item.id, "rate", rateNum);
+                                      updateItem(item.id, "gstRate", gstRate);
+                                    }
                                   }}
                                 >
-                                  <SelectTrigger className="h-9 border-transparent hover:border-border/60 focus:border-primary bg-transparent px-2 -ml-2 font-medium text-base">
-                                    <SelectValue placeholder="Select item" />
+                                  <SelectTrigger className="h-9 border-transparent hover:border-border/60 focus:border-primary bg-transparent px-2 -ml-2 font-medium text-base" data-testid={`select-item-${item.id}`}>
+                                    <SelectValue placeholder="Select item">{item.name || "Select item"}</SelectValue>
                                   </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="web">Web Design Services</SelectItem>
-                                    <SelectItem value="hosting">Hosting - Annual Plan</SelectItem>
-                                    <SelectItem value="consulting">Consulting Hours</SelectItem>
+                                  <SelectContent className="max-h-60 overflow-y-auto">
+                                    {productsLoading ? (
+                                      <div className="p-2 text-sm text-muted-foreground">Loading items...</div>
+                                    ) : products.length === 0 ? (
+                                      <div className="p-2 text-sm text-muted-foreground">No items found</div>
+                                    ) : (
+                                      products.map((product) => (
+                                        <SelectItem key={product.id} value={product.name} data-testid={`item-option-${product.id}`}>
+                                          {product.name}
+                                        </SelectItem>
+                                      ))
+                                    )}
                                   </SelectContent>
                                 </Select>
                                 <Textarea
@@ -787,6 +861,7 @@ export default function InvoiceCreate() {
                                   value={item.description}
                                   onChange={(e) => updateItem(item.id, "description", e.target.value)}
                                   className="min-h-[40px] resize-none border-transparent bg-transparent p-2 -ml-2 text-muted-foreground text-xs focus-visible:ring-0 focus:bg-secondary/20 rounded-md"
+                                  data-testid={`input-item-description-${item.id}`}
                                 />
                               </div>
                             </TableCell>
@@ -798,8 +873,8 @@ export default function InvoiceCreate() {
                                 value={item.qty}
                                 onChange={(e) => updateItem(item.id, "qty", parseFloat(e.target.value) || 0)}
                                 className="h-9 w-full min-w-[70px] bg-transparent border-border/60 focus:bg-background"
+                                data-testid={`input-item-qty-${item.id}`}
                               />
-                              <span className="text-[10px] text-muted-foreground mt-1 block pl-1 whitespace-nowrap">120 in stock</span>
                             </TableCell>
                             <TableCell className="py-3 align-top relative overflow-visible">
 

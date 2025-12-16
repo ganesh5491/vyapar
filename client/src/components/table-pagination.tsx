@@ -57,15 +57,12 @@ export function TablePagination({
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-border bg-muted/20" data-testid="pagination-container">
-      <div className="text-sm text-muted-foreground" data-testid="pagination-info">
-        Showing {startItem} to {endItem} of {totalItems} entries
-      </div>
-      <div className="flex items-center gap-1">
+    <div className="flex flex-col items-center gap-3 px-4 py-4 border-t border-border bg-gradient-to-r from-muted/30 via-muted/50 to-muted/30" data-testid="pagination-container">
+      <div className="flex items-center justify-center gap-2">
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 rounded-lg border-border/60 bg-white dark:bg-slate-800 hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           data-testid="pagination-first"
@@ -75,7 +72,7 @@ export function TablePagination({
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 rounded-lg border-border/60 bg-white dark:bg-slate-800 hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           data-testid="pagination-prev"
@@ -83,27 +80,33 @@ export function TablePagination({
           <ChevronLeft className="h-4 w-4" />
         </Button>
         
-        {getPageNumbers().map((page, index) => (
-          typeof page === "number" ? (
-            <Button
-              key={index}
-              variant={currentPage === page ? "default" : "outline"}
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={() => onPageChange(page)}
-              data-testid={`pagination-page-${page}`}
-            >
-              {page}
-            </Button>
-          ) : (
-            <span key={index} className="px-2 text-muted-foreground">...</span>
-          )
-        ))}
+        <div className="flex items-center gap-1 px-2">
+          {getPageNumbers().map((page, index) => (
+            typeof page === "number" ? (
+              <Button
+                key={index}
+                variant={currentPage === page ? "default" : "outline"}
+                size="sm"
+                className={`h-9 w-9 rounded-lg font-medium transition-all duration-200 ${
+                  currentPage === page 
+                    ? "bg-primary text-primary-foreground shadow-md scale-105" 
+                    : "border-border/60 bg-white dark:bg-slate-800 hover:bg-primary/10 hover:border-primary/50"
+                }`}
+                onClick={() => onPageChange(page)}
+                data-testid={`pagination-page-${page}`}
+              >
+                {page}
+              </Button>
+            ) : (
+              <span key={index} className="px-1 text-muted-foreground select-none">...</span>
+            )
+          ))}
+        </div>
         
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 rounded-lg border-border/60 bg-white dark:bg-slate-800 hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           data-testid="pagination-next"
@@ -113,13 +116,16 @@ export function TablePagination({
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-9 w-9 rounded-lg border-border/60 bg-white dark:bg-slate-800 hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           data-testid="pagination-last"
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>
+      </div>
+      <div className="text-sm text-muted-foreground" data-testid="pagination-info">
+        Showing <span className="font-medium text-foreground">{startItem}</span> to <span className="font-medium text-foreground">{endItem}</span> of <span className="font-medium text-foreground">{totalItems}</span> entries
       </div>
     </div>
   );
