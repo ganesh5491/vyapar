@@ -133,7 +133,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <NavItem href="/estimates" label="Quotes" indent />
             <NavItem href="/sales-orders" label="Sales Orders" indent />
             <NavItem href="/invoices" label="Invoices" indent />
-            {/* <NavItem href="/recurring-invoices" label="Recurring Invoices" indent /> */}
+            <NavItem href="/recurring-invoices" label="Recurring Invoices" indent />
             <NavItem href="/delivery-challans" label="Delivery Challans" indent />
             <NavItem href="/payments-received" label="Payments Received" indent />
             <NavItem href="/credit-notes" label="Credit Notes" indent />
@@ -149,15 +149,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <NavItem href="/vendor-credits" label="Vendor Credits" indent />
           </CollapsibleNavItem>
           
-          <NavItem href="/time-tracking" icon={Clock} label="Time Tracking" />
+          <NavItem href="/time-tracking" icon={Clock} label="Time Tracking (TBD)" />
           
-          <NavItem href="/banking" icon={Building2} label="Banking" />
+          <NavItem href="/banking" icon={Building2} label="Banking (TBD)" />
           
-          <CollapsibleNavItem id="filing" icon={FileCheck} label="Filing & Compliance">
+          <CollapsibleNavItem id="filing" icon={FileCheck} label="Filing & Compliance (TBD)">
             <NavItem href="/filing-compliance" label="GST Filing" indent />
           </CollapsibleNavItem>
           
-          <CollapsibleNavItem id="accountant" icon={UserCog} label="Accountant">
+          <CollapsibleNavItem id="accountant" icon={UserCog} label="Accountant (TBD)">
             <NavItem href="/manual-journals" label="Manual Journals" indent />
             <NavItem href="/bulk-update" label="Bulk Update" indent />
             <NavItem href="/chart-of-accounts" label="Chart of Accounts" indent />
@@ -166,15 +166,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           
           <NavItem href="/reports" icon={BarChart3} label="Reports" />
           
-          <NavItem href="/documents" icon={FolderOpen} label="Documents" />
-        </div>
-
-        <div className="px-2 mt-6">
-          <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Apps</p>
-          <div className="space-y-0.5">
-            <NavItem href="/zoho-payments" icon={CreditCard} label="Zoho Payments" />
-            <NavItem href="/more-features" icon={Star} label="More Features" />
-          </div>
+          <NavItem href="/documents" icon={FolderOpen} label="Documents (TBD)" />
         </div>
       </ScrollArea>
 

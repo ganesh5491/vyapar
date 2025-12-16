@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, RefreshCw, Upload, X, AlertTriangle, Settings } from "lucide-react";
+import {
+  ArrowLeft,
+  RefreshCw,
+  Upload,
+  X,
+  AlertTriangle,
+  Settings,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -125,7 +132,7 @@ export default function PaymentsMadeCreate() {
     paymentAmount: "",
     reverseCharge: false,
     tds: "",
-    paymentDate: new Date().toISOString().split('T')[0],
+    paymentDate: new Date().toISOString().split("T")[0],
     paymentMode: "cash",
     paidThrough: "petty_cash",
     depositTo: "prepaid_expenses",
@@ -134,36 +141,50 @@ export default function PaymentsMadeCreate() {
     attachments: [] as File[],
   });
 
-  const [selectedBills, setSelectedBills] = useState<{[key: string]: { payment: number, paymentMadeOn: string }}>({}); 
+  const [selectedBills, setSelectedBills] = useState<{
+    [key: string]: { payment: number; paymentMadeOn: string };
+  }>({});
 
-  const { data: vendorsData, isLoading: vendorsLoading } = useQuery<{ success: boolean; data: Vendor[] }>({
-    queryKey: ['/api/vendors'],
+  const { data: vendorsData, isLoading: vendorsLoading } = useQuery<{
+    success: boolean;
+    data: Vendor[];
+  }>({
+    queryKey: ["/api/vendors"],
   });
 
-  const { data: billsData, isLoading: billsLoading } = useQuery<{ success: boolean; data: Bill[] }>({
-    queryKey: ['/api/bills', formData.vendorId],
+  const { data: billsData, isLoading: billsLoading } = useQuery<{
+    success: boolean;
+    data: Bill[];
+  }>({
+    queryKey: ["/api/bills", formData.vendorId],
     enabled: !!formData.vendorId && activeTab === "bill_payment",
   });
 
-  const { data: nextNumberData } = useQuery<{ success: boolean; data: { nextNumber: string } }>({
-    queryKey: ['/api/payments-made/next-number'],
+  const { data: nextNumberData } = useQuery<{
+    success: boolean;
+    data: { nextNumber: string };
+  }>({
+    queryKey: ["/api/payments-made/next-number"],
   });
 
   useEffect(() => {
     if (nextNumberData?.data?.nextNumber) {
-      setFormData(prev => ({ ...prev, paymentNumber: nextNumberData.data.nextNumber }));
+      setFormData((prev) => ({
+        ...prev,
+        paymentNumber: nextNumberData.data.nextNumber,
+      }));
     }
   }, [nextNumberData]);
 
   const vendors = vendorsData?.data || [];
   const vendorBills = (billsData?.data || []).filter(
-    b => b.status !== 'PAID' && b.amountDue > 0
+    (b) => b.status !== "PAID" && b.amountDue > 0,
   );
 
   const handleVendorChange = (vendorId: string) => {
-    const vendor = vendors.find(v => v.id === vendorId);
+    const vendor = vendors.find((v) => v.id === vendorId);
     if (vendor) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         vendorId: vendor.id,
         vendorName: vendor.displayName,
@@ -176,35 +197,41 @@ export default function PaymentsMadeCreate() {
   };
 
   const handleBillPaymentChange = (billId: string, payment: number) => {
-    setSelectedBills(prev => ({
+    setSelectedBills((prev) => ({
       ...prev,
-      [billId]: { 
-        payment, 
-        paymentMadeOn: new Date().toISOString().split('T')[0] 
-      }
+      [billId]: {
+        payment,
+        paymentMadeOn: new Date().toISOString().split("T")[0],
+      },
     }));
   };
 
   const calculateTotals = () => {
-    const totalPaid = Object.values(selectedBills).reduce((sum, b) => sum + (b.payment || 0), 0);
+    const totalPaid = Object.values(selectedBills).reduce(
+      (sum, b) => sum + (b.payment || 0),
+      0,
+    );
     const amountPaid = parseFloat(formData.paymentAmount) || 0;
     const usedForPayments = totalPaid;
     const amountRefunded = 0;
     const amountInExcess = amountPaid - usedForPayments;
-    
+
     return { amountPaid, usedForPayments, amountRefunded, amountInExcess };
   };
 
   const totals = calculateTotals();
 
-  const handleSubmit = async (status: 'DRAFT' | 'PAID') => {
+  const handleSubmit = async (status: "DRAFT" | "PAID") => {
     if (!formData.vendorId) {
       toast({ title: "Please select a vendor", variant: "destructive" });
       return;
     }
-    
+
     if (!formData.paymentAmount || parseFloat(formData.paymentAmount) <= 0) {
-      toast({ title: "Please enter a valid payment amount", variant: "destructive" });
+      toast({
+        title: "Please enter a valid payment amount",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -218,18 +245,23 @@ export default function PaymentsMadeCreate() {
         status,
       };
 
-      const response = await fetch('/api/payments-made', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/payments-made", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        toast({ title: `Payment ${status === 'DRAFT' ? 'saved as draft' : 'recorded'} successfully` });
-        setLocation('/payments-made');
+        toast({
+          title: `Payment ${status === "DRAFT" ? "saved as draft" : "recorded"} successfully`,
+        });
+        setLocation("/payments-made");
       } else {
         const error = await response.json();
-        toast({ title: error.message || "Failed to save payment", variant: "destructive" });
+        toast({
+          title: error.message || "Failed to save payment",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({ title: "Failed to save payment", variant: "destructive" });
@@ -246,9 +278,9 @@ export default function PaymentsMadeCreate() {
     <div className="min-h-screen bg-slate-50">
       <div className="border-b border-slate-200 bg-white px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setLocation("/payments-made")}
             data-testid="button-back"
           >
@@ -261,16 +293,23 @@ export default function PaymentsMadeCreate() {
       <div className="max-w-4xl mx-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="bill_payment" data-testid="tab-bill-payment">Bill Payment</TabsTrigger>
-            <TabsTrigger value="vendor_advance" data-testid="tab-vendor-advance">Vendor Advance</TabsTrigger>
+            <TabsTrigger value="bill_payment" data-testid="tab-bill-payment">
+              Bill Payment
+            </TabsTrigger>
+            <TabsTrigger
+              value="vendor_advance"
+              data-testid="tab-vendor-advance"
+            >
+              Vendor Advance
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="bill_payment" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
                 <Label className="text-red-500">Vendor Name*</Label>
-                <Select 
-                  value={formData.vendorId} 
+                <Select
+                  value={formData.vendorId}
                   onValueChange={handleVendorChange}
                 >
                   <SelectTrigger data-testid="select-vendor">
@@ -278,9 +317,13 @@ export default function PaymentsMadeCreate() {
                   </SelectTrigger>
                   <SelectContent>
                     {vendorsLoading ? (
-                      <SelectItem value="_loading" disabled>Loading...</SelectItem>
+                      <SelectItem value="_loading" disabled>
+                        Loading...
+                      </SelectItem>
                     ) : vendors.length === 0 ? (
-                      <SelectItem value="_empty" disabled>No vendors found</SelectItem>
+                      <SelectItem value="_empty" disabled>
+                        No vendors found
+                      </SelectItem>
                     ) : (
                       vendors.map((vendor) => (
                         <SelectItem key={vendor.id} value={vendor.id}>
@@ -292,18 +335,21 @@ export default function PaymentsMadeCreate() {
                 </Select>
                 {formData.gstTreatment && (
                   <p className="text-sm text-slate-500 mt-1">
-                    GST Treatment: {formData.gstTreatment} <Settings className="h-3 w-3 inline ml-1 cursor-pointer" />
+                    GST Treatment: {formData.gstTreatment}{" "}
+                    <Settings className="h-3 w-3 inline ml-1 cursor-pointer" />
                   </p>
                 )}
               </div>
 
               {formData.vendorId && (
                 <div className="text-right">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="bg-blue-600 text-white hover:bg-blue-700"
-                    onClick={() => setLocation(`/vendors/${formData.vendorId}/edit`)}
+                    onClick={() =>
+                      setLocation(`/vendors/${formData.vendorId}/edit`)
+                    }
                     data-testid="button-vendor-details"
                   >
                     {formData.vendorName}'s Details &gt;
@@ -316,9 +362,14 @@ export default function PaymentsMadeCreate() {
               <div>
                 <Label className="text-red-500">Payment #*</Label>
                 <div className="relative">
-                  <Input 
+                  <Input
                     value={formData.paymentNumber}
-                    onChange={(e) => setFormData(prev => ({ ...prev, paymentNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        paymentNumber: e.target.value,
+                      }))
+                    }
                     data-testid="input-payment-number"
                   />
                   <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 cursor-pointer" />
@@ -331,12 +382,17 @@ export default function PaymentsMadeCreate() {
                   <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-slate-50 text-sm text-slate-500">
                     INR
                   </span>
-                  <Input 
+                  <Input
                     type="number"
                     step="0.01"
                     className="rounded-l-none"
                     value={formData.paymentAmount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, paymentAmount: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        paymentAmount: e.target.value,
+                      }))
+                    }
                     data-testid="input-payment-amount"
                   />
                 </div>
@@ -347,8 +403,11 @@ export default function PaymentsMadeCreate() {
               <CardContent className="flex items-center gap-3 py-3">
                 <span className="text-amber-600 text-lg">💡</span>
                 <p className="text-sm text-slate-700">
-                  Initiate payments for your bills directly from Zoho Books by integrating with one of our partner banks.{" "}
-                  <span className="text-blue-600 cursor-pointer">Set Up Now</span>
+                  Initiate payments for your bills directly from Zoho Books by
+                  integrating with one of our partner banks.{" "}
+                  <span className="text-blue-600 cursor-pointer">
+                    Set Up Now
+                  </span>
                 </p>
                 <X className="h-4 w-4 text-red-500 cursor-pointer ml-auto" />
               </CardContent>
@@ -357,19 +416,26 @@ export default function PaymentsMadeCreate() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label className="text-red-500">Payment Date*</Label>
-                <Input 
+                <Input
                   type="date"
                   value={formData.paymentDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, paymentDate: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      paymentDate: e.target.value,
+                    }))
+                  }
                   data-testid="input-payment-date"
                 />
               </div>
 
               <div>
                 <Label>Payment Mode</Label>
-                <Select 
-                  value={formData.paymentMode} 
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, paymentMode: v }))}
+                <Select
+                  value={formData.paymentMode}
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, paymentMode: v }))
+                  }
                 >
                   <SelectTrigger data-testid="select-payment-mode">
                     <SelectValue />
@@ -386,9 +452,11 @@ export default function PaymentsMadeCreate() {
 
               <div>
                 <Label className="text-red-500">Paid Through*</Label>
-                <Select 
-                  value={formData.paidThrough} 
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, paidThrough: v }))}
+                <Select
+                  value={formData.paidThrough}
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, paidThrough: v }))
+                  }
                 >
                   <SelectTrigger data-testid="select-paid-through">
                     <SelectValue />
@@ -405,9 +473,14 @@ export default function PaymentsMadeCreate() {
 
               <div>
                 <Label>Reference#</Label>
-                <Input 
+                <Input
                   value={formData.reference}
-                  onChange={(e) => setFormData(prev => ({ ...prev, reference: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      reference: e.target.value,
+                    }))
+                  }
                   data-testid="input-reference"
                 />
               </div>
@@ -416,8 +489,10 @@ export default function PaymentsMadeCreate() {
             {formData.vendorId && (
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-slate-700">Bills for {formData.vendorName}</h3>
-                  <button 
+                  <h3 className="font-medium text-slate-700">
+                    Bills for {formData.vendorName}
+                  </h3>
+                  <button
                     className="text-sm text-blue-600 cursor-pointer"
                     onClick={clearAppliedAmount}
                   >
@@ -429,55 +504,98 @@ export default function PaymentsMadeCreate() {
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50 border-b">
                       <tr>
-                        <th className="px-4 py-3 text-left font-medium text-slate-600">Date</th>
-                        <th className="px-4 py-3 text-left font-medium text-slate-600">Bill#</th>
-                        <th className="px-4 py-3 text-left font-medium text-slate-600">PO#</th>
-                        <th className="px-4 py-3 text-right font-medium text-slate-600">Bill Amount</th>
-                        <th className="px-4 py-3 text-right font-medium text-slate-600">Amount Due</th>
-                        <th className="px-4 py-3 text-center font-medium text-slate-600">Payment Made on</th>
-                        <th className="px-4 py-3 text-right font-medium text-slate-600">Payment</th>
+                        <th className="px-4 py-3 text-left font-medium text-slate-600">
+                          Date
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium text-slate-600">
+                          Bill#
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium text-slate-600">
+                          PO#
+                        </th>
+                        <th className="px-4 py-3 text-right font-medium text-slate-600">
+                          Bill Amount
+                        </th>
+                        <th className="px-4 py-3 text-right font-medium text-slate-600">
+                          Amount Due
+                        </th>
+                        <th className="px-4 py-3 text-center font-medium text-slate-600">
+                          Payment Made on
+                        </th>
+                        <th className="px-4 py-3 text-right font-medium text-slate-600">
+                          Payment
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {billsLoading ? (
                         <tr>
-                          <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                          <td
+                            colSpan={7}
+                            className="px-4 py-8 text-center text-slate-500"
+                          >
                             Loading bills...
                           </td>
                         </tr>
                       ) : vendorBills.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                          <td
+                            colSpan={7}
+                            className="px-4 py-8 text-center text-slate-500"
+                          >
                             There are no bills for this vendor.
                           </td>
                         </tr>
                       ) : (
                         vendorBills.map((bill) => (
-                          <tr key={bill.id} className="border-b last:border-b-0">
+                          <tr
+                            key={bill.id}
+                            className="border-b last:border-b-0"
+                          >
                             <td className="px-4 py-3">{bill.date}</td>
-                            <td className="px-4 py-3 text-blue-600">{bill.billNumber}</td>
-                            <td className="px-4 py-3">{bill.purchaseOrderNumber || '-'}</td>
-                            <td className="px-4 py-3 text-right">{bill.total.toFixed(2)}</td>
-                            <td className="px-4 py-3 text-right">{bill.amountDue.toFixed(2)}</td>
+                            <td className="px-4 py-3 text-blue-600">
+                              {bill.billNumber}
+                            </td>
+                            <td className="px-4 py-3">
+                              {bill.purchaseOrderNumber || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {bill.total.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {bill.amountDue.toFixed(2)}
+                            </td>
                             <td className="px-4 py-3 text-center">
-                              <Input 
+                              <Input
                                 type="date"
                                 className="h-8 w-32 mx-auto"
-                                value={selectedBills[bill.id]?.paymentMadeOn || ''}
-                                onChange={(e) => setSelectedBills(prev => ({
-                                  ...prev,
-                                  [bill.id]: { ...prev[bill.id], paymentMadeOn: e.target.value }
-                                }))}
+                                value={
+                                  selectedBills[bill.id]?.paymentMadeOn || ""
+                                }
+                                onChange={(e) =>
+                                  setSelectedBills((prev) => ({
+                                    ...prev,
+                                    [bill.id]: {
+                                      ...prev[bill.id],
+                                      paymentMadeOn: e.target.value,
+                                    },
+                                  }))
+                                }
                               />
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <Input 
+                              <Input
                                 type="number"
                                 step="0.01"
                                 className="h-8 w-24 ml-auto text-right"
                                 placeholder="0.00"
-                                value={selectedBills[bill.id]?.payment || ''}
-                                onChange={(e) => handleBillPaymentChange(bill.id, parseFloat(e.target.value) || 0)}
+                                value={selectedBills[bill.id]?.payment || ""}
+                                onChange={(e) =>
+                                  handleBillPaymentChange(
+                                    bill.id,
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
                               />
                             </td>
                           </tr>
@@ -489,7 +607,14 @@ export default function PaymentsMadeCreate() {
 
                 <div className="flex justify-end mt-4">
                   <div className="text-right space-y-1">
-                    <p className="text-sm"><span className="text-slate-500">Total:</span> <span className="font-medium">{Object.values(selectedBills).reduce((sum, b) => sum + (b.payment || 0), 0).toFixed(2)}</span></p>
+                    <p className="text-sm">
+                      <span className="text-slate-500">Total:</span>{" "}
+                      <span className="font-medium">
+                        {Object.values(selectedBills)
+                          .reduce((sum, b) => sum + (b.payment || 0), 0)
+                          .toFixed(2)}
+                      </span>
+                    </p>
                   </div>
                 </div>
 
@@ -501,7 +626,9 @@ export default function PaymentsMadeCreate() {
                         <span>{totals.amountPaid.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Amount used for Payments:</span>
+                        <span className="text-slate-600">
+                          Amount used for Payments:
+                        </span>
                         <span>{totals.usedForPayments.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
@@ -513,7 +640,9 @@ export default function PaymentsMadeCreate() {
                           <AlertTriangle className="h-4 w-4" />
                           Amount in Excess:
                         </span>
-                        <span className="text-amber-600">₹ {totals.amountInExcess.toFixed(2)}</span>
+                        <span className="text-amber-600">
+                          ₹ {totals.amountInExcess.toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -523,10 +652,12 @@ export default function PaymentsMadeCreate() {
 
             <div className="mt-6">
               <Label>Notes (Internal use. Not visible to vendor)</Label>
-              <Textarea 
+              <Textarea
                 rows={3}
                 value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                }
                 className="resize-none"
                 data-testid="input-notes"
               />
@@ -540,11 +671,14 @@ export default function PaymentsMadeCreate() {
                   Upload File
                 </Button>
               </div>
-              <p className="text-xs text-slate-500 mt-2">You can upload a maximum of 5 files, 10MB each</p>
+              <p className="text-xs text-slate-500 mt-2">
+                You can upload a maximum of 5 files, 10MB each
+              </p>
             </div>
 
             <div className="mt-4 text-sm text-slate-500">
-              <strong>Additional Fields:</strong> Start adding custom fields for your payments made by going to{" "}
+              <strong>Additional Fields:</strong> Start adding custom fields for
+              your payments made by going to{" "}
               <span className="text-blue-600">Settings</span> ➔{" "}
               <span className="text-blue-600">Purchases</span> ➔{" "}
               <span className="text-blue-600">Payments Made</span>.
@@ -555,8 +689,8 @@ export default function PaymentsMadeCreate() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label className="text-red-500">Vendor Name*</Label>
-                <Select 
-                  value={formData.vendorId} 
+                <Select
+                  value={formData.vendorId}
                   onValueChange={handleVendorChange}
                 >
                   <SelectTrigger data-testid="select-vendor-advance">
@@ -564,9 +698,13 @@ export default function PaymentsMadeCreate() {
                   </SelectTrigger>
                   <SelectContent>
                     {vendorsLoading ? (
-                      <SelectItem value="_loading" disabled>Loading...</SelectItem>
+                      <SelectItem value="_loading" disabled>
+                        Loading...
+                      </SelectItem>
                     ) : vendors.length === 0 ? (
-                      <SelectItem value="_empty" disabled>No vendors found</SelectItem>
+                      <SelectItem value="_empty" disabled>
+                        No vendors found
+                      </SelectItem>
                     ) : (
                       vendors.map((vendor) => (
                         <SelectItem key={vendor.id} value={vendor.id}>
@@ -578,7 +716,8 @@ export default function PaymentsMadeCreate() {
                 </Select>
                 {formData.gstTreatment && (
                   <p className="text-sm text-slate-500 mt-1">
-                    GST Treatment: {formData.gstTreatment} <Settings className="h-3 w-3 inline ml-1 cursor-pointer" />
+                    GST Treatment: {formData.gstTreatment}{" "}
+                    <Settings className="h-3 w-3 inline ml-1 cursor-pointer" />
                   </p>
                 )}
               </div>
@@ -587,16 +726,21 @@ export default function PaymentsMadeCreate() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label className="text-red-500">Source of Supply*</Label>
-                <Select 
-                  value={formData.sourceOfSupply} 
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, sourceOfSupply: v }))}
+                <Select
+                  value={formData.sourceOfSupply}
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, sourceOfSupply: v }))
+                  }
                 >
                   <SelectTrigger data-testid="select-source-supply">
                     <SelectValue placeholder="Select State" />
                   </SelectTrigger>
                   <SelectContent>
                     {INDIAN_STATES.map((state) => (
-                      <SelectItem key={state.code} value={`[${state.code}] - ${state.name}`}>
+                      <SelectItem
+                        key={state.code}
+                        value={`[${state.code}] - ${state.name}`}
+                      >
                         [{state.code}] - {state.name}
                       </SelectItem>
                     ))}
@@ -606,16 +750,21 @@ export default function PaymentsMadeCreate() {
 
               <div>
                 <Label className="text-red-500">Destination of Supply*</Label>
-                <Select 
-                  value={formData.destinationOfSupply} 
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, destinationOfSupply: v }))}
+                <Select
+                  value={formData.destinationOfSupply}
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, destinationOfSupply: v }))
+                  }
                 >
                   <SelectTrigger data-testid="select-destination-supply">
                     <SelectValue placeholder="Select State" />
                   </SelectTrigger>
                   <SelectContent>
                     {INDIAN_STATES.map((state) => (
-                      <SelectItem key={state.code} value={`[${state.code}] - ${state.name}`}>
+                      <SelectItem
+                        key={state.code}
+                        value={`[${state.code}] - ${state.name}`}
+                      >
                         [{state.code}] - {state.name}
                       </SelectItem>
                     ))}
@@ -628,9 +777,14 @@ export default function PaymentsMadeCreate() {
               <div>
                 <Label className="text-red-500">Payment #*</Label>
                 <div className="relative">
-                  <Input 
+                  <Input
                     value={formData.paymentNumber}
-                    onChange={(e) => setFormData(prev => ({ ...prev, paymentNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        paymentNumber: e.target.value,
+                      }))
+                    }
                     data-testid="input-payment-number-advance"
                   />
                   <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 cursor-pointer" />
@@ -639,11 +793,16 @@ export default function PaymentsMadeCreate() {
 
               <div>
                 <Label>Description of Supply</Label>
-                <Textarea 
+                <Textarea
                   rows={2}
                   placeholder="Will be displayed on the Payment Voucher"
                   value={formData.descriptionOfSupply}
-                  onChange={(e) => setFormData(prev => ({ ...prev, descriptionOfSupply: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      descriptionOfSupply: e.target.value,
+                    }))
+                  }
                   className="resize-none"
                   data-testid="input-description-supply"
                 />
@@ -657,44 +816,44 @@ export default function PaymentsMadeCreate() {
                   <span className="inline-flex items-center px-3 border border-r-0 rounded-l-md bg-slate-50 text-sm text-slate-500">
                     INR
                   </span>
-                  <Input 
+                  <Input
                     type="number"
                     step="0.01"
                     className="rounded-l-none"
                     value={formData.paymentAmount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, paymentAmount: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        paymentAmount: e.target.value,
+                      }))
+                    }
                     data-testid="input-payment-amount-advance"
                   />
                 </div>
               </div>
             </div>
 
-            <Card className="bg-amber-50 border-amber-200">
-              <CardContent className="flex items-center gap-3 py-3">
-                <span className="text-amber-600 text-lg">💡</span>
-                <p className="text-sm text-slate-700">
-                  Initiate payments for your bills directly from Zoho Books by integrating with one of our partner banks.{" "}
-                  <span className="text-blue-600 cursor-pointer">Set Up Now</span>
-                </p>
-                <X className="h-4 w-4 text-red-500 cursor-pointer ml-auto" />
-              </CardContent>
-            </Card>
-
             <div className="flex items-center gap-2">
               <Label>Reverse Charge</Label>
-              <Checkbox 
+              <Checkbox
                 checked={formData.reverseCharge}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, reverseCharge: !!checked }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, reverseCharge: !!checked }))
+                }
                 data-testid="checkbox-reverse-charge"
               />
-              <span className="text-sm text-slate-600">This transaction is applicable for reverse charge</span>
+              <span className="text-sm text-slate-600">
+                This transaction is applicable for reverse charge
+              </span>
             </div>
 
             <div>
               <Label>TDS</Label>
-              <Select 
-                value={formData.tds} 
-                onValueChange={(v) => setFormData(prev => ({ ...prev, tds: v }))}
+              <Select
+                value={formData.tds}
+                onValueChange={(v) =>
+                  setFormData((prev) => ({ ...prev, tds: v }))
+                }
               >
                 <SelectTrigger data-testid="select-tds">
                   <SelectValue placeholder="Select TDS" />
@@ -712,19 +871,26 @@ export default function PaymentsMadeCreate() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label className="text-red-500">Payment Date*</Label>
-                <Input 
+                <Input
                   type="date"
                   value={formData.paymentDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, paymentDate: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      paymentDate: e.target.value,
+                    }))
+                  }
                   data-testid="input-payment-date-advance"
                 />
               </div>
 
               <div>
                 <Label>Payment Mode</Label>
-                <Select 
-                  value={formData.paymentMode} 
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, paymentMode: v }))}
+                <Select
+                  value={formData.paymentMode}
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, paymentMode: v }))
+                  }
                 >
                   <SelectTrigger data-testid="select-payment-mode-advance">
                     <SelectValue />
@@ -741,9 +907,11 @@ export default function PaymentsMadeCreate() {
 
               <div>
                 <Label className="text-red-500">Paid Through*</Label>
-                <Select 
-                  value={formData.paidThrough} 
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, paidThrough: v }))}
+                <Select
+                  value={formData.paidThrough}
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, paidThrough: v }))
+                  }
                 >
                   <SelectTrigger data-testid="select-paid-through-advance">
                     <SelectValue />
@@ -760,9 +928,11 @@ export default function PaymentsMadeCreate() {
 
               <div>
                 <Label>Deposit To</Label>
-                <Select 
-                  value={formData.depositTo} 
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, depositTo: v }))}
+                <Select
+                  value={formData.depositTo}
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, depositTo: v }))
+                  }
                 >
                   <SelectTrigger data-testid="select-deposit-to">
                     <SelectValue />
@@ -779,9 +949,14 @@ export default function PaymentsMadeCreate() {
 
               <div>
                 <Label>Reference#</Label>
-                <Input 
+                <Input
                   value={formData.reference}
-                  onChange={(e) => setFormData(prev => ({ ...prev, reference: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      reference: e.target.value,
+                    }))
+                  }
                   data-testid="input-reference-advance"
                 />
               </div>
@@ -789,10 +964,12 @@ export default function PaymentsMadeCreate() {
 
             <div className="mt-6">
               <Label>Notes (Internal use. Not visible to vendor)</Label>
-              <Textarea 
+              <Textarea
                 rows={3}
                 value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                }
                 className="resize-none"
                 data-testid="input-notes-advance"
               />
@@ -806,11 +983,14 @@ export default function PaymentsMadeCreate() {
                   Upload File
                 </Button>
               </div>
-              <p className="text-xs text-slate-500 mt-2">You can upload a maximum of 5 files, 10MB each</p>
+              <p className="text-xs text-slate-500 mt-2">
+                You can upload a maximum of 5 files, 10MB each
+              </p>
             </div>
 
             <div className="mt-4 text-sm text-slate-500">
-              <strong>Additional Fields:</strong> Start adding custom fields for your payments made by going to{" "}
+              <strong>Additional Fields:</strong> Start adding custom fields for
+              your payments made by going to{" "}
               <span className="text-blue-600">Settings</span> ➔{" "}
               <span className="text-blue-600">Purchases</span> ➔{" "}
               <span className="text-blue-600">Payments Made</span>.
@@ -821,25 +1001,25 @@ export default function PaymentsMadeCreate() {
 
       <div className="border-t border-slate-200 bg-white px-6 py-4 sticky bottom-0">
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            onClick={() => handleSubmit('DRAFT')}
+          <Button
+            variant="outline"
+            onClick={() => handleSubmit("DRAFT")}
             disabled={saving}
             data-testid="button-save-draft"
           >
-            {saving ? 'Saving...' : 'Save as Draft'}
+            {saving ? "Saving..." : "Save as Draft"}
           </Button>
-          <Button 
+          <Button
             className="bg-blue-600 hover:bg-blue-700"
-            onClick={() => handleSubmit('PAID')}
+            onClick={() => handleSubmit("PAID")}
             disabled={saving}
             data-testid="button-save-paid"
           >
-            {saving ? 'Saving...' : 'Save as Paid'}
+            {saving ? "Saving..." : "Save as Paid"}
           </Button>
-          <Button 
+          <Button
             variant="ghost"
-            onClick={() => setLocation('/payments-made')}
+            onClick={() => setLocation("/payments-made")}
             data-testid="button-cancel"
           >
             Cancel
