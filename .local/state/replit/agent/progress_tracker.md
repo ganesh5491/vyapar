@@ -68,3 +68,4 @@
     - Added Refund History table in Comments & History tab
     - Added amountRefunded and refunds array to invoice data structure
     - Fixed refund validation to use amountPaid as remaining refundable balance
+[x] 47. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025 - current session)
