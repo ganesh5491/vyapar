@@ -110,3 +110,14 @@
       * delivery-challan-create.tsx: Parses customerId from URL and auto-selects customer
 [x] 54. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025 - current session)
 [x] 55. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025 - new session)
+[x] 56. Updated Payments Made section to match reference design (Dec 16, 2025):
+    - Updated list view columns: DATE, PAYMENT #, REFERENCE#, VENDOR NAME, BILL#, MODE, STATUS, AMOUNT, UNUSED AMOUNT
+    - Added "All Payments" dropdown filter header matching reference design
+    - Added detail panel that appears when clicking on a payment row
+    - Detail panel shows payment receipt with company header, "Paid" badge, and green Amount Paid box
+    - Added payment details: Payment#, Payment Date, Reference Number, Paid To, Place of Supply, Payment Mode, Paid Through, Amount Paid In Words
+    - Added "Paid To" section with vendor address details
+    - Added "Payment for" table showing linked bills (Bill Number, Bill Date, Bill Amount, Payment Amount)
+    - Added Journal tab with accounting entries (Petty Cash, Prepaid Expenses, Accounts Payable)
+    - Implemented number-to-words conversion for Amount Paid In Words field (Indian Rupee format)
+    - All data stored and fetched from server/data/paymentsMade.json
