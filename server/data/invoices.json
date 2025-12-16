@@ -1,6 +1,210 @@
 {
   "invoices": [
     {
+      "id": "1765801976316",
+      "invoiceNumber": "INV-00022",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "3",
+      "customerName": "Abhijit Patil",
+      "billingAddress": {
+        "street": "\n\n",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 240,
+      "shippingCharges": 0,
+      "cgst": 21.599999999999998,
+      "sgst": 21.599999999999998,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 283.2,
+      "amountPaid": 150,
+      "balanceDue": 133.2,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T12:32:56.316Z",
+      "updatedAt": "2025-12-15T12:34:04.475Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765802033945",
+          "date": "2025-12-15T12:33:00.000Z",
+          "amount": 100,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765802044475",
+          "date": "2025-12-15T12:33:00.000Z",
+          "amount": 50,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T12:32:56.316Z",
+          "action": "created",
+          "description": "Invoice created for ₹283.2",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T12:33:53.945Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹100 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T12:34:04.475Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹50 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1765801976312",
+      "invoiceNumber": "INV-00021",
+      "referenceNumber": "",
+      "date": "2025-12-15",
+      "dueDate": "2026-01-14",
+      "customerId": "3",
+      "customerName": "Abhijit Patil",
+      "billingAddress": {
+        "street": "\n\n",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "2",
+          "itemId": "2",
+          "name": "Hosting - Annual Plan",
+          "description": "",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 240,
+          "discount": 0,
+          "discountType": "flat",
+          "tax": 43.199999999999996,
+          "taxName": "GST18",
+          "amount": 283.2
+        }
+      ],
+      "subTotal": 240,
+      "shippingCharges": 0,
+      "cgst": 21.599999999999998,
+      "sgst": 21.599999999999998,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 283.2,
+      "amountPaid": 400,
+      "balanceDue": 0,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-15T12:32:56.312Z",
+      "updatedAt": "2025-12-15T12:33:26.398Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1765802006394",
+          "date": "2025-12-15T12:32:00.000Z",
+          "amount": 200,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765802006398",
+          "date": "2025-12-15T12:32:00.000Z",
+          "amount": 200,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-15T12:32:56.312Z",
+          "action": "created",
+          "description": "Invoice created for ₹283.2",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T12:33:26.394Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹200 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-15T12:33:26.398Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹200 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765784582175",
       "invoiceNumber": "INV-00020",
       "referenceNumber": "2355",
@@ -48,7 +252,7 @@
       "igst": 0,
       "adjustment": 0,
       "total": 1050.0629999999999,
-      "amountPaid": 1350.12,
+      "amountPaid": 1420.12,
       "balanceDue": 0,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
@@ -58,7 +262,7 @@
       "sourceNumber": "QT-000014",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T07:43:02.174Z",
-      "updatedAt": "2025-12-15T11:50:35.678Z",
+      "updatedAt": "2025-12-15T12:06:53.191Z",
       "createdBy": "Admin User",
       "payments": [
         {
@@ -98,6 +302,30 @@
           "date": "2025-12-15T11:50:00.000Z",
           "amount": 300.06,
           "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765800385413",
+          "date": "2025-12-12T12:05:00.000Z",
+          "amount": 10,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765800385696",
+          "date": "2025-12-12T12:05:00.000Z",
+          "amount": 10,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1765800413191",
+          "date": "2025-12-15T12:06:00.000Z",
+          "amount": 50,
+          "paymentMode": "upi",
           "reference": "",
           "notes": ""
         }
@@ -143,6 +371,27 @@
           "timestamp": "2025-12-15T11:50:35.678Z",
           "action": "payment_recorded",
           "description": "Payment of ₹300.06 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "7",
+          "timestamp": "2025-12-15T12:06:25.413Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹10 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "8",
+          "timestamp": "2025-12-15T12:06:25.696Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹10 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "9",
+          "timestamp": "2025-12-15T12:06:53.191Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹50 recorded",
           "user": "Admin User"
         }
       ]
@@ -1959,5 +2208,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 21
+  "nextInvoiceNumber": 23
 }

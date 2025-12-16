@@ -68,10 +68,10 @@
       "total": 1110,
       "customerNotes": "Looking forward for your business.",
       "termsAndConditions": "",
-      "status": "DRAFT",
+      "status": "SENT",
       "emailRecipients": [],
       "createdAt": "2025-12-15T10:41:51.503Z",
-      "updatedAt": "2025-12-15T10:41:51.503Z",
+      "updatedAt": "2025-12-15T12:09:51.004Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -79,6 +79,13 @@
           "timestamp": "2025-12-15T10:41:51.503Z",
           "action": "created",
           "description": "Quote created for ₹1,110",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-15T12:09:51.004Z",
+          "action": "sent",
+          "description": "Quote has been sent to customer",
           "user": "Admin User"
         }
       ]
