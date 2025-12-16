@@ -93,3 +93,4 @@
     - Added Exemption Reason dropdown with common exemption reasons and free-text input
     - State management clears incompatible fields when switching between Taxable and Tax Exempt
     - All dropdowns support keyboard navigation and search functionality
+[x] 52. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025 - current session)
