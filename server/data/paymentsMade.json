@@ -1,4 +1,29 @@
 {
-  "paymentsMade": [],
-  "nextPaymentNumber": 1
+  "paymentsMade": [
+    {
+      "id": "pm-1765885564416",
+      "paymentNumber": "PM-00001",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "[AP] - Andhra Pradesh",
+      "destinationOfSupply": "[AR] - Arunachal Pradesh",
+      "descriptionOfSupply": "",
+      "paymentAmount": 12121,
+      "reverseCharge": false,
+      "tds": "professional_fees_10",
+      "paymentDate": "2025-12-16",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "1232",
+      "notes": "",
+      "billPayments": {},
+      "paymentType": "vendor_advance",
+      "status": "PAID",
+      "createdAt": "2025-12-16T11:46:04.416Z",
+      "updatedAt": "2025-12-16T11:46:04.416Z"
+    }
+  ],
+  "nextPaymentNumber": 2
 }
