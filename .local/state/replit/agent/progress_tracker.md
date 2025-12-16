@@ -59,3 +59,12 @@
 [x] 45. Updated Quotes status column display (Dec 16, 2025):
     - Changed "SENT" to display as "Quotation Send"
     - Capitalized each word in all status values (Draft, Accepted, Declined, Expired, Converted To Invoice, Converted To Sales Order)
+[x] 46. Implemented synchronized refund system between Invoices and Payments Received (Dec 16, 2025):
+    - Added /api/invoices/:id/refund endpoint that creates refund records in both invoices and payments
+    - Updated /api/payments-received/:id/refund to also update linked invoices when a payment is refunded
+    - Added Refund button next to Record Payment in invoice detail (only visible when amountPaid > 0)
+    - Added refund dialog with amount, mode, and reason fields
+    - Updated invoice detail to show Payment Made and Refunded amounts
+    - Added Refund History table in Comments & History tab
+    - Added amountRefunded and refunds array to invoice data structure
+    - Fixed refund validation to use amountPaid as remaining refundable balance
