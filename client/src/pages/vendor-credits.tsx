@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Filter, ReceiptText, MoreHorizontal } from "lucide-react";
+import { Plus, Search, Filter, ReceiptText, MoreHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,8 +13,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { usePagination } from "@/hooks/use-pagination";
 import { TablePagination } from "@/components/table-pagination";
+import { useToast } from "@/hooks/use-toast";
 
 interface VendorCredit {
   id: string;
@@ -29,11 +41,38 @@ interface VendorCredit {
 }
 
 export default function VendorCredits() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [creditToDelete, setCreditToDelete] = useState<string | null>(null);
 
-  const { data: vendorCreditsData, isLoading } = useQuery<{ success: boolean; data: VendorCredit[] }>({
+  const { data: vendorCreditsData, isLoading, refetch } = useQuery<{ success: boolean; data: VendorCredit[] }>({
     queryKey: ['/api/vendor-credits'],
   });
+
+  const handleDelete = (id: string) => {
+    setCreditToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!creditToDelete) return;
+    try {
+      const response = await fetch(`/api/vendor-credits/${creditToDelete}`, { method: 'DELETE' });
+      if (response.ok) {
+        toast({ title: "Vendor credit deleted successfully" });
+        refetch();
+      } else {
+        toast({ title: "Failed to delete vendor credit", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Failed to delete vendor credit", variant: "destructive" });
+    } finally {
+      setDeleteDialogOpen(false);
+      setCreditToDelete(null);
+    }
+  };
 
   const vendorCredits = vendorCreditsData?.data || [];
 
@@ -59,7 +98,11 @@ export default function VendorCredits() {
           <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground tracking-tight">Vendor Credits</h1>
           <p className="text-muted-foreground">Manage credits received from your vendors.</p>
         </div>
-        <Button className="gap-2 shadow-lg shadow-primary/20" data-testid="button-add-vendor-credit">
+        <Button 
+          className="gap-2 shadow-lg shadow-primary/20" 
+          onClick={() => setLocation('/vendor-credits/new')}
+          data-testid="button-add-vendor-credit"
+        >
           <Plus className="h-4 w-4" /> Add Vendor Credit
         </Button>
       </div>
@@ -94,7 +137,11 @@ export default function VendorCredits() {
             <p className="text-muted-foreground mb-4 max-w-sm">
               Record credits from vendors for returns or adjustments to apply against future bills.
             </p>
-            <Button className="gap-2" data-testid="button-add-first-vendor-credit">
+            <Button 
+              className="gap-2" 
+              onClick={() => setLocation('/vendor-credits/new')}
+              data-testid="button-add-first-vendor-credit"
+            >
               <Plus className="h-4 w-4" /> Add Your First Vendor Credit
             </Button>
           </CardContent>
@@ -157,8 +204,10 @@ export default function VendorCredits() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive"
+                          onClick={() => handleDelete(credit.id)}
                           data-testid={`action-delete-${credit.id}`}
                         >
+                          <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -177,6 +226,23 @@ export default function VendorCredits() {
           />
         </div>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vendor Credit</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this vendor credit? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

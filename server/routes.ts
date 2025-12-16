@@ -4021,5 +4021,284 @@ export async function registerRoutes(
     }
   });
 
+  // ========== PAYMENTS MADE API ==========
+  const PAYMENTS_MADE_FILE = path.join(DATA_DIR, "paymentsMade.json");
+
+  function readPaymentsMadeData() {
+    ensureDataDir();
+    if (!fs.existsSync(PAYMENTS_MADE_FILE)) {
+      const defaultData = { paymentsMade: [], nextPaymentNumber: 1 };
+      fs.writeFileSync(PAYMENTS_MADE_FILE, JSON.stringify(defaultData, null, 2));
+      return defaultData;
+    }
+    return JSON.parse(fs.readFileSync(PAYMENTS_MADE_FILE, "utf-8"));
+  }
+
+  function writePaymentsMadeData(data: any) {
+    ensureDataDir();
+    fs.writeFileSync(PAYMENTS_MADE_FILE, JSON.stringify(data, null, 2));
+  }
+
+  function generatePaymentMadeNumber(num: number): string {
+    return `PM-${String(num).padStart(5, '0')}`;
+  }
+
+  app.get("/api/payments-made", (_req: Request, res: Response) => {
+    try {
+      const data = readPaymentsMadeData();
+      res.json({ success: true, data: data.paymentsMade || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch payments made" });
+    }
+  });
+
+  app.get("/api/payments-made/next-number", (_req: Request, res: Response) => {
+    try {
+      const data = readPaymentsMadeData();
+      const nextNumber = generatePaymentMadeNumber(data.nextPaymentNumber);
+      res.json({ success: true, data: { nextNumber } });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to get next payment number" });
+    }
+  });
+
+  app.get("/api/payments-made/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsMadeData();
+      const payment = data.paymentsMade.find((p: any) => p.id === req.params.id);
+      
+      if (!payment) {
+        return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+      
+      res.json({ success: true, data: payment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch payment" });
+    }
+  });
+
+  app.post("/api/payments-made", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsMadeData();
+      const now = new Date().toISOString();
+      const paymentNumber = req.body.paymentNumber || generatePaymentMadeNumber(data.nextPaymentNumber);
+      
+      const newPayment = {
+        id: `pm-${Date.now()}`,
+        paymentNumber,
+        vendorId: req.body.vendorId,
+        vendorName: req.body.vendorName,
+        gstTreatment: req.body.gstTreatment || '',
+        sourceOfSupply: req.body.sourceOfSupply || '',
+        destinationOfSupply: req.body.destinationOfSupply || '',
+        descriptionOfSupply: req.body.descriptionOfSupply || '',
+        paymentAmount: req.body.paymentAmount || 0,
+        reverseCharge: req.body.reverseCharge || false,
+        tds: req.body.tds || '',
+        paymentDate: req.body.paymentDate || now.split('T')[0],
+        paymentMode: req.body.paymentMode || 'cash',
+        paidThrough: req.body.paidThrough || 'petty_cash',
+        depositTo: req.body.depositTo || 'prepaid_expenses',
+        reference: req.body.reference || '',
+        notes: req.body.notes || '',
+        billPayments: req.body.billPayments || {},
+        paymentType: req.body.paymentType || 'bill_payment',
+        status: req.body.status || 'PAID',
+        createdAt: now,
+        updatedAt: now
+      };
+
+      data.paymentsMade.push(newPayment);
+      data.nextPaymentNumber++;
+      writePaymentsMadeData(data);
+
+      res.json({ success: true, data: newPayment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to create payment" });
+    }
+  });
+
+  app.put("/api/payments-made/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsMadeData();
+      const index = data.paymentsMade.findIndex((p: any) => p.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+
+      const updatedPayment = {
+        ...data.paymentsMade[index],
+        ...req.body,
+        updatedAt: new Date().toISOString()
+      };
+
+      data.paymentsMade[index] = updatedPayment;
+      writePaymentsMadeData(data);
+
+      res.json({ success: true, data: updatedPayment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update payment" });
+    }
+  });
+
+  app.delete("/api/payments-made/:id", (req: Request, res: Response) => {
+    try {
+      const data = readPaymentsMadeData();
+      const index = data.paymentsMade.findIndex((p: any) => p.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+
+      data.paymentsMade.splice(index, 1);
+      writePaymentsMadeData(data);
+
+      res.json({ success: true, message: "Payment deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete payment" });
+    }
+  });
+
+  // ========== VENDOR CREDITS API ==========
+  const VENDOR_CREDITS_FILE = path.join(DATA_DIR, "vendorCredits.json");
+
+  function readVendorCreditsData() {
+    ensureDataDir();
+    if (!fs.existsSync(VENDOR_CREDITS_FILE)) {
+      const defaultData = { vendorCredits: [], nextCreditNumber: 1 };
+      fs.writeFileSync(VENDOR_CREDITS_FILE, JSON.stringify(defaultData, null, 2));
+      return defaultData;
+    }
+    return JSON.parse(fs.readFileSync(VENDOR_CREDITS_FILE, "utf-8"));
+  }
+
+  function writeVendorCreditsData(data: any) {
+    ensureDataDir();
+    fs.writeFileSync(VENDOR_CREDITS_FILE, JSON.stringify(data, null, 2));
+  }
+
+  function generateVendorCreditNumber(num: number): string {
+    return `VC-${String(num).padStart(5, '0')}`;
+  }
+
+  app.get("/api/vendor-credits", (_req: Request, res: Response) => {
+    try {
+      const data = readVendorCreditsData();
+      res.json({ success: true, data: data.vendorCredits || [] });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch vendor credits" });
+    }
+  });
+
+  app.get("/api/vendor-credits/next-number", (_req: Request, res: Response) => {
+    try {
+      const data = readVendorCreditsData();
+      const nextNumber = generateVendorCreditNumber(data.nextCreditNumber);
+      res.json({ success: true, data: { nextNumber } });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to get next credit number" });
+    }
+  });
+
+  app.get("/api/vendor-credits/:id", (req: Request, res: Response) => {
+    try {
+      const data = readVendorCreditsData();
+      const credit = data.vendorCredits.find((c: any) => c.id === req.params.id);
+      
+      if (!credit) {
+        return res.status(404).json({ success: false, message: "Vendor credit not found" });
+      }
+      
+      res.json({ success: true, data: credit });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch vendor credit" });
+    }
+  });
+
+  app.post("/api/vendor-credits", (req: Request, res: Response) => {
+    try {
+      const data = readVendorCreditsData();
+      const now = new Date().toISOString();
+      const creditNumber = req.body.creditNoteNumber || generateVendorCreditNumber(data.nextCreditNumber);
+      
+      const newCredit = {
+        id: `vc-${Date.now()}`,
+        creditNumber,
+        vendorId: req.body.vendorId,
+        vendorName: req.body.vendorName,
+        orderNumber: req.body.orderNumber || '',
+        date: req.body.vendorCreditDate || now.split('T')[0],
+        subject: req.body.subject || '',
+        reverseCharge: req.body.reverseCharge || false,
+        taxType: req.body.taxType || 'tds',
+        tdsTcs: req.body.tdsTcs || '',
+        items: req.body.items || [],
+        subTotal: req.body.subTotal || 0,
+        discountType: req.body.discountType || 'percentage',
+        discountValue: req.body.discountValue || '',
+        discountAmount: req.body.discountAmount || 0,
+        tdsTcsAmount: req.body.tdsTcsAmount || 0,
+        adjustment: req.body.adjustment || 0,
+        amount: req.body.total || 0,
+        balance: req.body.total || 0,
+        notes: req.body.notes || '',
+        status: req.body.status || 'Open',
+        createdAt: now,
+        updatedAt: now
+      };
+
+      data.vendorCredits.push(newCredit);
+      data.nextCreditNumber++;
+      writeVendorCreditsData(data);
+
+      res.json({ success: true, data: newCredit });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to create vendor credit" });
+    }
+  });
+
+  app.put("/api/vendor-credits/:id", (req: Request, res: Response) => {
+    try {
+      const data = readVendorCreditsData();
+      const index = data.vendorCredits.findIndex((c: any) => c.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Vendor credit not found" });
+      }
+
+      const updatedCredit = {
+        ...data.vendorCredits[index],
+        ...req.body,
+        updatedAt: new Date().toISOString()
+      };
+
+      data.vendorCredits[index] = updatedCredit;
+      writeVendorCreditsData(data);
+
+      res.json({ success: true, data: updatedCredit });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update vendor credit" });
+    }
+  });
+
+  app.delete("/api/vendor-credits/:id", (req: Request, res: Response) => {
+    try {
+      const data = readVendorCreditsData();
+      const index = data.vendorCredits.findIndex((c: any) => c.id === req.params.id);
+      
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Vendor credit not found" });
+      }
+
+      data.vendorCredits.splice(index, 1);
+      writeVendorCreditsData(data);
+
+      res.json({ success: true, message: "Vendor credit deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete vendor credit" });
+    }
+  });
+
   return httpServer;
 }

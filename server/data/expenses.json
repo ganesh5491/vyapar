@@ -1,6 +1,37 @@
 {
   "expenses": [
     {
+      "id": "6",
+      "expenseNumber": "EXP-00006",
+      "date": "2025-12-16",
+      "expenseAccount": "Bad Debt",
+      "amount": 3423,
+      "currency": "INR",
+      "paidThrough": "Undeposited Funds",
+      "expenseType": "services",
+      "sac": "",
+      "vendorId": "3",
+      "vendorName": "Ganesh kale (Copy)",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "Daman and Diu",
+      "destinationOfSupply": "[BI] - Bihar",
+      "reverseCharge": false,
+      "tax": "gst_18",
+      "taxAmount": 0,
+      "amountIs": "tax_exclusive",
+      "invoiceNumber": "INV-00019",
+      "notes": "",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "reportingTags": [],
+      "isBillable": false,
+      "status": "recorded",
+      "attachments": [],
+      "createdAt": "2025-12-16T10:55:06.597Z",
+      "updatedAt": "2025-12-16T10:55:06.597Z",
+      "createdTime": "2025-12-16T10:55:06.597Z"
+    },
+    {
       "id": "5",
       "expenseNumber": "EXP-00005",
       "date": "2025-12-10",
@@ -156,13 +187,60 @@
       "createdTime": "2025-12-10T07:41:29.496Z"
     }
   ],
-  "mileageRecords": [],
+  "mileageRecords": [
+    {
+      "id": "2",
+      "date": "2025-12-16",
+      "employee": "gk",
+      "calculationMethod": "distance_travelled",
+      "distance": 224,
+      "unit": "km",
+      "startOdometer": 0,
+      "endOdometer": 0,
+      "amount": 423123,
+      "currency": "INR",
+      "paidThrough": "Petty Cash",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "invoiceNumber": "",
+      "notes": "",
+      "customerId": "8",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED ",
+      "reportingTags": [],
+      "status": "recorded",
+      "createdAt": "2025-12-16T10:53:54.471Z",
+      "updatedAt": "2025-12-16T10:53:54.471Z"
+    },
+    {
+      "id": "1",
+      "date": "2025-12-16",
+      "employee": "",
+      "calculationMethod": "distance_travelled",
+      "distance": 123,
+      "unit": "km",
+      "startOdometer": 0,
+      "endOdometer": 0,
+      "amount": 500,
+      "currency": "INR",
+      "paidThrough": "Undeposited Funds",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "invoiceNumber": "1234",
+      "notes": "",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "reportingTags": [],
+      "status": "recorded",
+      "createdAt": "2025-12-16T10:52:50.642Z",
+      "updatedAt": "2025-12-16T10:52:50.642Z"
+    }
+  ],
   "mileageSettings": {
     "associateEmployeesToExpenses": false,
     "defaultMileageCategory": "Fuel/Mileage Expense",
     "defaultUnit": "km",
     "mileageRates": []
   },
-  "nextExpenseId": 6,
-  "nextMileageId": 1
+  "nextExpenseId": 7,
+  "nextMileageId": 3
 }
