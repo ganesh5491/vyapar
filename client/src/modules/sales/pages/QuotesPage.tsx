@@ -85,15 +85,31 @@ const getStatusColor = (status: string) => {
 };
 
 const getStatusDisplayText = (status: string, convertedTo?: string) => {
-  if (status.toUpperCase() === 'CONVERTED') {
+  const upperStatus = status.toUpperCase();
+  if (upperStatus === 'CONVERTED') {
     if (convertedTo === 'invoice') {
-      return 'Converted to Invoice';
+      return 'Converted To Invoice';
     } else if (convertedTo === 'sales-order') {
-      return 'Converted to Sales Order';
+      return 'Converted To Sales Order';
     }
-    return 'CONVERTED';
+    return 'Converted';
   }
-  return status;
+  if (upperStatus === 'SENT') {
+    return 'Quotation Send';
+  }
+  if (upperStatus === 'DRAFT') {
+    return 'Draft';
+  }
+  if (upperStatus === 'ACCEPTED') {
+    return 'Accepted';
+  }
+  if (upperStatus === 'DECLINED') {
+    return 'Declined';
+  }
+  if (upperStatus === 'EXPIRED') {
+    return 'Expired';
+  }
+  return status.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 };
 
 const formatDate = (dateString: string) => {

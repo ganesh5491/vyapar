@@ -56,3 +56,6 @@
     - Status changes to "REFUNDED" (red badge) only when refund is processed
     - Both invoice record-payment and direct payment creation use "PAID" as default
 [x] 44. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025)
+[x] 45. Updated Quotes status column display (Dec 16, 2025):
+    - Changed "SENT" to display as "Quotation Send"
+    - Capitalized each word in all status values (Draft, Accepted, Declined, Expired, Converted To Invoice, Converted To Sales Order)
