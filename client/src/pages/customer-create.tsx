@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { ArrowLeft, Upload, X, Info, Plus, MoreHorizontal, FileText, Trash2 } from "lucide-react";
+import { ArrowLeft, Upload, X, Info, Plus, MoreHorizontal, FileText, Trash2, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,6 +31,82 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/lib/store";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+
+const INDIAN_STATES = [
+  { code: "01", name: "Jammu and Kashmir" },
+  { code: "02", name: "Himachal Pradesh" },
+  { code: "03", name: "Punjab" },
+  { code: "04", name: "Chandigarh" },
+  { code: "05", name: "Uttarakhand" },
+  { code: "06", name: "Haryana" },
+  { code: "07", name: "Delhi" },
+  { code: "08", name: "Rajasthan" },
+  { code: "09", name: "Uttar Pradesh" },
+  { code: "10", name: "Bihar" },
+  { code: "11", name: "Sikkim" },
+  { code: "12", name: "Arunachal Pradesh" },
+  { code: "13", name: "Nagaland" },
+  { code: "14", name: "Manipur" },
+  { code: "15", name: "Mizoram" },
+  { code: "16", name: "Tripura" },
+  { code: "17", name: "Meghalaya" },
+  { code: "18", name: "Assam" },
+  { code: "19", name: "West Bengal" },
+  { code: "20", name: "Jharkhand" },
+  { code: "21", name: "Odisha" },
+  { code: "22", name: "Chhattisgarh" },
+  { code: "23", name: "Madhya Pradesh" },
+  { code: "24", name: "Gujarat" },
+  { code: "25", name: "Daman and Diu (Old)" },
+  { code: "26", name: "Dadra and Nagar Haveli and Daman and Diu" },
+  { code: "27", name: "Maharashtra" },
+  { code: "28", name: "Andhra Pradesh (Old)" },
+  { code: "29", name: "Karnataka" },
+  { code: "30", name: "Goa" },
+  { code: "31", name: "Lakshadweep" },
+  { code: "32", name: "Kerala" },
+  { code: "33", name: "Tamil Nadu" },
+  { code: "34", name: "Puducherry" },
+  { code: "35", name: "Andaman and Nicobar Islands" },
+  { code: "36", name: "Telangana" },
+  { code: "37", name: "Andhra Pradesh" },
+  { code: "38", name: "Ladakh" },
+  { code: "97", name: "Other Territory" },
+];
+
+const EXEMPTION_REASONS = [
+  "Exempt supply under GST",
+  "Export without payment of tax",
+  "SEZ supply",
+  "Deemed export",
+  "Zero-rated supply",
+  "Supply to EOU/STP/EHTP",
+  "Government entity",
+  "Charitable organization",
+  "Educational institution",
+  "Healthcare services",
+];
+
+const SALUTATIONS: Record<string, string> = {
+  mr: "Mr.",
+  mrs: "Mrs.",
+  ms: "Ms.",
+  dr: "Dr.",
+};
 
 const customerSchema = z.object({
   customerType: z.enum(["business", "individual"]),
@@ -44,17 +120,17 @@ const customerSchema = z.object({
   mobile: z.string().optional(),
   language: z.string().default("English"),
 
-  // Other Details
-  gstTreatment: z.string().min(1, "GST Treatment is required"),
+  gstTreatment: z.string().optional(),
   placeOfSupply: z.string().min(1, "Place of Supply is required"),
+  gstin: z.string().optional(),
   pan: z.string().optional(),
   taxPreference: z.enum(["taxable", "tax_exempt"]),
+  exemptionReason: z.string().optional(),
   currency: z.string().default("INR"),
   openingBalance: z.string().optional(),
   paymentTerms: z.string().optional(),
   enablePortal: z.boolean().default(false),
 
-  // Address
   billingAddress: z.object({
     attention: z.string().optional(),
     country: z.string().optional(),
@@ -78,7 +154,6 @@ const customerSchema = z.object({
     fax: z.string().optional(),
   }),
 
-  // Contact Persons
   contactPersons: z.array(z.object({
     salutation: z.string().optional(),
     firstName: z.string().optional(),
@@ -90,6 +165,36 @@ const customerSchema = z.object({
 
   remarks: z.string().optional(),
   tags: z.array(z.string()).optional(),
+}).refine((data) => {
+  if (data.taxPreference === "taxable" && !data.gstTreatment) {
+    return false;
+  }
+  return true;
+}, {
+  message: "GST Treatment is required for taxable customers",
+  path: ["gstTreatment"],
+}).refine((data) => {
+  if (data.taxPreference === "tax_exempt" && !data.exemptionReason) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Exemption Reason is required for tax exempt customers",
+  path: ["exemptionReason"],
+}).refine((data) => {
+  if (data.taxPreference === "taxable" && data.gstin) {
+    if (data.gstin.length !== 15) {
+      return false;
+    }
+    const gstinPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    if (!gstinPattern.test(data.gstin)) {
+      return false;
+    }
+  }
+  return true;
+}, {
+  message: "Invalid GSTIN format. Must be 15 characters (e.g., 27AAGCA4900Q1ZE)",
+  path: ["gstin"],
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -101,14 +206,36 @@ const defaultValues: CustomerFormValues = {
   language: "English",
   gstTreatment: "",
   placeOfSupply: "",
+  gstin: "",
   taxPreference: "taxable",
+  exemptionReason: "",
   currency: "INR",
   enablePortal: false,
-  billingAddress: { street: "", city: "", state: "", country: "", pincode: "" },
-  shippingAddress: { street: "", city: "", state: "", country: "", pincode: "" },
+  billingAddress: { street1: "", street2: "", city: "", state: "", country: "", pincode: "" },
+  shippingAddress: { street1: "", street2: "", city: "", state: "", country: "", pincode: "" },
   contactPersons: [],
   tags: [],
 };
+
+function validateGSTIN(gstin: string): { valid: boolean; message?: string } {
+  if (!gstin) return { valid: true };
+  
+  if (gstin.length !== 15) {
+    return { valid: false, message: "GSTIN must be 15 characters" };
+  }
+  
+  const gstinPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  if (!gstinPattern.test(gstin)) {
+    return { valid: false, message: "Invalid GSTIN format" };
+  }
+  
+  return { valid: true };
+}
+
+function getStateCodeFromGSTIN(gstin: string): string | null {
+  if (!gstin || gstin.length < 2) return null;
+  return gstin.substring(0, 2);
+}
 
 export default function CustomerCreate() {
   const [, setLocation] = useLocation();
@@ -118,6 +245,14 @@ export default function CustomerCreate() {
   const { toast } = useToast();
   const { addCustomer, setPendingCustomerId } = useAppStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [displayNameOpen, setDisplayNameOpen] = useState(false);
+  const [displayNameSearch, setDisplayNameSearch] = useState("");
+  const [stateOpen, setStateOpen] = useState(false);
+  const [stateSearch, setStateSearch] = useState("");
+  const [exemptionOpen, setExemptionOpen] = useState(false);
+  const [exemptionSearch, setExemptionSearch] = useState("");
+  const [gstinWarning, setGstinWarning] = useState<string | null>(null);
 
   interface AttachedFile {
     id: string;
@@ -195,6 +330,94 @@ export default function CustomerCreate() {
     name: "contactPersons",
   });
 
+  const watchSalutation = form.watch("salutation");
+  const watchFirstName = form.watch("firstName");
+  const watchLastName = form.watch("lastName");
+  const watchCompanyName = form.watch("companyName");
+  const watchTaxPreference = form.watch("taxPreference");
+  const watchPlaceOfSupply = form.watch("placeOfSupply");
+  const watchGstin = form.watch("gstin");
+
+  const displayNameOptions = useMemo(() => {
+    const options: string[] = [];
+    const salutationLabel = watchSalutation ? SALUTATIONS[watchSalutation] : "";
+    const firstName = watchFirstName?.trim() || "";
+    const lastName = watchLastName?.trim() || "";
+    const companyName = watchCompanyName?.trim() || "";
+
+    if (salutationLabel && firstName && lastName) {
+      options.push(`${salutationLabel} ${firstName} ${lastName}`);
+    }
+    if (firstName && lastName) {
+      options.push(`${firstName} ${lastName}`);
+    }
+    if (lastName && firstName) {
+      options.push(`${lastName}, ${firstName}`);
+    }
+    if (companyName) {
+      options.push(companyName);
+    }
+    if (firstName && !lastName) {
+      if (salutationLabel) {
+        options.push(`${salutationLabel} ${firstName}`);
+      }
+      options.push(firstName);
+    }
+    if (lastName && !firstName) {
+      if (salutationLabel) {
+        options.push(`${salutationLabel} ${lastName}`);
+      }
+      options.push(lastName);
+    }
+
+    return Array.from(new Set(options));
+  }, [watchSalutation, watchFirstName, watchLastName, watchCompanyName]);
+
+  useEffect(() => {
+    if (watchTaxPreference === "tax_exempt") {
+      form.setValue("gstTreatment", "");
+      form.setValue("gstin", "");
+      setGstinWarning(null);
+    } else {
+      form.setValue("exemptionReason", "");
+    }
+  }, [watchTaxPreference, form]);
+
+  useEffect(() => {
+    if (watchGstin && watchPlaceOfSupply) {
+      const gstinStateCode = getStateCodeFromGSTIN(watchGstin);
+      if (gstinStateCode && gstinStateCode !== watchPlaceOfSupply) {
+        const gstinState = INDIAN_STATES.find(s => s.code === gstinStateCode);
+        const selectedState = INDIAN_STATES.find(s => s.code === watchPlaceOfSupply);
+        setGstinWarning(
+          `GSTIN state code (${gstinStateCode} - ${gstinState?.name || "Unknown"}) does not match Place of Supply (${selectedState?.name || watchPlaceOfSupply})`
+        );
+      } else {
+        setGstinWarning(null);
+      }
+    } else {
+      setGstinWarning(null);
+    }
+  }, [watchGstin, watchPlaceOfSupply]);
+
+  const filteredStates = useMemo(() => {
+    if (!stateSearch) return INDIAN_STATES;
+    const searchLower = stateSearch.toLowerCase();
+    return INDIAN_STATES.filter(
+      state => 
+        state.name.toLowerCase().includes(searchLower) ||
+        state.code.includes(searchLower)
+    );
+  }, [stateSearch]);
+
+  const filteredExemptionReasons = useMemo(() => {
+    if (!exemptionSearch) return EXEMPTION_REASONS;
+    const searchLower = exemptionSearch.toLowerCase();
+    return EXEMPTION_REASONS.filter(reason => 
+      reason.toLowerCase().includes(searchLower)
+    );
+  }, [exemptionSearch]);
+
   const onSubmit = async (data: CustomerFormValues) => {
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -207,13 +430,7 @@ export default function CustomerCreate() {
       "overseas": "Overseas",
     };
 
-    const placeOfSupplyLabels: Record<string, string> = {
-      "KA": "Karnataka",
-      "MH": "Maharashtra",
-      "DL": "Delhi",
-      "TN": "Tamil Nadu",
-      "GJ": "Gujarat",
-    };
+    const selectedState = INDIAN_STATES.find(s => s.code === data.placeOfSupply);
 
     const billingAddress = {
       street: [data.billingAddress.street1, data.billingAddress.street2].filter(Boolean).join(", ") || "",
@@ -239,19 +456,23 @@ export default function CustomerCreate() {
       phone: data.workPhone || "",
       workPhone: data.workPhone || "",
       mobile: data.mobile || "",
-      gstTreatment: gstTreatmentLabels[data.gstTreatment] || data.gstTreatment,
-      receivables: "₹0.00",
+      gstTreatment: data.taxPreference === "taxable" 
+        ? (gstTreatmentLabels[data.gstTreatment || ""] || data.gstTreatment || "")
+        : "",
+      gstin: data.taxPreference === "taxable" ? (data.gstin || "") : "",
+      receivables: "0.00",
       avatar: data.displayName.slice(0, 2).toUpperCase(),
       pan: data.pan || "",
       customerType: data.customerType,
-      status: "active",
+      status: "active" as const,
       billingAddress,
       shippingAddress,
       currency: data.currency || "INR",
       paymentTerms: data.paymentTerms || "Due on Receipt",
-      placeOfSupply: placeOfSupplyLabels[data.placeOfSupply] || data.placeOfSupply,
+      placeOfSupply: selectedState ? `${selectedState.code} - ${selectedState.name}` : data.placeOfSupply,
       taxPreference: data.taxPreference,
-      portalStatus: data.enablePortal ? "enabled" : "disabled",
+      exemptionReason: data.taxPreference === "tax_exempt" ? (data.exemptionReason || "") : "",
+      portalStatus: (data.enablePortal ? "enabled" : "disabled") as "enabled" | "disabled",
       contactPersons: data.contactPersons || [],
     };
 
@@ -271,10 +492,7 @@ export default function CustomerCreate() {
       const result = await response.json();
       const newCustomer = result.data;
 
-      addCustomer({
-        ...customerPayload,
-        id: newCustomer.id,
-      });
+      addCustomer(customerPayload);
 
       toast({
         title: "Customer Created",
@@ -307,7 +525,8 @@ export default function CustomerCreate() {
       form.setValue("companyName", "Tech Solutions Pvt Ltd");
       form.setValue("displayName", "Tech Solutions");
       form.setValue("gstTreatment", "registered_regular");
-      form.setValue("placeOfSupply", "KA");
+      form.setValue("placeOfSupply", "29");
+      form.setValue("gstin", "29AAGCA4900Q1ZE");
       toast({
         title: "Details Prefilled",
         description: "Customer details have been populated from GSTIN.",
@@ -326,24 +545,23 @@ export default function CustomerCreate() {
   return (
     <div className="max-w-5xl mx-auto pb-20">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-4 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer w-fit" onClick={() => setLocation("/customers")}>
+        <div className="flex items-center gap-2 mb-4 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer w-fit" onClick={() => setLocation("/customers")} data-testid="link-back-customers">
           <ArrowLeft className="h-4 w-4" />
           <span className="text-sm font-medium">Back to Customers</span>
         </div>
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">New Customer</h1>
+          <h1 className="text-2xl font-bold text-slate-900" data-testid="text-page-title">New Customer</h1>
         </div>
       </div>
 
       <div className="bg-blue-50 border border-blue-100 px-4 py-3 rounded-md flex items-center gap-2 text-sm text-blue-700 mb-8">
         <Info className="h-4 w-4" />
         <span>Prefill Customer details from the GST portal using the Customer's GSTIN.</span>
-        <button type="button" onClick={handlePrefill} className="font-semibold hover:underline ml-1">Prefill {">"}</button>
+        <button type="button" onClick={handlePrefill} className="font-semibold hover:underline ml-1" data-testid="button-prefill-gst">Prefill {">"}</button>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Basic Details */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12">
             <div className="md:col-span-4 space-y-6">
               <FormField
@@ -360,13 +578,13 @@ export default function CustomerCreate() {
                       >
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="business" />
+                            <RadioGroupItem value="business" data-testid="radio-customer-business" />
                           </FormControl>
                           <FormLabel className="font-normal">Business</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="individual" />
+                            <RadioGroupItem value="individual" data-testid="radio-customer-individual" />
                           </FormControl>
                           <FormLabel className="font-normal">Individual</FormLabel>
                         </FormItem>
@@ -379,16 +597,19 @@ export default function CustomerCreate() {
 
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <Label className="block text-sm font-medium">Primary Contact</Label>
+                  <div className="flex items-center gap-1">
+                    <Label className="block text-sm font-medium">Primary Contact</Label>
+                    <Info className="h-3.5 w-3.5 text-slate-400" />
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <FormField
                       control={form.control}
                       name="salutation"
                       render={({ field }) => (
                         <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger className="w-full">
+                              <SelectTrigger className="w-full" data-testid="select-salutation">
                                 <SelectValue placeholder="Salutation" />
                               </SelectTrigger>
                             </FormControl>
@@ -409,7 +630,7 @@ export default function CustomerCreate() {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input placeholder="First Name" {...field} className="w-full" />
+                            <Input placeholder="First Name" {...field} className="w-full" data-testid="input-first-name" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -421,7 +642,7 @@ export default function CustomerCreate() {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input placeholder="Last Name" {...field} className="w-full" />
+                            <Input placeholder="Last Name" {...field} className="w-full" data-testid="input-last-name" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -437,7 +658,7 @@ export default function CustomerCreate() {
                     <FormItem>
                       <FormLabel>Company Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="" {...field} />
+                        <Input placeholder="" {...field} data-testid="input-company-name" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -448,11 +669,84 @@ export default function CustomerCreate() {
                   control={form.control}
                   name="displayName"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">Display Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="" {...field} />
-                      </FormControl>
+                    <FormItem className="flex flex-col">
+                      <div className="flex items-center gap-1">
+                        <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">Display Name</FormLabel>
+                        <Info className="h-3.5 w-3.5 text-slate-400" />
+                      </div>
+                      <Popover open={displayNameOpen} onOpenChange={setDisplayNameOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={displayNameOpen}
+                              className={cn(
+                                "w-full justify-between font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="combobox-display-name"
+                            >
+                              {field.value || "Select or type to add"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                          <Command>
+                            <CommandInput 
+                              placeholder="Select or type to add..." 
+                              value={displayNameSearch}
+                              onValueChange={(value) => {
+                                setDisplayNameSearch(value);
+                                field.onChange(value);
+                              }}
+                              data-testid="input-display-name-search"
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {displayNameSearch ? (
+                                  <div 
+                                    className="py-2 px-3 cursor-pointer hover:bg-accent rounded-sm"
+                                    onClick={() => {
+                                      field.onChange(displayNameSearch.trim());
+                                      setDisplayNameOpen(false);
+                                    }}
+                                  >
+                                    Use "{displayNameSearch.trim()}"
+                                  </div>
+                                ) : (
+                                  "Type a name or enter contact details above"
+                                )}
+                              </CommandEmpty>
+                              {displayNameOptions.length > 0 && (
+                                <CommandGroup heading="Suggested Names">
+                                  {displayNameOptions.map((option) => (
+                                    <CommandItem
+                                      key={option}
+                                      value={option}
+                                      onSelect={() => {
+                                        field.onChange(option);
+                                        setDisplayNameSearch("");
+                                        setDisplayNameOpen(false);
+                                      }}
+                                      data-testid={`option-display-name-${option.replace(/\s+/g, '-').toLowerCase()}`}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === option ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {option}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              )}
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -463,10 +757,13 @@ export default function CustomerCreate() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <div className="flex items-center gap-1">
+                        <FormLabel>Email Address</FormLabel>
+                        <Info className="h-3.5 w-3.5 text-slate-400" />
+                      </div>
                       <FormControl>
                         <div className="relative">
-                          <Input placeholder="" {...field} className="pl-9" />
+                          <Input placeholder="" {...field} className="pl-9" data-testid="input-email" />
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="text-slate-400">@</span>
                           </div>
@@ -483,9 +780,12 @@ export default function CustomerCreate() {
                     name="workPhone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Work Phone</FormLabel>
+                        <div className="flex items-center gap-1">
+                          <FormLabel>Phone</FormLabel>
+                          <Info className="h-3.5 w-3.5 text-slate-400" />
+                        </div>
                         <FormControl>
-                          <Input placeholder="+1 (555) 123-4567" {...field} className="w-full" />
+                          <Input placeholder="" {...field} className="w-full" data-testid="input-work-phone" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -498,7 +798,7 @@ export default function CustomerCreate() {
                       <FormItem>
                         <FormLabel>Mobile</FormLabel>
                         <FormControl>
-                          <Input placeholder="+1 (555) 987-6543" {...field} className="w-full" />
+                          <Input placeholder="" {...field} className="w-full" data-testid="input-mobile" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -509,78 +809,276 @@ export default function CustomerCreate() {
             </div>
           </div>
 
-          {/* Tabs */}
           <Tabs defaultValue="other" className="w-full mt-8">
-            <TabsList className="w-full justify-start h-auto border-b border-slate-200 bg-transparent p-0 rounded-none space-x-6">
-              <TabsTrigger value="other" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2">Other Details</TabsTrigger>
-              <TabsTrigger value="address" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2">Address</TabsTrigger>
-              <TabsTrigger value="contact" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2">Contact Persons</TabsTrigger>
-              <TabsTrigger value="custom" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2">Custom Fields</TabsTrigger>
-              <TabsTrigger value="tags" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2">Reporting Tags</TabsTrigger>
-              <TabsTrigger value="remarks" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2">Remarks</TabsTrigger>
+            <TabsList className="w-full justify-start h-auto border-b border-slate-200 bg-transparent p-0 rounded-none space-x-6 flex-wrap">
+              <TabsTrigger value="other" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2" data-testid="tab-other-details">Other Details</TabsTrigger>
+              <TabsTrigger value="address" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2" data-testid="tab-address">Address</TabsTrigger>
+              <TabsTrigger value="contact" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2" data-testid="tab-contact">Contact Persons</TabsTrigger>
+              <TabsTrigger value="custom" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2" data-testid="tab-custom">Custom Fields</TabsTrigger>
+              <TabsTrigger value="tags" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2" data-testid="tab-tags">Reporting Tags</TabsTrigger>
+              <TabsTrigger value="remarks" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-700 px-0 py-2" data-testid="tab-remarks">Remarks</TabsTrigger>
             </TabsList>
 
             <div className="mt-6">
               <TabsContent value="other" className="space-y-6 max-w-4xl">
+                <FormField
+                  control={form.control}
+                  name="taxPreference"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">Tax Preference</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="flex flex-row space-x-4"
+                        >
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="taxable" data-testid="radio-taxable" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Taxable</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="tax_exempt" data-testid="radio-tax-exempt" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Tax Exempt</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                  <FormField
-                    control={form.control}
-                    name="gstTreatment"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">GST Treatment</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select GST Treatment" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="registered_regular">Registered Business - Regular</SelectItem>
-                            <SelectItem value="registered_composition">Registered Business - Composition</SelectItem>
-                            <SelectItem value="unregistered">Unregistered Business</SelectItem>
-                            <SelectItem value="consumer">Consumer</SelectItem>
-                            <SelectItem value="overseas">Overseas</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {watchTaxPreference === "taxable" && (
+                    <FormField
+                      control={form.control}
+                      name="gstTreatment"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">GST Treatment</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-gst-treatment">
+                                <SelectValue placeholder="Select GST Treatment" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="registered_regular">Registered Business - Regular</SelectItem>
+                              <SelectItem value="registered_composition">Registered Business - Composition</SelectItem>
+                              <SelectItem value="unregistered">Unregistered Business</SelectItem>
+                              <SelectItem value="consumer">Consumer</SelectItem>
+                              <SelectItem value="overseas">Overseas</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {watchTaxPreference === "tax_exempt" && (
+                    <FormField
+                      control={form.control}
+                      name="exemptionReason"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <div className="flex items-center gap-1">
+                            <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">Exemption Reason</FormLabel>
+                            <Info className="h-3.5 w-3.5 text-slate-400" />
+                          </div>
+                          <Popover open={exemptionOpen} onOpenChange={setExemptionOpen}>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={exemptionOpen}
+                                  className={cn(
+                                    "w-full justify-between font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                  data-testid="combobox-exemption-reason"
+                                >
+                                  {field.value || "Select or type to add"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                              <Command>
+                                <CommandInput 
+                                  placeholder="Search or type..." 
+                                  value={exemptionSearch}
+                                  onValueChange={(value) => {
+                                    setExemptionSearch(value);
+                                  }}
+                                  data-testid="input-exemption-search"
+                                />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    {exemptionSearch ? (
+                                      <div 
+                                        className="py-2 px-3 cursor-pointer hover:bg-accent rounded-sm"
+                                        onClick={() => {
+                                          field.onChange(exemptionSearch.trim());
+                                          setExemptionOpen(false);
+                                          setExemptionSearch("");
+                                        }}
+                                      >
+                                        Use "{exemptionSearch.trim()}"
+                                      </div>
+                                    ) : (
+                                      "No exemption reasons found"
+                                    )}
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {filteredExemptionReasons.map((reason) => (
+                                      <CommandItem
+                                        key={reason}
+                                        value={reason}
+                                        onSelect={() => {
+                                          field.onChange(reason);
+                                          setExemptionSearch("");
+                                          setExemptionOpen(false);
+                                        }}
+                                        data-testid={`option-exemption-${reason.replace(/\s+/g, '-').toLowerCase()}`}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === reason ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {reason}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
                     name="placeOfSupply"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">Place of Supply</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select State" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="KA">Karnataka</SelectItem>
-                            <SelectItem value="MH">Maharashtra</SelectItem>
-                            <SelectItem value="DL">Delhi</SelectItem>
-                            <SelectItem value="TN">Tamil Nadu</SelectItem>
-                            <SelectItem value="GJ">Gujarat</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">Place of Supply</FormLabel>
+                        <Popover open={stateOpen} onOpenChange={setStateOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={stateOpen}
+                                className={cn(
+                                  "w-full justify-between font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                data-testid="combobox-place-of-supply"
+                              >
+                                {field.value 
+                                  ? INDIAN_STATES.find(s => s.code === field.value)?.name || field.value
+                                  : "Select State"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                            <Command>
+                              <CommandInput 
+                                placeholder="Search state..." 
+                                value={stateSearch}
+                                onValueChange={setStateSearch}
+                                data-testid="input-state-search"
+                              />
+                              <CommandList className="max-h-[300px]">
+                                <CommandEmpty>No state found</CommandEmpty>
+                                <CommandGroup>
+                                  {filteredStates.map((state) => (
+                                    <CommandItem
+                                      key={state.code}
+                                      value={`${state.code} ${state.name}`}
+                                      onSelect={() => {
+                                        field.onChange(state.code);
+                                        setStateSearch("");
+                                        setStateOpen(false);
+                                      }}
+                                      data-testid={`option-state-${state.code}`}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === state.code ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {state.code} - {state.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  {watchTaxPreference === "taxable" && (
+                    <FormField
+                      control={form.control}
+                      name="gstin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>GSTIN</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="e.g., 27AAGCA4900Q1ZE" 
+                              {...field} 
+                              onChange={(e) => {
+                                const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                field.onChange(value.substring(0, 15));
+                              }}
+                              maxLength={15}
+                              data-testid="input-gstin"
+                            />
+                          </FormControl>
+                          {gstinWarning && (
+                            <div className="flex items-center gap-1 text-amber-600 text-sm mt-1">
+                              <AlertTriangle className="h-3.5 w-3.5" />
+                              <span>{gstinWarning}</span>
+                            </div>
+                          )}
+                          {field.value && !validateGSTIN(field.value).valid && (
+                            <p className="text-red-500 text-sm mt-1">{validateGSTIN(field.value).message}</p>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
                     name="pan"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>PAN</FormLabel>
+                        <div className="flex items-center gap-1">
+                          <FormLabel>PAN</FormLabel>
+                          <Info className="h-3.5 w-3.5 text-slate-400" />
+                        </div>
                         <FormControl>
-                          <Input placeholder="" {...field} />
+                          <Input placeholder="" {...field} data-testid="input-pan" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -595,7 +1093,7 @@ export default function CustomerCreate() {
                         <FormLabel>Currency</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger data-testid="select-currency">
                               <SelectValue placeholder="Currency" />
                             </SelectTrigger>
                           </FormControl>
@@ -619,7 +1117,7 @@ export default function CustomerCreate() {
                         <FormControl>
                           <div className="flex items-center">
                             <span className="bg-slate-100 border border-r-0 border-slate-300 rounded-l-md px-3 py-2 text-sm text-slate-500">INR</span>
-                            <Input placeholder="0.00" {...field} className="rounded-l-none" />
+                            <Input placeholder="0.00" {...field} className="rounded-l-none" data-testid="input-opening-balance" />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -635,7 +1133,7 @@ export default function CustomerCreate() {
                         <FormLabel>Payment Terms</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger data-testid="select-payment-terms">
                               <SelectValue placeholder="Due on Receipt" />
                             </SelectTrigger>
                           </FormControl>
@@ -654,37 +1152,6 @@ export default function CustomerCreate() {
 
                 <FormField
                   control={form.control}
-                  name="taxPreference"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">Tax Preference</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-row space-x-4"
-                        >
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="taxable" />
-                            </FormControl>
-                            <FormLabel className="font-normal">Taxable</FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="tax_exempt" />
-                            </FormControl>
-                            <FormLabel className="font-normal">Tax Exempt</FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="enablePortal"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4 border border-slate-100 bg-slate-50/50">
@@ -692,6 +1159,7 @@ export default function CustomerCreate() {
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          data-testid="checkbox-enable-portal"
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
@@ -779,7 +1247,6 @@ export default function CustomerCreate() {
 
               <TabsContent value="address" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Billing Address */}
                   <div className="space-y-4">
                     <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500 mb-4">Billing Address</h3>
 
@@ -790,7 +1257,7 @@ export default function CustomerCreate() {
                         <FormItem>
                           <FormLabel>Attention</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} data-testid="input-billing-attention" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -804,7 +1271,7 @@ export default function CustomerCreate() {
                           <FormLabel>Country / Region</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger data-testid="select-billing-country">
                                 <SelectValue placeholder="Select Country" />
                               </SelectTrigger>
                             </FormControl>
@@ -827,7 +1294,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>Address</FormLabel>
                             <FormControl>
-                              <Input placeholder="Street 1" {...field} />
+                              <Input placeholder="Street 1" {...field} data-testid="input-billing-street1" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -839,7 +1306,7 @@ export default function CustomerCreate() {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input placeholder="Street 2" {...field} />
+                              <Input placeholder="Street 2" {...field} data-testid="input-billing-street2" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -855,7 +1322,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-billing-city" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -868,7 +1335,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>State</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-billing-state" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -883,7 +1350,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>Pin Code</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-billing-pincode" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -896,7 +1363,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>Phone</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-billing-phone" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -910,7 +1377,7 @@ export default function CustomerCreate() {
                         <FormItem>
                           <FormLabel>Fax</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} data-testid="input-billing-fax" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -918,11 +1385,10 @@ export default function CustomerCreate() {
                     />
                   </div>
 
-                  {/* Shipping Address */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Shipping Address</h3>
-                      <Button type="button" variant="ghost" size="sm" onClick={copyBillingToShipping} className="text-blue-600 h-8 text-xs">
+                      <Button type="button" variant="link" size="sm" onClick={copyBillingToShipping} className="text-blue-600 h-auto p-0" data-testid="button-copy-billing">
                         Copy billing address
                       </Button>
                     </div>
@@ -934,7 +1400,7 @@ export default function CustomerCreate() {
                         <FormItem>
                           <FormLabel>Attention</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} data-testid="input-shipping-attention" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -946,9 +1412,9 @@ export default function CustomerCreate() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Country / Region</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || form.getValues("shippingAddress.country")}>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger data-testid="select-shipping-country">
                                 <SelectValue placeholder="Select Country" />
                               </SelectTrigger>
                             </FormControl>
@@ -971,7 +1437,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>Address</FormLabel>
                             <FormControl>
-                              <Input placeholder="Street 1" {...field} />
+                              <Input placeholder="Street 1" {...field} data-testid="input-shipping-street1" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -983,7 +1449,7 @@ export default function CustomerCreate() {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input placeholder="Street 2" {...field} />
+                              <Input placeholder="Street 2" {...field} data-testid="input-shipping-street2" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -999,7 +1465,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-shipping-city" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1012,7 +1478,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>State</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-shipping-state" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1027,7 +1493,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>Pin Code</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-shipping-pincode" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1040,7 +1506,7 @@ export default function CustomerCreate() {
                           <FormItem>
                             <FormLabel>Phone</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} data-testid="input-shipping-phone" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1054,7 +1520,7 @@ export default function CustomerCreate() {
                         <FormItem>
                           <FormLabel>Fax</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} data-testid="input-shipping-fax" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1064,168 +1530,155 @@ export default function CustomerCreate() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="contact">
-                <Card>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Salutation</TableHead>
-                          <TableHead>First Name</TableHead>
-                          <TableHead>Last Name</TableHead>
-                          <TableHead>Email Address</TableHead>
-                          <TableHead>Work Phone</TableHead>
-                          <TableHead>Mobile</TableHead>
-                          <TableHead className="w-10"></TableHead>
+              <TabsContent value="contact" className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Contact Persons</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendContact({ salutation: "", firstName: "", lastName: "", email: "", workPhone: "", mobile: "" })}
+                    data-testid="button-add-contact"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Contact Person
+                  </Button>
+                </div>
+
+                {contactFields.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    <p>No contact persons added yet.</p>
+                    <p className="text-sm mt-1">Click "Add Contact Person" to add one.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Salutation</TableHead>
+                        <TableHead>First Name</TableHead>
+                        <TableHead>Last Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Work Phone</TableHead>
+                        <TableHead>Mobile</TableHead>
+                        <TableHead></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contactFields.map((field, index) => (
+                        <TableRow key={field.id} data-testid={`row-contact-${index}`}>
+                          <TableCell>
+                            <FormField
+                              control={form.control}
+                              name={`contactPersons.${index}.salutation`}
+                              render={({ field }) => (
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger className="w-24" data-testid={`select-contact-salutation-${index}`}>
+                                    <SelectValue placeholder="--" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="mr">Mr.</SelectItem>
+                                    <SelectItem value="mrs">Mrs.</SelectItem>
+                                    <SelectItem value="ms">Ms.</SelectItem>
+                                    <SelectItem value="dr">Dr.</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <FormField
+                              control={form.control}
+                              name={`contactPersons.${index}.firstName`}
+                              render={({ field }) => (
+                                <Input {...field} className="w-full" data-testid={`input-contact-firstname-${index}`} />
+                              )}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <FormField
+                              control={form.control}
+                              name={`contactPersons.${index}.lastName`}
+                              render={({ field }) => (
+                                <Input {...field} className="w-full" data-testid={`input-contact-lastname-${index}`} />
+                              )}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <FormField
+                              control={form.control}
+                              name={`contactPersons.${index}.email`}
+                              render={({ field }) => (
+                                <Input {...field} type="email" className="w-full" data-testid={`input-contact-email-${index}`} />
+                              )}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <FormField
+                              control={form.control}
+                              name={`contactPersons.${index}.workPhone`}
+                              render={({ field }) => (
+                                <Input {...field} className="w-full" data-testid={`input-contact-workphone-${index}`} />
+                              )}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <FormField
+                              control={form.control}
+                              name={`contactPersons.${index}.mobile`}
+                              render={({ field }) => (
+                                <Input {...field} className="w-full" data-testid={`input-contact-mobile-${index}`} />
+                              )}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeContact(index)}
+                              data-testid={`button-remove-contact-${index}`}
+                            >
+                              <Trash2 className="h-4 w-4 text-slate-400" />
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {contactFields.map((fieldItem, index) => (
-                          <TableRow key={fieldItem.id}>
-                            <TableCell>
-                              <FormField
-                                control={form.control}
-                                name={`contactPersons.${index}.salutation`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input {...field} className="h-8" placeholder="Mr." />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <FormField
-                                control={form.control}
-                                name={`contactPersons.${index}.firstName`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input {...field} className="h-8" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <FormField
-                                control={form.control}
-                                name={`contactPersons.${index}.lastName`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input {...field} className="h-8" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <FormField
-                                control={form.control}
-                                name={`contactPersons.${index}.email`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input {...field} className="h-8" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <FormField
-                                control={form.control}
-                                name={`contactPersons.${index}.workPhone`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input {...field} className="h-8" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <FormField
-                                control={form.control}
-                                name={`contactPersons.${index}.mobile`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input {...field} className="h-8" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="icon" type="button" onClick={() => removeContact(index)}>
-                                <X className="h-4 w-4 text-slate-400 hover:text-red-500" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {contactFields.length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-slate-500">
-                              No contact persons added.
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => appendContact({ salutation: "", firstName: "", lastName: "", email: "", workPhone: "", mobile: "" })}
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Add Contact Person
-                </Button>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </TabsContent>
 
-              <TabsContent value="custom">
-                <div className="flex flex-col items-center justify-center py-12 border border-dashed border-slate-200 rounded-lg bg-slate-50/30">
-                  <div className="p-4 bg-slate-100 rounded-full mb-3">
-                    <MoreHorizontal className="h-6 w-6 text-slate-400" />
-                  </div>
-                  <h3 className="font-medium text-slate-900">No Custom Fields</h3>
-                  <p className="text-sm text-slate-500 mt-1">You haven't created any custom fields for Customers yet.</p>
+              <TabsContent value="custom" className="space-y-6">
+                <div className="text-center py-8 text-slate-500">
+                  <p>Custom fields can be configured in Settings.</p>
+                  <Button variant="link" className="text-blue-600 mt-2" data-testid="link-configure-custom-fields">
+                    Configure Custom Fields
+                  </Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="tags">
-                <div className="space-y-4">
-                  <h3 className="font-medium text-slate-900">Reporting Tags</h3>
-                  <p className="text-sm text-slate-500">Associate tags to this customer for reporting purposes.</p>
-                  <div className="p-4 border border-slate-200 rounded-md bg-white">
-                    <p className="text-sm text-slate-400 italic">No tags available. Go to Settings to create tags.</p>
-                  </div>
+              <TabsContent value="tags" className="space-y-6">
+                <div className="text-center py-8 text-slate-500">
+                  <p>Reporting tags help categorize customers for reports.</p>
+                  <Button variant="link" className="text-blue-600 mt-2" data-testid="link-configure-tags">
+                    Configure Reporting Tags
+                  </Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="remarks">
+              <TabsContent value="remarks" className="space-y-6">
                 <FormField
                   control={form.control}
                   name="remarks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Remarks (Internal Use)</FormLabel>
+                      <FormLabel>Remarks</FormLabel>
                       <FormControl>
-                        <Textarea
-                          placeholder="Enter any notes or remarks about this customer..."
-                          className="min-h-[150px]"
+                        <Textarea 
+                          placeholder="For internal use only. These remarks won't appear on any documents."
+                          className="min-h-[100px]"
                           {...field}
+                          data-testid="textarea-remarks"
                         />
                       </FormControl>
                       <FormMessage />
@@ -1236,12 +1689,11 @@ export default function CustomerCreate() {
             </div>
           </Tabs>
 
-          {/* Sticky Footer */}
-          <div className="fixed bottom-0 left-0 md:left-64 right-0 bg-white border-t border-slate-200 p-4 flex items-center gap-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 min-w-[100px]">
+          <div className="flex items-center gap-3 pt-6 border-t">
+            <Button type="submit" disabled={isSubmitting} data-testid="button-save-customer">
               {isSubmitting ? "Saving..." : "Save"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setLocation("/customers")}>
+            <Button type="button" variant="outline" onClick={() => setLocation("/customers")} data-testid="button-cancel">
               Cancel
             </Button>
           </div>

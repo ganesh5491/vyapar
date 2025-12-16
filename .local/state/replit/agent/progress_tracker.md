@@ -83,3 +83,13 @@
     - Added empty state message when no items are added
     - Improved pagination styling with better visual hierarchy and hover effects
 [x] 50. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025 - current session)
+[x] 51. Enhanced Customer Creation Form (Dec 16, 2025):
+    - Added Display Name dropdown with auto-generated options from Primary Contact fields (Salutation, First Name, Last Name, Company Name)
+    - Implemented Tax Preference toggle (Taxable/Tax Exempt) with conditional field visibility:
+      * Taxable: Shows GST Treatment*, Place of Supply*, GSTIN fields
+      * Tax Exempt: Shows Exemption Reason*, Place of Supply* fields, hides GST Treatment and GSTIN
+    - Added complete Indian States dropdown with all 36 states/UTs and GST codes for Place of Supply
+    - Added GSTIN field with 15-character format validation and state code mismatch warning
+    - Added Exemption Reason dropdown with common exemption reasons and free-text input
+    - State management clears incompatible fields when switching between Taxable and Tax Exempt
+    - All dropdowns support keyboard navigation and search functionality
