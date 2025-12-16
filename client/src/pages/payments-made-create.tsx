@@ -399,7 +399,7 @@ export default function PaymentsMadeCreate() {
               </div>
             </div>
 
-            <Card className="bg-amber-50 border-amber-200">
+            {/* <Card className="bg-amber-50 border-amber-200">
               <CardContent className="flex items-center gap-3 py-3">
                 <span className="text-amber-600 text-lg">💡</span>
                 <p className="text-sm text-slate-700">
@@ -412,7 +412,7 @@ export default function PaymentsMadeCreate() {
                 <X className="h-4 w-4 text-red-500 cursor-pointer ml-auto" />
               </CardContent>
             </Card>
-
+ */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label className="text-red-500">Payment Date*</Label>
