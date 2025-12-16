@@ -33,7 +33,8 @@ import {
     Truck,
     Ban,
     BookOpen,
-    Settings
+    Settings,
+    RotateCcw
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -122,6 +123,8 @@ interface InvoiceDetail {
     payments: any[];
     activityLogs: any[];
     createdAt: string;
+    amountRefunded?: number;
+    refunds?: any[];
 }
 
 const formatCurrency = (amount: number) => {
@@ -207,6 +210,10 @@ export default function Invoices() {
     const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
     const [journalDialogOpen, setJournalDialogOpen] = useState(false);
     const [preferencesDialogOpen, setPreferencesDialogOpen] = useState(false);
+    const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+    const [refundAmount, setRefundAmount] = useState("");
+    const [refundMode, setRefundMode] = useState("Cash");
+    const [refundReason, setRefundReason] = useState("");
 
     useEffect(() => {
         fetchInvoices();
@@ -414,6 +421,49 @@ export default function Invoices() {
             }
         } catch (error) {
             toast({ title: "Failed to record payment", variant: "destructive" });
+        }
+    };
+
+    const getRefundableAmount = () => {
+        if (!selectedInvoice) return 0;
+        return selectedInvoice.amountPaid || 0;
+    };
+
+    const handleRefund = async () => {
+        if (!selectedInvoice || !refundAmount) return;
+        const amount = parseFloat(refundAmount);
+        const refundableAmount = getRefundableAmount();
+        if (amount <= 0) {
+            toast({ title: "Refund amount must be greater than 0", variant: "destructive" });
+            return;
+        }
+        if (amount > refundableAmount) {
+            toast({ title: `Refund amount cannot exceed refundable balance of ${formatCurrency(refundableAmount)}`, variant: "destructive" });
+            return;
+        }
+        try {
+            const response = await fetch(`/api/invoices/${selectedInvoice.id}/refund`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: amount,
+                    mode: refundMode,
+                    reason: refundReason || 'Refund processed'
+                })
+            });
+            if (response.ok) {
+                toast({ title: "Refund processed successfully" });
+                setRefundDialogOpen(false);
+                setRefundAmount("");
+                setRefundReason("");
+                fetchInvoiceDetail(selectedInvoice.id);
+                fetchInvoices();
+            } else {
+                const errorData = await response.json();
+                toast({ title: errorData.message || "Failed to process refund", variant: "destructive" });
+            }
+        } catch (error) {
+            toast({ title: "Failed to process refund", variant: "destructive" });
         }
     };
 
@@ -780,6 +830,16 @@ export default function Invoices() {
                             <CreditCard className="h-3.5 w-3.5" />
                             Record Payment
                         </Button>
+                        {(selectedInvoice?.amountPaid || 0) > 0 && (
+                            <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={() => {
+                                setRefundAmount("");
+                                setRefundReason("");
+                                setRefundDialogOpen(true);
+                            }} data-testid="button-refund">
+                                <RotateCcw className="h-3.5 w-3.5" />
+                                Refund
+                            </Button>
+                        )}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-8" data-testid="button-more-actions">
@@ -962,10 +1022,16 @@ export default function Invoices() {
                                                     <span>Total</span>
                                                     <span>{formatCurrency(selectedInvoice.total)}</span>
                                                 </div>
-                                                {selectedInvoice.amountPaid > 0 && (
+                                                {(selectedInvoice.amountPaid > 0 || (selectedInvoice.amountRefunded || 0) > 0) && (
                                                     <div className="flex justify-between text-green-600">
                                                         <span>Payment Made</span>
-                                                        <span>(-) {formatCurrency(selectedInvoice.amountPaid)}</span>
+                                                        <span>(-) {formatCurrency((selectedInvoice.amountPaid || 0) + (selectedInvoice.amountRefunded || 0))}</span>
+                                                    </div>
+                                                )}
+                                                {(selectedInvoice.amountRefunded || 0) > 0 && (
+                                                    <div className="flex justify-between text-orange-600">
+                                                        <span>Refunded</span>
+                                                        <span>(+) {formatCurrency(selectedInvoice.amountRefunded || 0)}</span>
                                                     </div>
                                                 )}
                                                 <div className="flex justify-between pt-2 border-t border-slate-200 font-bold text-base">
@@ -1011,6 +1077,40 @@ export default function Invoices() {
                                                                 </td>
                                                                 <td className="px-4 py-3 text-sm text-slate-900">
                                                                     {formatDateTime(payment.date || payment.timestamp)}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Refund History Section */}
+                                    {(selectedInvoice.refunds || []).length > 0 && (
+                                        <div className="mt-6">
+                                            <h3 className="text-sm font-semibold text-slate-700 mb-3">Refund History</h3>
+                                            <div className="border border-slate-200 rounded-lg overflow-hidden">
+                                                <table className="w-full">
+                                                    <thead className="bg-orange-50">
+                                                        <tr>
+                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Refund Details</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Mode</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-200">
+                                                        {(selectedInvoice.refunds || []).map((refund: any) => (
+                                                            <tr key={refund.id} className="hover:bg-slate-50">
+                                                                <td className="px-4 py-3 text-sm text-orange-700">
+                                                                    Refund of {formatCurrency(refund.amount)} processed
+                                                                    {refund.reason && <span className="text-slate-500 ml-1">- {refund.reason}</span>}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-slate-900">
+                                                                    {refund.mode?.toUpperCase() || 'N/A'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-slate-900">
+                                                                    {formatDateTime(refund.date)}
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -1106,6 +1206,59 @@ export default function Invoices() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Cancel</Button>
                         <Button onClick={handleRecordPayment} data-testid="button-confirm-payment">Record Payment</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Process Refund</DialogTitle>
+                        <DialogDescription>
+                            Process a refund for {selectedInvoice?.invoiceNumber}. Refundable balance: {formatCurrency(getRefundableAmount())}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Refund Amount</Label>
+                            <Input
+                                type="number"
+                                placeholder="Enter refund amount"
+                                value={refundAmount}
+                                onChange={(e) => setRefundAmount(e.target.value)}
+                                max={getRefundableAmount()}
+                                data-testid="input-refund-amount"
+                            />
+                            <p className="text-xs text-muted-foreground">Maximum refundable: {formatCurrency(getRefundableAmount())}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Refund Mode</Label>
+                            <Select value={refundMode} onValueChange={setRefundMode}>
+                                <SelectTrigger data-testid="select-refund-mode">
+                                    <SelectValue placeholder="Select refund mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Cash">Cash</SelectItem>
+                                    <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                                    <SelectItem value="Cheque">Cheque</SelectItem>
+                                    <SelectItem value="UPI">UPI</SelectItem>
+                                    <SelectItem value="Credit Card">Credit Card</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Reason (Optional)</Label>
+                            <Input
+                                placeholder="Enter reason for refund"
+                                value={refundReason}
+                                onChange={(e) => setRefundReason(e.target.value)}
+                                data-testid="input-refund-reason"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setRefundDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleRefund} data-testid="button-confirm-refund">Process Refund</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

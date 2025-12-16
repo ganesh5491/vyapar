@@ -3517,16 +3517,201 @@ export async function registerRoutes(
       }
 
       const payment = data.paymentsReceived[index];
+      const refundAmount = req.body.refundAmount || payment.amount;
+      const now = new Date().toISOString();
+      
       payment.status = 'REFUNDED';
-      payment.refundedAt = new Date().toISOString();
-      payment.refundAmount = req.body.refundAmount || payment.amount;
+      payment.refundedAt = now;
+      payment.refundAmount = refundAmount;
       
       data.paymentsReceived[index] = payment;
       writePaymentsReceivedData(data);
 
+      // Also update linked invoices if any
+      if (payment.invoices && payment.invoices.length > 0) {
+        const invoicesData = readInvoicesData();
+        
+        payment.invoices.forEach((paymentInvoice: any) => {
+          const invoiceIndex = invoicesData.invoices.findIndex((inv: any) => inv.id === paymentInvoice.invoiceId);
+          if (invoiceIndex !== -1) {
+            const invoice = invoicesData.invoices[invoiceIndex];
+            
+            // Initialize refunds array if not exists
+            if (!invoice.refunds) {
+              invoice.refunds = [];
+            }
+            
+            // Add refund record
+            invoice.refunds.push({
+              id: `ref-${Date.now()}`,
+              paymentId: payment.id,
+              paymentNumber: payment.paymentNumber,
+              amount: paymentInvoice.paymentAmount || refundAmount,
+              date: now,
+              reason: req.body.reason || 'Payment refunded'
+            });
+            
+            // Update amounts
+            invoice.amountRefunded = (invoice.amountRefunded || 0) + (paymentInvoice.paymentAmount || refundAmount);
+            invoice.amountPaid = Math.max(0, (invoice.amountPaid || 0) - (paymentInvoice.paymentAmount || refundAmount));
+            invoice.balanceDue = invoice.total - invoice.amountPaid;
+            
+            // Update status
+            if (invoice.balanceDue >= invoice.total) {
+              invoice.status = 'SENT';
+            } else if (invoice.balanceDue > 0) {
+              invoice.status = 'PARTIALLY_PAID';
+            }
+            
+            invoice.updatedAt = now;
+            invoice.activityLogs = invoice.activityLogs || [];
+            invoice.activityLogs.push({
+              id: String(invoice.activityLogs.length + 1),
+              timestamp: now,
+              action: 'refund_recorded',
+              description: `Refund of ₹${(paymentInvoice.paymentAmount || refundAmount).toLocaleString('en-IN')} recorded from Payment #${payment.paymentNumber}`,
+              user: req.body.refundedBy || 'Admin User'
+            });
+            
+            invoicesData.invoices[invoiceIndex] = invoice;
+          }
+        });
+        
+        writeInvoicesData(invoicesData);
+      }
+
       res.json({ success: true, data: payment });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to refund payment" });
+    }
+  });
+
+  // Refund from invoice - creates refund record and updates payment
+  app.post("/api/invoices/:id/refund", (req: Request, res: Response) => {
+    try {
+      const invoicesData = readInvoicesData();
+      const invoiceIndex = invoicesData.invoices.findIndex((i: any) => i.id === req.params.id);
+
+      if (invoiceIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Invoice not found' });
+      }
+
+      const invoice = invoicesData.invoices[invoiceIndex];
+      const refundAmount = req.body.amount || 0;
+      const now = new Date().toISOString();
+
+      // Validate refund amount
+      if (refundAmount <= 0) {
+        return res.status(400).json({ success: false, message: 'Refund amount must be greater than 0' });
+      }
+
+      if (refundAmount > (invoice.amountPaid || 0)) {
+        return res.status(400).json({ success: false, message: 'Refund amount cannot exceed amount paid' });
+      }
+
+      // Initialize refunds array if not exists
+      if (!invoice.refunds) {
+        invoice.refunds = [];
+      }
+
+      // Add refund record
+      const refundId = `ref-${Date.now()}`;
+      invoice.refunds.push({
+        id: refundId,
+        paymentId: req.body.paymentId || null,
+        paymentNumber: req.body.paymentNumber || null,
+        amount: refundAmount,
+        date: now,
+        reason: req.body.reason || 'Refund processed',
+        mode: req.body.mode || 'Cash'
+      });
+
+      // Update amounts
+      invoice.amountRefunded = (invoice.amountRefunded || 0) + refundAmount;
+      invoice.amountPaid = Math.max(0, (invoice.amountPaid || 0) - refundAmount);
+      invoice.balanceDue = invoice.total - invoice.amountPaid;
+
+      // Update status
+      if (invoice.balanceDue >= invoice.total) {
+        invoice.status = 'SENT';
+      } else if (invoice.balanceDue > 0) {
+        invoice.status = 'PARTIALLY_PAID';
+      }
+
+      invoice.updatedAt = now;
+      invoice.activityLogs = invoice.activityLogs || [];
+      invoice.activityLogs.push({
+        id: String(invoice.activityLogs.length + 1),
+        timestamp: now,
+        action: 'refund_recorded',
+        description: `Refund of ₹${refundAmount.toLocaleString('en-IN')} processed`,
+        user: req.body.refundedBy || 'Admin User'
+      });
+
+      invoicesData.invoices[invoiceIndex] = invoice;
+      writeInvoicesData(invoicesData);
+
+      // Also update linked payment if paymentId is provided
+      if (req.body.paymentId) {
+        const paymentsData = readPaymentsReceivedData();
+        const paymentIndex = paymentsData.paymentsReceived.findIndex((p: any) => p.id === req.body.paymentId);
+        
+        if (paymentIndex !== -1) {
+          const payment = paymentsData.paymentsReceived[paymentIndex];
+          payment.status = 'REFUNDED';
+          payment.refundedAt = now;
+          payment.refundAmount = (payment.refundAmount || 0) + refundAmount;
+          
+          paymentsData.paymentsReceived[paymentIndex] = payment;
+          writePaymentsReceivedData(paymentsData);
+        }
+      }
+
+      // Create a new payment record for the refund in Payments Received
+      const paymentsData = readPaymentsReceivedData();
+      const refundPayment = {
+        id: `pr-ref-${Date.now()}`,
+        paymentNumber: `REF-${generatePaymentNumber(paymentsData.nextPaymentNumber)}`,
+        date: now.split('T')[0],
+        referenceNumber: '',
+        customerId: invoice.customerId || '',
+        customerName: invoice.customerName || '',
+        customerEmail: invoice.customerEmail || '',
+        invoices: [{
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          invoiceDate: invoice.date,
+          invoiceAmount: invoice.total,
+          refundAmount: refundAmount
+        }],
+        mode: req.body.mode || 'Cash',
+        depositTo: 'Petty Cash',
+        amount: -refundAmount,
+        unusedAmount: 0,
+        bankCharges: 0,
+        tax: '',
+        taxAmount: 0,
+        notes: req.body.reason || `Refund for ${invoice.invoiceNumber}`,
+        attachments: [],
+        sendThankYou: false,
+        status: 'REFUNDED',
+        paymentType: 'refund',
+        placeOfSupply: invoice.placeOfSupply || '',
+        descriptionOfSupply: '',
+        amountInWords: `Refund: ${numberToWords(refundAmount)}`,
+        journalEntries: [],
+        createdAt: now,
+        isRefund: true,
+        originalInvoiceId: invoice.id
+      };
+
+      paymentsData.paymentsReceived.push(refundPayment);
+      paymentsData.nextPaymentNumber++;
+      writePaymentsReceivedData(paymentsData);
+
+      res.json({ success: true, data: invoice, refundPayment });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to process refund' });
     }
   });
 
