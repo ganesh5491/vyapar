@@ -94,3 +94,17 @@
     - State management clears incompatible fields when switching between Taxable and Tax Exempt
     - All dropdowns support keyboard navigation and search functionality
 [x] 52. Session restart - reinstalled cross-env and verified application running (Dec 16, 2025 - current session)
+[x] 53. Enhanced Customer Module (Dec 16, 2025):
+    - Updated customer-create.tsx: Moved GSTIN field next to PAN in responsive side-by-side layout (flex-row on desktop, stacked on mobile)
+    - Updated customer-edit.tsx: Added Tax Preference toggle with conditional field visibility:
+      * Taxable: Shows GSTIN and GST Treatment fields
+      * Tax Exempt: Shows Exemption Reason field, hides GST/GSTIN
+    - Added Customer List Filters dropdown with 9 predefined filters:
+      * All Customers, Active Customers, CRM Customers, Duplicate Customers
+      * Inactive Customers, Customer Portal Enabled, Customer Portal Disabled
+      * Overdue Customers, Unpaid Customers
+    - Filter dropdown includes favorite toggle (star icon) and "New Custom View" option
+    - Updated New Transaction navigation to auto-fetch customer data:
+      * invoice-create.tsx: Parses customerId from URL and auto-selects customer
+      * sales-order-create.tsx: Parses customerId from URL and auto-populates customer
+      * delivery-challan-create.tsx: Parses customerId from URL and auto-selects customer

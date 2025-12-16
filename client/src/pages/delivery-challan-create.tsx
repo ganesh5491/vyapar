@@ -74,7 +74,7 @@ const TAX_OPTIONS = [
 ];
 
 export default function DeliveryChallanCreate() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   
   const [date, setDate] = useState<Date>(new Date());
@@ -88,6 +88,7 @@ export default function DeliveryChallanCreate() {
   const [termsAndConditions, setTermsAndConditions] = useState("");
   const [adjustment, setAdjustment] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [customerIdFromUrl, setCustomerIdFromUrl] = useState<string | null>(null);
 
   const [items, setItems] = useState<ChallanItem[]>([
     {
@@ -107,7 +108,25 @@ export default function DeliveryChallanCreate() {
     fetchNextChallanNumber();
     fetchCustomers();
     fetchInventoryItems();
-  }, []);
+    
+    // Parse customerId from URL
+    const params = new URLSearchParams(location.split('?')[1]);
+    const urlCustomerId = params.get('customerId');
+    if (urlCustomerId) {
+      setCustomerIdFromUrl(urlCustomerId);
+    }
+  }, [location]);
+  
+  // Set customer from URL after customers are loaded
+  useEffect(() => {
+    if (customerIdFromUrl && customers.length > 0) {
+      const customer = customers.find(c => c.id === customerIdFromUrl);
+      if (customer) {
+        setSelectedCustomerId(customer.id);
+        setCustomerIdFromUrl(null);
+      }
+    }
+  }, [customerIdFromUrl, customers]);
 
   const fetchInventoryItems = async () => {
     try {

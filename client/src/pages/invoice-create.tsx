@@ -112,6 +112,7 @@ export default function InvoiceCreate() {
   const [products, setProducts] = useState<Product[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [customerIdFromUrl, setCustomerIdFromUrl] = useState<string | null>(null);
 
   const [date, setDate] = useState<Date>(new Date());
   const [dueDate, setDueDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() + 30)));
@@ -176,13 +177,27 @@ export default function InvoiceCreate() {
     fetchSalespersons();
     fetchCustomers();
     fetchProducts();
-    // Handle clone parameter
+    // Handle clone parameter and customerId from URL
     const params = new URLSearchParams(location.split('?')[1]);
     const cloneFromId = params.get('cloneFrom');
+    const urlCustomerId = params.get('customerId');
     if (cloneFromId) {
       fetchInvoiceToClone(cloneFromId);
+    } else if (urlCustomerId) {
+      setCustomerIdFromUrl(urlCustomerId);
     }
   }, [location]);
+  
+  // Set customer from URL after customers are loaded
+  useEffect(() => {
+    if (customerIdFromUrl && customers.length > 0) {
+      const customer = customers.find(c => c.id === customerIdFromUrl);
+      if (customer) {
+        setSelectedCustomerId(customer.id);
+        setCustomerIdFromUrl(null);
+      }
+    }
+  }, [customerIdFromUrl, customers]);
 
   const fetchCustomers = async () => {
     try {

@@ -1039,6 +1039,35 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+  const [favoriteFilters, setFavoriteFilters] = useState<string[]>([]);
+
+  const CUSTOMER_FILTERS = [
+    { id: "all", label: "All Customers" },
+    { id: "active", label: "Active Customers" },
+    { id: "crm", label: "CRM Customers" },
+    { id: "duplicate", label: "Duplicate Customers" },
+    { id: "inactive", label: "Inactive Customers" },
+    { id: "portal_enabled", label: "Customer Portal Enabled" },
+    { id: "portal_disabled", label: "Customer Portal Disabled" },
+    { id: "overdue", label: "Overdue Customers" },
+    { id: "unpaid", label: "Unpaid Customers" },
+  ];
+
+  const getFilterLabel = () => {
+    const filter = CUSTOMER_FILTERS.find(f => f.id === activeFilter);
+    return filter?.label || "All Customers";
+  };
+
+  const toggleFavorite = (filterId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (favoriteFilters.includes(filterId)) {
+      setFavoriteFilters(favoriteFilters.filter(f => f !== filterId));
+    } else {
+      setFavoriteFilters([...favoriteFilters, filterId]);
+    }
+  };
 
   useEffect(() => {
     fetchCustomers();
@@ -1150,7 +1179,51 @@ export default function CustomersPage() {
     }
   };
 
-  const filteredCustomers = customers.filter(customer => 
+  const applyFilter = (customerList: CustomerListItem[]) => {
+    let filtered = customerList;
+    
+    switch (activeFilter) {
+      case "active":
+        filtered = customerList.filter(c => c.status === "active" || !c.status);
+        break;
+      case "inactive":
+        filtered = customerList.filter(c => c.status === "inactive");
+        break;
+      case "portal_enabled":
+        filtered = customerList.filter(c => (c as any).portalStatus === "enabled");
+        break;
+      case "portal_disabled":
+        filtered = customerList.filter(c => (c as any).portalStatus !== "enabled");
+        break;
+      case "overdue":
+        filtered = customerList.filter(c => (c.outstandingReceivables || 0) > 0);
+        break;
+      case "unpaid":
+        filtered = customerList.filter(c => (c.outstandingReceivables || 0) > 0);
+        break;
+      case "duplicate":
+        const emailCounts: Record<string, number> = {};
+        const phoneCounts: Record<string, number> = {};
+        customerList.forEach(c => {
+          if (c.email) emailCounts[c.email] = (emailCounts[c.email] || 0) + 1;
+          if (c.phone) phoneCounts[c.phone] = (phoneCounts[c.phone] || 0) + 1;
+        });
+        filtered = customerList.filter(c => 
+          (c.email && emailCounts[c.email] > 1) ||
+          (c.phone && phoneCounts[c.phone] > 1)
+        );
+        break;
+      case "crm":
+        filtered = customerList.filter(c => (c as any).source === "crm");
+        break;
+      default:
+        filtered = customerList;
+    }
+    
+    return filtered;
+  };
+
+  const filteredCustomers = applyFilter(customers).filter(customer => 
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -1162,8 +1235,55 @@ export default function CustomersPage() {
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${selectedCustomer ? 'w-80' : 'w-full'}`}>
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Active Customers</h1>
-            <ChevronDown className="h-4 w-4 text-slate-500" />
+            <DropdownMenu open={filterDropdownOpen} onOpenChange={setFilterDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="gap-1.5 text-xl font-semibold text-slate-900 dark:text-white p-0 h-auto"
+                  data-testid="button-filter-dropdown"
+                >
+                  {getFilterLabel()}
+                  <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                {CUSTOMER_FILTERS.map((filter) => (
+                  <DropdownMenuItem 
+                    key={filter.id}
+                    className={`flex items-center justify-between ${activeFilter === filter.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                    onClick={() => {
+                      setActiveFilter(filter.id);
+                      setFilterDropdownOpen(false);
+                    }}
+                    data-testid={`filter-${filter.id}`}
+                  >
+                    <span className={activeFilter === filter.id ? 'font-medium text-blue-600' : ''}>
+                      {filter.label}
+                    </span>
+                    <button
+                      className="ml-2 text-slate-400 hover:text-yellow-500"
+                      onClick={(e) => toggleFavorite(filter.id, e)}
+                      data-testid={`favorite-${filter.id}`}
+                    >
+                      {favoriteFilters.includes(filter.id) ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-yellow-500">
+                          <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                        </svg>
+                      )}
+                    </button>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-blue-600" data-testid="filter-new-custom-view">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Custom View
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="flex items-center gap-2">
             <Button 

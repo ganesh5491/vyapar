@@ -143,6 +143,7 @@ export default function CustomerEdit() {
     gstin: "",
     pan: "",
     taxPreference: "taxable" as "taxable" | "tax_exempt",
+    exemptionReason: "",
     currency: "INR",
     paymentTerms: "",
     billingStreet: "",
@@ -188,6 +189,7 @@ export default function CustomerEdit() {
               gstin: found.gstin || "",
               pan: found.pan || "",
               taxPreference: found.taxPreference || "taxable",
+              exemptionReason: found.exemptionReason || "",
               currency: found.currency || "INR",
               paymentTerms: found.paymentTerms || "",
               billingStreet: found.billingAddress?.street || "",
@@ -235,11 +237,12 @@ export default function CustomerEdit() {
         phone: formData.workPhone,
         workPhone: formData.workPhone,
         mobile: formData.mobile,
-        gstTreatment: formData.gstTreatment,
+        gstTreatment: formData.taxPreference === "taxable" ? formData.gstTreatment : "",
         placeOfSupply: formData.placeOfSupply,
-        gstin: formData.gstin,
+        gstin: formData.taxPreference === "taxable" ? formData.gstin : "",
         pan: formData.pan,
         taxPreference: formData.taxPreference,
+        exemptionReason: formData.taxPreference === "tax_exempt" ? formData.exemptionReason : "",
         currency: formData.currency,
         paymentTerms: formData.paymentTerms,
         customerType: formData.customerType,
@@ -408,28 +411,83 @@ export default function CustomerEdit() {
 
           <div className="mt-6">
             <TabsContent value="tax" className="space-y-6 max-w-4xl">
+              <div className="space-y-3">
+                <Label>Tax Preference *</Label>
+                <RadioGroup
+                  value={formData.taxPreference}
+                  onValueChange={(val) => {
+                    const newData = { ...formData, taxPreference: val as "taxable" | "tax_exempt" };
+                    if (val === "tax_exempt") {
+                      newData.gstTreatment = "";
+                      newData.gstin = "";
+                    } else {
+                      newData.exemptionReason = "";
+                    }
+                    setFormData(newData);
+                  }}
+                  className="flex flex-row space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="taxable" id="taxable" data-testid="radio-taxable" />
+                    <Label htmlFor="taxable" className="font-normal">Taxable</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="tax_exempt" id="tax_exempt" data-testid="radio-tax-exempt" />
+                    <Label htmlFor="tax_exempt" className="font-normal">Tax Exempt</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="gstTreatment">GST Treatment *</Label>
-                  <Select
-                    value={formData.gstTreatment}
-                    onValueChange={(val) => setFormData({ ...formData, gstTreatment: val })}
-                  >
-                    <SelectTrigger data-testid="select-gst-treatment">
-                      <SelectValue placeholder="Select GST Treatment" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Registered Business - Regular">Registered Business - Regular</SelectItem>
-                      <SelectItem value="Registered Business - Composition">Registered Business - Composition</SelectItem>
-                      <SelectItem value="Unregistered Business">Unregistered Business</SelectItem>
-                      <SelectItem value="Consumer">Consumer</SelectItem>
-                      <SelectItem value="Overseas">Overseas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {formData.taxPreference === "taxable" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="gstTreatment" className="text-red-500">GST Treatment *</Label>
+                    <Select
+                      value={formData.gstTreatment}
+                      onValueChange={(val) => setFormData({ ...formData, gstTreatment: val })}
+                    >
+                      <SelectTrigger data-testid="select-gst-treatment">
+                        <SelectValue placeholder="Select GST Treatment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Registered Business - Regular">Registered Business - Regular</SelectItem>
+                        <SelectItem value="Registered Business - Composition">Registered Business - Composition</SelectItem>
+                        <SelectItem value="Unregistered Business">Unregistered Business</SelectItem>
+                        <SelectItem value="Consumer">Consumer</SelectItem>
+                        <SelectItem value="Overseas">Overseas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {formData.taxPreference === "tax_exempt" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="exemptionReason" className="text-red-500">Exemption Reason *</Label>
+                    <Select
+                      value={formData.exemptionReason || ""}
+                      onValueChange={(val) => setFormData({ ...formData, exemptionReason: val })}
+                    >
+                      <SelectTrigger data-testid="select-exemption-reason">
+                        <SelectValue placeholder="Select or type to add" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Exempt supply under GST">Exempt supply under GST</SelectItem>
+                        <SelectItem value="Export without payment of tax">Export without payment of tax</SelectItem>
+                        <SelectItem value="SEZ supply">SEZ supply</SelectItem>
+                        <SelectItem value="Deemed export">Deemed export</SelectItem>
+                        <SelectItem value="Zero-rated supply">Zero-rated supply</SelectItem>
+                        <SelectItem value="Supply to EOU/STP/EHTP">Supply to EOU/STP/EHTP</SelectItem>
+                        <SelectItem value="Government entity">Government entity</SelectItem>
+                        <SelectItem value="Charitable organization">Charitable organization</SelectItem>
+                        <SelectItem value="Educational institution">Educational institution</SelectItem>
+                        <SelectItem value="Healthcare services">Healthcare services</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="placeOfSupply">Place of Supply</Label>
+                  <Label htmlFor="placeOfSupply" className="text-red-500">Place of Supply *</Label>
                   <Select
                     value={formData.placeOfSupply}
                     onValueChange={(val) => setFormData({ ...formData, placeOfSupply: val })}
@@ -438,33 +496,58 @@ export default function CustomerEdit() {
                       <SelectValue placeholder="Select State" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Maharashtra">Maharashtra</SelectItem>
-                      <SelectItem value="Karnataka">Karnataka</SelectItem>
-                      <SelectItem value="Delhi">Delhi</SelectItem>
-                      <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
-                      <SelectItem value="Gujarat">Gujarat</SelectItem>
+                      <SelectItem value="01 - Jammu and Kashmir">01 - Jammu and Kashmir</SelectItem>
+                      <SelectItem value="02 - Himachal Pradesh">02 - Himachal Pradesh</SelectItem>
+                      <SelectItem value="03 - Punjab">03 - Punjab</SelectItem>
+                      <SelectItem value="04 - Chandigarh">04 - Chandigarh</SelectItem>
+                      <SelectItem value="05 - Uttarakhand">05 - Uttarakhand</SelectItem>
+                      <SelectItem value="06 - Haryana">06 - Haryana</SelectItem>
+                      <SelectItem value="07 - Delhi">07 - Delhi</SelectItem>
+                      <SelectItem value="08 - Rajasthan">08 - Rajasthan</SelectItem>
+                      <SelectItem value="09 - Uttar Pradesh">09 - Uttar Pradesh</SelectItem>
+                      <SelectItem value="10 - Bihar">10 - Bihar</SelectItem>
+                      <SelectItem value="27 - Maharashtra">27 - Maharashtra</SelectItem>
+                      <SelectItem value="29 - Karnataka">29 - Karnataka</SelectItem>
+                      <SelectItem value="32 - Kerala">32 - Kerala</SelectItem>
+                      <SelectItem value="33 - Tamil Nadu">33 - Tamil Nadu</SelectItem>
+                      <SelectItem value="36 - Telangana">36 - Telangana</SelectItem>
+                      <SelectItem value="37 - Andhra Pradesh">37 - Andhra Pradesh</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="gstin">GSTIN</Label>
-                  <Input
-                    id="gstin"
-                    value={formData.gstin}
-                    onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
-                    data-testid="input-gstin"
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="pan">PAN</Label>
+                    <Input
+                      id="pan"
+                      value={formData.pan}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                        setFormData({ ...formData, pan: value.substring(0, 10) });
+                      }}
+                      maxLength={10}
+                      placeholder="e.g., ABCDE1234F"
+                      data-testid="input-pan"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="pan">PAN</Label>
-                  <Input
-                    id="pan"
-                    value={formData.pan}
-                    onChange={(e) => setFormData({ ...formData, pan: e.target.value })}
-                    data-testid="input-pan"
-                  />
+                  {formData.taxPreference === "taxable" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="gstin">GSTIN</Label>
+                      <Input
+                        id="gstin"
+                        value={formData.gstin}
+                        onChange={(e) => {
+                          const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                          setFormData({ ...formData, gstin: value.substring(0, 15) });
+                        }}
+                        maxLength={15}
+                        placeholder="e.g., 27AAGCA4900Q1ZE"
+                        data-testid="input-gstin"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -501,24 +584,6 @@ export default function CustomerEdit() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="space-y-3">
-                <Label>Tax Preference *</Label>
-                <RadioGroup
-                  value={formData.taxPreference}
-                  onValueChange={(val) => setFormData({ ...formData, taxPreference: val as "taxable" | "tax_exempt" })}
-                  className="flex flex-row space-x-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="taxable" id="taxable" />
-                    <Label htmlFor="taxable" className="font-normal">Taxable</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="tax_exempt" id="tax_exempt" />
-                    <Label htmlFor="tax_exempt" className="font-normal">Tax Exempt</Label>
-                  </div>
-                </RadioGroup>
               </div>
             </TabsContent>
 

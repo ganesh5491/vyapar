@@ -83,7 +83,7 @@ const deliveryMethodOptions = [
 ];
 
 export default function SalesOrderCreatePage() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -91,6 +91,7 @@ export default function SalesOrderCreatePage() {
   const [nextOrderNumber, setNextOrderNumber] = useState("SO-00001");
   const [showManageSalespersons, setShowManageSalespersons] = useState(false);
   const [salespersons, setSalespersons] = useState<{ id: string; name: string }[]>([]);
+  const [customerIdFromUrl, setCustomerIdFromUrl] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     customerId: "",
@@ -132,7 +133,29 @@ export default function SalesOrderCreatePage() {
     fetchItems();
     fetchNextOrderNumber();
     fetchSalespersons();
-  }, []);
+    
+    // Parse customerId from URL
+    const params = new URLSearchParams(location.split('?')[1]);
+    const urlCustomerId = params.get('customerId');
+    if (urlCustomerId) {
+      setCustomerIdFromUrl(urlCustomerId);
+    }
+  }, [location]);
+  
+  // Set customer from URL after customers are loaded
+  useEffect(() => {
+    if (customerIdFromUrl && customers.length > 0) {
+      const customer = customers.find(c => c.id === customerIdFromUrl);
+      if (customer) {
+        setFormData(prev => ({
+          ...prev,
+          customerId: customer.id,
+          customerName: customer.name
+        }));
+        setCustomerIdFromUrl(null);
+      }
+    }
+  }, [customerIdFromUrl, customers]);
 
   const fetchSalespersons = async () => {
     try {

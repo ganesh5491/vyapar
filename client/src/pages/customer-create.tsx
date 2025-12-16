@@ -1034,56 +1034,67 @@ export default function CustomerCreate() {
                     )}
                   />
 
-                  {watchTaxPreference === "taxable" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="gstin"
+                      name="pan"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>GSTIN</FormLabel>
+                          <div className="flex items-center gap-1">
+                            <FormLabel>PAN</FormLabel>
+                            <Info className="h-3.5 w-3.5 text-slate-400" />
+                          </div>
                           <FormControl>
                             <Input 
-                              placeholder="e.g., 27AAGCA4900Q1ZE" 
+                              placeholder="e.g., ABCDE1234F" 
                               {...field} 
                               onChange={(e) => {
                                 const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                                field.onChange(value.substring(0, 15));
+                                field.onChange(value.substring(0, 10));
                               }}
-                              maxLength={15}
-                              data-testid="input-gstin"
+                              maxLength={10}
+                              data-testid="input-pan" 
                             />
                           </FormControl>
-                          {gstinWarning && (
-                            <div className="flex items-center gap-1 text-amber-600 text-sm mt-1">
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                              <span>{gstinWarning}</span>
-                            </div>
-                          )}
-                          {field.value && !validateGSTIN(field.value).valid && (
-                            <p className="text-red-500 text-sm mt-1">{validateGSTIN(field.value).message}</p>
-                          )}
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  )}
 
-                  <FormField
-                    control={form.control}
-                    name="pan"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center gap-1">
-                          <FormLabel>PAN</FormLabel>
-                          <Info className="h-3.5 w-3.5 text-slate-400" />
-                        </div>
-                        <FormControl>
-                          <Input placeholder="" {...field} data-testid="input-pan" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                    {watchTaxPreference === "taxable" && (
+                      <FormField
+                        control={form.control}
+                        name="gstin"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>GSTIN</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., 27AAGCA4900Q1ZE" 
+                                {...field} 
+                                onChange={(e) => {
+                                  const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                  field.onChange(value.substring(0, 15));
+                                }}
+                                maxLength={15}
+                                data-testid="input-gstin"
+                              />
+                            </FormControl>
+                            {gstinWarning && (
+                              <div className="flex items-center gap-1 text-amber-600 text-sm mt-1">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                <span>{gstinWarning}</span>
+                              </div>
+                            )}
+                            {field.value && !validateGSTIN(field.value).valid && (
+                              <p className="text-red-500 text-sm mt-1">{validateGSTIN(field.value).message}</p>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
+                  </div>
 
                   <FormField
                     control={form.control}
