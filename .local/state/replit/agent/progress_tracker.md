@@ -224,3 +224,4 @@
       * Shows "From Invoice #" badge indicator
     - Clone: Already working - navigates to /invoices/new?cloneFrom=id
     - All dropdown actions now properly navigate and fetch related data
+[x] 72. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
