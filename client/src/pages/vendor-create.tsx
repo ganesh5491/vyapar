@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Plus, Trash2, HelpCircle, Upload, Link as LinkIcon } from "lucide-react";
+import { Plus, Trash2, HelpCircle, Upload, Link as LinkIcon, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 const SALUTATIONS = ["Mr.", "Mrs.", "Ms.", "Miss", "Dr."];
 
@@ -90,6 +103,25 @@ const MSME_REGISTRATION_TYPES = [
   { value: "medium", label: "Medium" },
 ];
 
+const TDS_OPTIONS = [
+  { value: "none", label: "None", rate: "" },
+  { value: "commission-brokerage-2", label: "Commission or Brokerage", rate: "2%" },
+  { value: "commission-brokerage-reduced", label: "Commission or Brokerage (Reduced)", rate: "3.75%" },
+  { value: "dividend-10", label: "Dividend", rate: "10%" },
+  { value: "dividend-reduced", label: "Dividend (Reduced)", rate: "7.5%" },
+  { value: "interest-other-10", label: "Other Interest than Securities", rate: "10%" },
+  { value: "interest-other-reduced", label: "Other Interest than Securities (Reduced)", rate: "7.5%" },
+  { value: "contractors-others-2", label: "Payment of Contractors for Others", rate: "2%" },
+  { value: "contractors-others-reduced", label: "Payment of Contractors for Others (Reduced)", rate: "1.5%" },
+  { value: "contractors-huf-1", label: "Payment of Contractors HUF/Indiv", rate: "1%" },
+  { value: "contractors-huf-reduced", label: "Payment of Contractors HUF/Indiv (Reduced)", rate: "0.75%" },
+  { value: "professional-fees-10", label: "Professional Fees", rate: "10%" },
+  { value: "professional-fees-reduced", label: "Professional Fees (Reduced)", rate: "7.5%" },
+  { value: "rent-land-furniture-10", label: "Rent on Land or Furniture etc", rate: "10%" },
+  { value: "rent-land-furniture-reduced", label: "Rent on Land or Furniture etc (Reduced)", rate: "7.5%" },
+  { value: "technical-fees-2", label: "Technical Fees", rate: "2%" },
+];
+
 interface ContactPerson {
   id: string;
   salutation: string;
@@ -105,6 +137,7 @@ export default function VendorCreate() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("other-details");
   const [saving, setSaving] = useState(false);
+  const [tdsOpen, setTdsOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     salutation: "",
@@ -555,16 +588,58 @@ export default function VendorCreate() {
                 </Select>
 
                 <Label className="text-sm font-medium text-slate-700 pt-2">TDS</Label>
-                <Select value={formData.tds} onValueChange={(v) => handleInputChange('tds', v)}>
-                  <SelectTrigger data-testid="select-tds">
-                    <SelectValue placeholder="Select a Tax" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="tds-194c">TDS 194C - Contractors</SelectItem>
-                    <SelectItem value="tds-194j">TDS 194J - Professional Services</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover open={tdsOpen} onOpenChange={setTdsOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={tdsOpen}
+                      className="w-full justify-between font-normal"
+                      data-testid="select-tds"
+                    >
+                      {formData.tds
+                        ? TDS_OPTIONS.find((t) => t.value === formData.tds)?.label + 
+                          (TDS_OPTIONS.find((t) => t.value === formData.tds)?.rate 
+                            ? ` - ${TDS_OPTIONS.find((t) => t.value === formData.tds)?.rate}` 
+                            : '')
+                        : "Select a Tax"}
+                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search TDS type..." />
+                      <CommandList>
+                        <CommandEmpty>No TDS type found.</CommandEmpty>
+                        <CommandGroup>
+                          {TDS_OPTIONS.map((tds) => (
+                            <CommandItem
+                              key={tds.value}
+                              value={tds.label}
+                              onSelect={() => {
+                                handleInputChange('tds', tds.value);
+                                setTdsOpen(false);
+                              }}
+                              className="flex justify-between"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Check
+                                  className={`h-4 w-4 ${
+                                    formData.tds === tds.value ? "opacity-100" : "opacity-0"
+                                  }`}
+                                />
+                                <span>{tds.label}</span>
+                              </div>
+                              {tds.rate && (
+                                <span className="text-slate-500">{tds.rate}</span>
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
 
                 <Label className="text-sm font-medium text-slate-700 pt-2">Documents</Label>
                 <div>
