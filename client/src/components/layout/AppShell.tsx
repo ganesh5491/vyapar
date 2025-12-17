@@ -133,7 +133,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <NavItem href="/estimates" label="Quotes" indent />
             <NavItem href="/sales-orders" label="Sales Orders" indent />
             <NavItem href="/invoices" label="Invoices" indent />
-            <NavItem href="/recurring-invoices" label="Recurring Invoices" indent />
             <NavItem href="/delivery-challans" label="Delivery Challans" indent />
             <NavItem href="/payments-received" label="Payments Received" indent />
             <NavItem href="/credit-notes" label="Credit Notes" indent />

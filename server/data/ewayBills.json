@@ -111,7 +111,62 @@
       "createdAt": "2025-12-17T10:09:03.929Z",
       "updatedAt": "2025-12-17T10:10:16.488Z",
       "generatedAt": "2025-12-17T10:10:16.724Z"
+    },
+    {
+      "id": "ewb-1765967128847",
+      "ewayBillNumber": "EWB-000003",
+      "documentType": "invoices",
+      "transactionSubType": "supply",
+      "customerId": "3",
+      "customerName": "Abhijit Patil",
+      "customerGstin": "",
+      "documentNumber": "INV-00021",
+      "documentId": "1765801976312",
+      "date": "2025-12-17",
+      "expiryDate": "2026-01-01",
+      "transactionType": "regular",
+      "dispatchFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billTo": {
+        "street": "\n\n",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shipTo": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "placeOfDelivery": "[RJ] - Rajasthan",
+      "transporter": "transporter1",
+      "distance": 1999,
+      "modeOfTransportation": "road",
+      "vehicleType": "regular",
+      "vehicleNo": "",
+      "transporterDocNo": "",
+      "transporterDocDate": "",
+      "items": [],
+      "total": 0,
+      "status": "NOT_GENERATED",
+      "createdAt": "2025-12-17T10:25:28.847Z",
+      "updatedAt": "2025-12-17T10:25:28.847Z"
     }
   ],
-  "nextEWayBillNumber": 3
+  "nextEWayBillNumber": 4
 }

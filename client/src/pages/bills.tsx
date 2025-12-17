@@ -692,16 +692,7 @@ function RecordPaymentDialog({
           </div>
 
           {/* Info Message */}
-          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
-            <Lightbulb className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm">
-              <span className="text-slate-700">Initiate payments for your bills directly from Zoho Books by integrating with one of our partner banks. </span>
-              <button className="text-blue-600 hover:underline">Set Up Now</button>
-            </div>
-            <button onClick={() => {}} className="text-red-500 ml-auto flex-shrink-0">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+      
 
           {/* Payment Mode */}
           <div className="space-y-2">
