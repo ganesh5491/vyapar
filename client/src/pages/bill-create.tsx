@@ -80,10 +80,15 @@ interface Product {
   sku?: string;
   type?: string;
   unit?: string;
+  usageUnit?: string;
   sellingPrice?: number;
   costPrice?: number;
+  rate?: string | number;
+  purchaseRate?: string | number;
   description?: string;
+  purchaseDescription?: string;
   hsnCode?: string;
+  hsnSac?: string;
   sacCode?: string;
   taxPreference?: string;
 }
@@ -389,12 +394,13 @@ export default function BillCreate() {
       setFormData(prev => {
         const updatedItems = prev.items.map(item => {
           if (item.id === itemId) {
-            const rate = product.costPrice || product.sellingPrice || 0;
+            // For bills (purchases), use purchaseRate first, then rate, then costPrice/sellingPrice
+            const rate = Number(product.purchaseRate) || Number(product.rate) || product.costPrice || product.sellingPrice || 0;
             const amount = item.quantity * rate;
             return {
               ...item,
               itemName: product.name,
-              description: product.description || "",
+              description: product.purchaseDescription || product.description || "",
               rate: rate,
               amount: amount
             };
@@ -674,11 +680,14 @@ export default function BillCreate() {
                               ) : products.length === 0 ? (
                                 <SelectItem value="none" disabled>No items available</SelectItem>
                               ) : (
-                                products.map(product => (
-                                  <SelectItem key={product.id} value={product.name}>
-                                    {product.name} {product.sku ? `(${product.sku})` : ''} - ₹{product.costPrice || product.sellingPrice || 0}
-                                  </SelectItem>
-                                ))
+                                products.map(product => {
+                                  const displayPrice = Number(product.purchaseRate) || Number(product.rate) || product.costPrice || product.sellingPrice || 0;
+                                  return (
+                                    <SelectItem key={product.id} value={product.name}>
+                                      {product.name} {product.usageUnit ? `(${product.usageUnit})` : ''} - ₹{displayPrice}
+                                    </SelectItem>
+                                  );
+                                })
                               )}
                             </SelectContent>
                           </Select>

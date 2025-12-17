@@ -231,3 +231,10 @@
     - Root cause: Corrupted data in paymentsMade.json where paymentNumber was saved as object instead of string
     - Fixed payment record pm-1765964697396: Changed paymentNumber from {"nextNumber":"PM-00003"} to "PM-00003"
     - Purchase Orders section now loads correctly
+[x] 75. Fixed Bill Create and Edit pages - items not fetching correct values (Dec 17, 2025):
+    - Updated Product interface to include rate, purchaseRate, usageUnit, purchaseDescription, hsnSac fields
+    - Fixed handleProductSelect to use purchaseRate/rate instead of costPrice/sellingPrice
+    - Item dropdown now shows correct price: "Rice (kg) - ₹50" using purchaseRate
+    - When item is selected, rate field populates with correct value from Items section
+    - Total calculations now work correctly with proper item rates
+    - Applied fixes to both bill-create.tsx and bill-edit.tsx
