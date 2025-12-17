@@ -139,3 +139,26 @@
     - All data stored and fetched from server/data/vendorCredits.json
 [x] 59. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
 [x] 60. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - latest session)
+[x] 61. Enhanced Bills section with Record Payment and More actions dropdown (Dec 17, 2025):
+    - Added Record Payment button in bill detail panel action bar
+    - Added More (...) dropdown with: Void, Expected Payment Date, Clone, Create Vendor Credits, View Journal, Delete
+    - Created comprehensive Record Payment dialog form with fields:
+      * Payment Made (INR) with amount pre-populated with balance due
+      * Info message banner about partner banks integration
+      * Payment Mode dropdown (Cash, Bank Transfer, Cheque, Credit Card, UPI, NEFT, RTGS, IMPS)
+      * Payment Date (required)
+      * Payment # with auto-increment button
+      * Payment Made on date
+      * Paid Through dropdown (Petty Cash, Undeposited Funds, Bank Account, etc.)
+      * Reference# field
+      * Notes textarea
+      * Attachments upload section
+      * Email notification checkbox
+      * Save as Draft / Save as Paid / Cancel buttons
+    - Dialog title dynamically shows "Payment for {billNumber}" based on selected bill
+    - Record Payment also creates entry in Payments Made section for full tracking
+    - Added Void Bill confirmation dialog
+    - Added Expected Payment Date dialog
+    - Added View Journal dialog showing accounting entries
+    - Clone navigates to new bill form with pre-filled data
+    - Create Vendor Credits navigates to vendor credits form with bill/vendor data

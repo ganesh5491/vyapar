@@ -27,32 +27,32 @@
           "description": "",
           "account": "Rent",
           "quantity": 1,
-          "rate": 0,
+          "rate": 200,
           "tax": "GST12",
-          "taxAmount": 0,
+          "taxAmount": 24,
           "customerDetails": "none",
-          "amount": 0
+          "amount": 200
         }
       ],
-      "subTotal": 0,
+      "subTotal": 200,
       "discountType": "percent",
       "discountValue": 0,
       "discountAmount": 0,
       "taxType": "TDS",
       "taxCategory": "",
-      "taxAmount": 0,
+      "taxAmount": 24,
       "adjustment": 0,
       "adjustmentDescription": "",
-      "total": 0,
+      "total": 224,
       "amountPaid": 0,
-      "balanceDue": 0,
+      "balanceDue": 224,
       "notes": "",
       "attachments": [],
       "status": "OPEN",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-11T05:48:58.681Z",
-      "updatedAt": "2025-12-11T05:48:58.681Z",
+      "updatedAt": "2025-12-17T06:12:23.009Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -60,6 +60,13 @@
           "timestamp": "2025-12-11T05:48:58.681Z",
           "action": "created",
           "description": "Bill created for ₹0",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-17T06:12:23.009Z",
+          "action": "updated",
+          "description": "Bill has been updated",
           "user": "Admin User"
         }
       ]

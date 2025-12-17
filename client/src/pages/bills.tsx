@@ -3,7 +3,8 @@ import { useLocation } from "wouter";
 import { 
   Plus, Search, ChevronDown, MoreHorizontal, Pencil, Trash2, 
   X, Mail, FileText, Printer, Filter, Download,
-  Eye, Check, List, Grid3X3
+  Eye, Check, List, Grid3X3, CreditCard, Copy, Clock, 
+  BookOpen, Ban, Upload, RefreshCw, Lightbulb
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/hooks/use-pagination";
@@ -13,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -31,6 +33,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -388,13 +403,25 @@ function BillDetailPanel({
   onClose, 
   onEdit, 
   onDelete,
-  onMarkPaid
+  onMarkPaid,
+  onRecordPayment,
+  onVoid,
+  onClone,
+  onCreateVendorCredits,
+  onViewJournal,
+  onExpectedPaymentDate
 }: { 
   bill: Bill; 
   onClose: () => void; 
   onEdit: () => void;
   onDelete: () => void;
   onMarkPaid: () => void;
+  onRecordPayment: () => void;
+  onVoid: () => void;
+  onClone: () => void;
+  onCreateVendorCredits: () => void;
+  onViewJournal: () => void;
+  onExpectedPaymentDate: () => void;
 }) {
   const [showPdfView, setShowPdfView] = useState(false);
 
@@ -440,19 +467,41 @@ function BillDetailPanel({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        {bill.status !== 'PAID' && bill.status !== 'VOID' && (
+          <Button variant="ghost" size="sm" className="h-8 gap-1.5" onClick={onRecordPayment} data-testid="button-record-payment">
+            <CreditCard className="h-3.5 w-3.5" />
+            Record Payment
+          </Button>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 gap-1.5" data-testid="button-more-actions">
               <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {bill.status !== 'PAID' && (
-              <DropdownMenuItem onClick={onMarkPaid}>
-                <Check className="mr-2 h-4 w-4" />
-                Mark as Paid
+          <DropdownMenuContent align="end" className="w-56">
+            {bill.status !== 'VOID' && (
+              <DropdownMenuItem onClick={onVoid} className="text-red-600">
+                <Ban className="mr-2 h-4 w-4" />
+                Void
               </DropdownMenuItem>
             )}
+            <DropdownMenuItem onClick={onExpectedPaymentDate}>
+              <Clock className="mr-2 h-4 w-4" />
+              Expected Payment Date
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onClone}>
+              <Copy className="mr-2 h-4 w-4" />
+              Clone
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onCreateVendorCredits}>
+              <CreditCard className="mr-2 h-4 w-4" />
+              Create Vendor Credits
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onViewJournal}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              View Journal
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-red-600" onClick={onDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
@@ -485,6 +534,349 @@ function BillDetailPanel({
   );
 }
 
+// Record Payment Dialog Component
+function RecordPaymentDialog({
+  isOpen,
+  onClose,
+  bill,
+  onPaymentRecorded
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  bill: Bill | null;
+  onPaymentRecorded: () => void;
+}) {
+  const { toast } = useToast();
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [paymentNumber, setPaymentNumber] = useState("1");
+  const [paymentMadeOn, setPaymentMadeOn] = useState("");
+  const [paidThrough, setPaidThrough] = useState("Petty Cash");
+  const [reference, setReference] = useState("");
+  const [notes, setNotes] = useState("");
+  const [sendNotification, setSendNotification] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && bill) {
+      setPaymentAmount(String(bill.balanceDue || 0));
+      setPaymentDate(new Date().toISOString().split('T')[0]);
+      fetchNextPaymentNumber();
+    }
+  }, [isOpen, bill]);
+
+  const fetchNextPaymentNumber = async () => {
+    try {
+      const response = await fetch('/api/payments-made/next-number');
+      if (response.ok) {
+        const data = await response.json();
+        setPaymentNumber(data.data || "1");
+      }
+    } catch (error) {
+      console.error('Failed to fetch next payment number:', error);
+    }
+  };
+
+  const incrementPaymentNumber = () => {
+    const num = parseInt(paymentNumber) || 0;
+    setPaymentNumber(String(num + 1));
+  };
+
+  const handleSave = async (status: 'DRAFT' | 'PAID') => {
+    if (!bill) return;
+
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({ title: "Please enter a valid payment amount", variant: "destructive" });
+      return;
+    }
+    if (amount > (bill.balanceDue || 0)) {
+      toast({ title: "Payment amount cannot exceed balance due", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Record payment on the bill
+      const billResponse = await fetch(`/api/bills/${bill.id}/record-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          paymentMode,
+          paymentDate,
+          paymentNumber,
+          paymentMadeOn,
+          paidThrough,
+          reference,
+          notes,
+          status,
+          sendNotification
+        })
+      });
+
+      if (!billResponse.ok) {
+        throw new Error('Failed to record payment');
+      }
+
+      // Also create a payment record in Payments Made
+      await fetch('/api/payments-made', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentNumber,
+          vendorId: bill.vendorId,
+          vendorName: bill.vendorName,
+          billId: bill.id,
+          billNumber: bill.billNumber,
+          paymentDate,
+          paymentMadeOn,
+          paymentMode,
+          paidThrough,
+          reference,
+          amount,
+          notes,
+          status,
+          attachments: []
+        })
+      });
+
+      toast({ title: status === 'DRAFT' ? "Payment saved as draft" : "Payment recorded successfully" });
+      onPaymentRecorded();
+      onClose();
+      resetForm();
+    } catch (error) {
+      toast({ title: "Failed to record payment", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setPaymentAmount("");
+    setPaymentMode("Cash");
+    setPaymentDate(new Date().toISOString().split('T')[0]);
+    setPaymentNumber("1");
+    setPaymentMadeOn("");
+    setPaidThrough("Petty Cash");
+    setReference("");
+    setNotes("");
+    setSendNotification(false);
+  };
+
+  if (!bill) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold" data-testid="text-payment-title">
+            Payment for {bill.billNumber}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6 pt-4">
+          {/* Payment Amount */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-red-600">
+              Payment Made <span className="text-red-500">*</span>(INR)
+            </Label>
+            <Input
+              type="number"
+              value={paymentAmount}
+              onChange={(e) => setPaymentAmount(e.target.value)}
+              className="max-w-xs"
+              data-testid="input-payment-amount"
+            />
+          </div>
+
+          {/* Info Message */}
+          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+            <Lightbulb className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <span className="text-slate-700">Initiate payments for your bills directly from Zoho Books by integrating with one of our partner banks. </span>
+              <button className="text-blue-600 hover:underline">Set Up Now</button>
+            </div>
+            <button onClick={() => {}} className="text-red-500 ml-auto flex-shrink-0">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Payment Mode */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Payment Mode</Label>
+            <Select value={paymentMode} onValueChange={setPaymentMode}>
+              <SelectTrigger className="max-w-xs" data-testid="select-payment-mode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Cash">Cash</SelectItem>
+                <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                <SelectItem value="Cheque">Cheque</SelectItem>
+                <SelectItem value="Credit Card">Credit Card</SelectItem>
+                <SelectItem value="UPI">UPI</SelectItem>
+                <SelectItem value="NEFT">NEFT</SelectItem>
+                <SelectItem value="RTGS">RTGS</SelectItem>
+                <SelectItem value="IMPS">IMPS</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Payment Date and Payment # */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-red-600">
+                Payment Date<span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                data-testid="input-payment-date"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-red-600">
+                Payment #<span className="text-red-500">*</span>
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  value={paymentNumber}
+                  onChange={(e) => setPaymentNumber(e.target.value)}
+                  className="flex-1"
+                  data-testid="input-payment-number"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={incrementPaymentNumber}
+                  title="Generate next number"
+                  data-testid="button-next-payment-number"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Made On, Paid Through, Reference */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Payment Made on</Label>
+              <Input
+                type="date"
+                value={paymentMadeOn}
+                onChange={(e) => setPaymentMadeOn(e.target.value)}
+                placeholder="dd/MM/yyyy"
+                data-testid="input-payment-made-on"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-red-600">
+                Paid Through<span className="text-red-500">*</span>
+              </Label>
+              <Select value={paidThrough} onValueChange={setPaidThrough}>
+                <SelectTrigger data-testid="select-paid-through">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Petty Cash">Petty Cash</SelectItem>
+                  <SelectItem value="Undeposited Funds">Undeposited Funds</SelectItem>
+                  <SelectItem value="Bank Account">Bank Account</SelectItem>
+                  <SelectItem value="Prepaid Expenses">Prepaid Expenses</SelectItem>
+                  <SelectItem value="Accounts Payable">Accounts Payable</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Reference#</Label>
+              <Input
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                data-testid="input-reference"
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Notes</Label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              data-testid="input-notes"
+            />
+          </div>
+
+          {/* Attachments */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Attachments</Label>
+            <div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2" data-testid="button-upload-file">
+                    <Upload className="h-4 w-4" />
+                    Upload File
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>Upload from Computer</DropdownMenuItem>
+                  <DropdownMenuItem>Attach from Cloud</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <p className="text-xs text-slate-500 mt-1">You can upload a maximum of 5 files, 10MB each</p>
+            </div>
+          </div>
+
+          {/* Email Notification */}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="send-notification"
+              checked={sendNotification}
+              onCheckedChange={(checked) => setSendNotification(checked === true)}
+              data-testid="checkbox-send-notification"
+            />
+            <Label htmlFor="send-notification" className="text-sm cursor-pointer">
+              Send a Payment Made email notification.
+            </Label>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => handleSave('DRAFT')}
+              disabled={isSubmitting}
+              data-testid="button-save-draft"
+            >
+              Save as Draft
+            </Button>
+            <Button
+              onClick={() => handleSave('PAID')}
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700"
+              data-testid="button-save-paid"
+            >
+              Save as Paid
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSubmitting}
+              data-testid="button-cancel"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function Bills() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -496,6 +888,11 @@ export default function Bills() {
   const [billToDelete, setBillToDelete] = useState<string | null>(null);
   const [selectedBills, setSelectedBills] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'table'>('table');
+  const [recordPaymentDialogOpen, setRecordPaymentDialogOpen] = useState(false);
+  const [voidDialogOpen, setVoidDialogOpen] = useState(false);
+  const [expectedPaymentDateDialogOpen, setExpectedPaymentDateDialogOpen] = useState(false);
+  const [expectedPaymentDate, setExpectedPaymentDate] = useState("");
+  const [journalDialogOpen, setJournalDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchBills();
@@ -580,6 +977,85 @@ export default function Bills() {
       }
     } catch (error) {
       toast({ title: "Failed to update bill status", variant: "destructive" });
+    }
+  };
+
+  const handleRecordPayment = () => {
+    setRecordPaymentDialogOpen(true);
+  };
+
+  const handlePaymentRecorded = () => {
+    fetchBills();
+    if (selectedBill) {
+      fetchBillDetail(selectedBill.id);
+    }
+  };
+
+  const handleVoid = async () => {
+    if (!selectedBill) return;
+    setVoidDialogOpen(true);
+  };
+
+  const confirmVoid = async () => {
+    if (!selectedBill) return;
+    try {
+      const response = await fetch(`/api/bills/${selectedBill.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'VOID' })
+      });
+      if (response.ok) {
+        toast({ title: "Bill has been voided" });
+        fetchBills();
+        fetchBillDetail(selectedBill.id);
+      }
+    } catch (error) {
+      toast({ title: "Failed to void bill", variant: "destructive" });
+    } finally {
+      setVoidDialogOpen(false);
+    }
+  };
+
+  const handleClone = () => {
+    if (selectedBill) {
+      setLocation(`/bills/new?clone=${selectedBill.id}`);
+    }
+  };
+
+  const handleCreateVendorCredits = () => {
+    if (selectedBill) {
+      setLocation(`/vendor-credits/create?billId=${selectedBill.id}&vendorId=${selectedBill.vendorId}`);
+    }
+  };
+
+  const handleViewJournal = () => {
+    setJournalDialogOpen(true);
+  };
+
+  const handleExpectedPaymentDate = () => {
+    if (selectedBill) {
+      setExpectedPaymentDate(selectedBill.dueDate || "");
+      setExpectedPaymentDateDialogOpen(true);
+    }
+  };
+
+  const confirmExpectedPaymentDate = async () => {
+    if (!selectedBill) return;
+    try {
+      const response = await fetch(`/api/bills/${selectedBill.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...selectedBill, expectedPaymentDate })
+      });
+      if (response.ok) {
+        toast({ title: "Expected payment date updated" });
+        fetchBills();
+        fetchBillDetail(selectedBill.id);
+      }
+    } catch (error) {
+      toast({ title: "Failed to update expected payment date", variant: "destructive" });
+    } finally {
+      setExpectedPaymentDateDialogOpen(false);
     }
   };
 
@@ -819,10 +1295,25 @@ export default function Bills() {
             onEdit={handleEditBill}
             onDelete={() => handleDelete(selectedBill.id)}
             onMarkPaid={handleMarkPaid}
+            onRecordPayment={handleRecordPayment}
+            onVoid={handleVoid}
+            onClone={handleClone}
+            onCreateVendorCredits={handleCreateVendorCredits}
+            onViewJournal={handleViewJournal}
+            onExpectedPaymentDate={handleExpectedPaymentDate}
           />
         </div>
       )}
 
+      {/* Record Payment Dialog */}
+      <RecordPaymentDialog
+        isOpen={recordPaymentDialogOpen}
+        onClose={() => setRecordPaymentDialogOpen(false)}
+        bill={selectedBill}
+        onPaymentRecorded={handlePaymentRecorded}
+      />
+
+      {/* Delete Bill Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -839,6 +1330,116 @@ export default function Bills() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Void Bill Dialog */}
+      <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Void Bill</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to void this bill? This will cancel the bill and it cannot be used for any transactions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmVoid} className="bg-red-600 hover:bg-red-700">
+              Void Bill
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Expected Payment Date Dialog */}
+      <Dialog open={expectedPaymentDateDialogOpen} onOpenChange={setExpectedPaymentDateDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Expected Payment Date</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Expected Payment Date</Label>
+              <Input
+                type="date"
+                value={expectedPaymentDate}
+                onChange={(e) => setExpectedPaymentDate(e.target.value)}
+                data-testid="input-expected-payment-date"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setExpectedPaymentDateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={confirmExpectedPaymentDate} className="bg-blue-600 hover:bg-blue-700">
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Journal Dialog */}
+      <Dialog open={journalDialogOpen} onOpenChange={setJournalDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Journal Entries</DialogTitle>
+          </DialogHeader>
+          <div className="pt-4">
+            <p className="text-xs text-slate-500 mb-2">
+              Amount is displayed in your base currency <Badge variant="outline" className="text-xs">INR</Badge>
+            </p>
+            {selectedBill && (
+              <>
+                <h4 className="font-semibold mb-2">Bill - {selectedBill.billNumber}</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">ACCOUNT</TableHead>
+                      <TableHead className="text-xs text-right">DEBIT</TableHead>
+                      <TableHead className="text-xs text-right">CREDIT</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedBill.journalEntries && selectedBill.journalEntries.length > 0 ? (
+                      selectedBill.journalEntries.map((entry, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{entry.account}</TableCell>
+                          <TableCell className="text-right">{entry.debit.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{entry.credit.toFixed(2)}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <>
+                        <TableRow>
+                          <TableCell>Purchases</TableCell>
+                          <TableCell className="text-right">{selectedBill.subTotal.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">0.00</TableCell>
+                        </TableRow>
+                        {selectedBill.taxAmount && selectedBill.taxAmount > 0 && (
+                          <TableRow>
+                            <TableCell>Input Tax Credits (IGST)</TableCell>
+                            <TableCell className="text-right">{selectedBill.taxAmount.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">0.00</TableCell>
+                          </TableRow>
+                        )}
+                        <TableRow>
+                          <TableCell>Accounts Payable</TableCell>
+                          <TableCell className="text-right">0.00</TableCell>
+                          <TableCell className="text-right">{selectedBill.total.toFixed(2)}</TableCell>
+                        </TableRow>
+                      </>
+                    )}
+                  </TableBody>
+                </Table>
+              </>
+            )}
+            <div className="flex justify-end mt-4">
+              <Button variant="outline" onClick={() => setJournalDialogOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
