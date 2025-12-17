@@ -532,7 +532,9 @@ export default function CreditNoteCreate() {
                         </SelectTrigger>
                         <SelectContent>
                           {items.map(i => (
-                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                            <SelectItem key={i.id} value={i.id}>
+                              {i.name} - ₹{i.sellingPrice || 0}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

@@ -250,7 +250,7 @@ export default function BillEdit() {
       setFormData(prev => ({
         ...prev,
         vendorId: vendor.id,
-        vendorName: vendor.companyName || vendor.name,
+        vendorName: vendor.name || vendor.companyName || "",
         vendorAddress: {
           street1: vendor.billingAddress?.street1 || "",
           street2: vendor.billingAddress?.street2 || "",
@@ -471,7 +471,7 @@ export default function BillEdit() {
                     <SelectContent>
                       {vendors.map(vendor => (
                         <SelectItem key={vendor.id} value={vendor.id}>
-                          {vendor.companyName || vendor.name}
+                          {vendor.name || vendor.companyName}
                         </SelectItem>
                       ))}
                     </SelectContent>

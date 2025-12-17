@@ -272,10 +272,27 @@ export default function PurchaseOrderEdit() {
   const selectItem = (lineItemId: string, itemId: string) => {
     const item = items.find(i => i.id === itemId);
     if (item) {
-      updateLineItem(lineItemId, 'itemId', item.id);
-      updateLineItem(lineItemId, 'itemName', item.name);
-      updateLineItem(lineItemId, 'description', item.description || '');
-      updateLineItem(lineItemId, 'rate', item.purchasePrice || item.sellingPrice || 0);
+      const rate = item.purchasePrice || item.sellingPrice || 0;
+      setLineItems(prev => prev.map(lineItem => {
+        if (lineItem.id === lineItemId) {
+          const baseAmount = lineItem.quantity * rate;
+          let taxRate = 0;
+          if (lineItem.tax && lineItem.tax !== 'none') {
+            taxRate = parseInt(lineItem.tax.replace(/\D/g, '')) || 0;
+          }
+          const taxAmount = (baseAmount * taxRate) / 100;
+          return {
+            ...lineItem,
+            itemId: item.id,
+            itemName: item.name,
+            description: item.description || '',
+            rate: rate,
+            taxAmount: taxAmount,
+            amount: baseAmount + taxAmount
+          };
+        }
+        return lineItem;
+      }));
     }
   };
 
@@ -549,7 +566,9 @@ export default function PurchaseOrderEdit() {
                               </SelectTrigger>
                               <SelectContent>
                                 {items.map(i => (
-                                  <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                                  <SelectItem key={i.id} value={i.id}>
+                                    {i.name} - ₹{i.purchasePrice || i.sellingPrice || 0}
+                                  </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>

@@ -88,6 +88,13 @@ interface Product {
   taxPreference?: string;
 }
 
+interface Customer {
+  id: string;
+  name: string;
+  displayName?: string;
+  companyName?: string;
+}
+
 export default function BillCreate() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -95,6 +102,7 @@ export default function BillCreate() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [taxes, setTaxes] = useState<Tax[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingPO, setLoadingPO] = useState(false);
@@ -143,10 +151,23 @@ export default function BillCreate() {
     fetchTaxes();
     fetchProducts();
     fetchNextBillNumber();
+    fetchCustomers();
     if (purchaseOrderId) {
       fetchPurchaseOrderData(purchaseOrderId);
     }
   }, [purchaseOrderId]);
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await fetch('/api/customers');
+      if (response.ok) {
+        const data = await response.json();
+        setCustomers(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customers:', error);
+    }
+  };
 
   const fetchPurchaseOrderData = async (poId: string) => {
     try {
@@ -269,7 +290,7 @@ export default function BillCreate() {
       setFormData(prev => ({
         ...prev,
         vendorId: vendor.id,
-        vendorName: vendor.companyName || vendor.name,
+        vendorName: vendor.name || vendor.companyName || "",
         vendorAddress: {
           street1: vendor.billingAddress?.street1 || "",
           street2: vendor.billingAddress?.street2 || "",
@@ -497,7 +518,7 @@ export default function BillCreate() {
                     <SelectContent>
                       {vendors.map(vendor => (
                         <SelectItem key={vendor.id} value={vendor.id}>
-                          {vendor.companyName || vendor.name}
+                          {vendor.name || vendor.companyName}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -617,7 +638,7 @@ export default function BillCreate() {
                     <TableHead className="w-[200px] text-xs">ITEM DETAILS</TableHead>
                     <TableHead className="w-[150px] text-xs">ACCOUNT</TableHead>
                     <TableHead className="w-[100px] text-xs text-center">QUANTITY</TableHead>
-                    <TableHead className="w-[100px] text-xs text-right">RATE (₹)</TableHead>
+                    <TableHead className="w-[140px] text-xs text-right">RATE (₹)</TableHead>
                     <TableHead className="w-[120px] text-xs">TAX</TableHead>
                     <TableHead className="w-[150px] text-xs">CUSTOMER DETAILS</TableHead>
                     <TableHead className="w-[100px] text-xs text-right">AMOUNT</TableHead>
@@ -722,13 +743,21 @@ export default function BillCreate() {
                         <TableCell>
                           <Select 
                             value={item.customerDetails || ""}
-                            onValueChange={(value) => updateItem(item.id, 'customerDetails', value)}
+                            onValueChange={(value) => {
+                              const customer = customers.find(c => c.id === value);
+                              updateItem(item.id, 'customerDetails', customer ? (customer.displayName || customer.name) : value);
+                            }}
                           >
                             <SelectTrigger className="text-sm">
                               <SelectValue placeholder="Select Customer" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">None</SelectItem>
+                              {customers.map(customer => (
+                                <SelectItem key={customer.id} value={customer.id}>
+                                  {customer.displayName || customer.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </TableCell>
