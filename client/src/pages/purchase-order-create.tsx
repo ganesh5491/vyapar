@@ -520,7 +520,7 @@ export default function PurchaseOrderCreate() {
             </div>
 
             <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-4">
                   <RadioGroup defaultValue="item" className="flex gap-4">
                     <div className="flex items-center space-x-2">
@@ -538,16 +538,16 @@ export default function PurchaseOrderCreate() {
                 </Button>
               </div>
 
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
+              <div className="border rounded-lg overflow-x-auto">
+                <Table className="min-w-[800px]">
                   <TableHeader className="bg-blue-600">
                     <TableRow>
                       <TableHead className="text-white font-medium w-8">#</TableHead>
-                      <TableHead className="text-white font-medium">Item & Description</TableHead>
-                      <TableHead className="text-white font-medium">Account</TableHead>
+                      <TableHead className="text-white font-medium min-w-[200px]">Item & Description</TableHead>
+                      <TableHead className="text-white font-medium min-w-[140px]">Account</TableHead>
                       <TableHead className="text-white font-medium text-center w-24">Quantity</TableHead>
                       <TableHead className="text-white font-medium text-right w-24">Rate</TableHead>
-                      <TableHead className="text-white font-medium w-32">Tax</TableHead>
+                      <TableHead className="text-white font-medium min-w-[120px]">Tax</TableHead>
                       <TableHead className="text-white font-medium text-right w-28">Amount</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>

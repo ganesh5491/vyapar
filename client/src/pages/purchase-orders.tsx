@@ -548,8 +548,8 @@ export default function PurchaseOrders() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300 pr-0">
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${selectedPO ? 'max-w-md' : 'pr-0'}`}>
+    <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300 w-full">
+      <div className={`flex flex-col overflow-hidden transition-all duration-300 ${selectedPO ? 'w-[350px] min-w-[350px] flex-shrink-0' : 'flex-1 w-full'}`}>
         <div className="flex items-center justify-between p-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-slate-900">All Purchase Orders</h1>
@@ -706,7 +706,7 @@ export default function PurchaseOrders() {
       </div>
 
       {selectedPO && (
-        <div className="w-[600px] border-l border-slate-200">
+        <div className="flex-1 min-w-0 border-l border-slate-200 overflow-hidden">
           <PurchaseOrderDetailPanel 
             purchaseOrder={selectedPO}
             onClose={handleClosePanel}

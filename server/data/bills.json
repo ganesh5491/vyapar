@@ -44,15 +44,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 590,
-      "amountPaid": 0,
-      "balanceDue": 590,
+      "amountPaid": 100,
+      "balanceDue": 490,
       "notes": "",
       "attachments": [],
-      "status": "OPEN",
+      "status": "PARTIALLY_PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-17T07:33:30.761Z",
-      "updatedAt": "2025-12-17T07:33:30.761Z",
+      "updatedAt": "2025-12-17T09:44:57.077Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -60,6 +60,13 @@
           "timestamp": "2025-12-17T07:33:30.761Z",
           "action": "created",
           "description": "Bill created for ₹590",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-17T09:44:57.077Z",
+          "action": "payment",
+          "description": "Payment of ₹100 recorded",
           "user": "Admin User"
         }
       ]

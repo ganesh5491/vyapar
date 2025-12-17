@@ -184,6 +184,8 @@ export default function Expenses() {
   const [showMileageSettings, setShowMileageSettings] = useState(false);
   const [expenseTab, setExpenseTab] = useState("record-expense");
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
 
   const [expenseForm, setExpenseForm] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
@@ -295,6 +297,23 @@ export default function Expenses() {
     },
   });
 
+  const updateExpenseMutation = useMutation({
+    mutationFn: async ({ id, expense }: { id: string; expense: any }) => {
+      return apiRequest('PUT', `/api/expenses/${id}`, expense);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/expenses'] });
+      setShowRecordExpense(false);
+      setIsEditMode(false);
+      setEditingExpenseId(null);
+      resetExpenseForm();
+      toast({ title: "Expense updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update expense", variant: "destructive" });
+    },
+  });
+
   const updateMileageSettingsMutation = useMutation({
     mutationFn: async (settings: any) => {
       return apiRequest('PUT', '/api/mileage-settings', settings);
@@ -368,10 +387,16 @@ export default function Expenses() {
       toast({ title: "Please fill in required fields", variant: "destructive" });
       return;
     }
-    createExpenseMutation.mutate({
+    const expenseData = {
       ...expenseForm,
       amount: parseFloat(expenseForm.amount) || 0,
-    });
+    };
+    
+    if (isEditMode && editingExpenseId) {
+      updateExpenseMutation.mutate({ id: editingExpenseId, expense: expenseData });
+    } else {
+      createExpenseMutation.mutate(expenseData);
+    }
   };
 
   const handleSubmitMileage = () => {
@@ -464,8 +489,32 @@ export default function Expenses() {
 
   const handleEditExpense = () => {
     if (selectedExpense) {
-      // Navigate to edit page or open edit dialog
-      toast({ title: "Edit functionality coming soon" });
+      setExpenseForm({
+        date: selectedExpense.date || format(new Date(), 'yyyy-MM-dd'),
+        expenseAccount: selectedExpense.expenseAccount || "",
+        amount: String(selectedExpense.amount || ""),
+        currency: selectedExpense.currency || "INR",
+        paidThrough: selectedExpense.paidThrough || "",
+        expenseType: selectedExpense.expenseType || "services",
+        sac: selectedExpense.sac || "",
+        vendorId: selectedExpense.vendorId || "",
+        vendorName: selectedExpense.vendorName || "",
+        gstTreatment: selectedExpense.gstTreatment || "",
+        sourceOfSupply: selectedExpense.sourceOfSupply || "",
+        destinationOfSupply: selectedExpense.destinationOfSupply || "[MH] - Maharashtra",
+        reverseCharge: selectedExpense.reverseCharge || false,
+        tax: selectedExpense.tax || "",
+        amountIs: selectedExpense.amountIs || "tax_exclusive",
+        invoiceNumber: selectedExpense.invoiceNumber || "",
+        notes: selectedExpense.notes || "",
+        customerId: selectedExpense.customerId || "",
+        customerName: selectedExpense.customerName || "",
+        reportingTags: selectedExpense.reportingTags || [],
+      });
+      setIsEditMode(true);
+      setEditingExpenseId(selectedExpense.id);
+      setExpenseTab("record-expense");
+      setShowRecordExpense(true);
     }
   };
 
@@ -741,16 +790,27 @@ export default function Expenses() {
       )}
 
 
-      <Dialog open={showRecordExpense} onOpenChange={setShowRecordExpense}>
+      <Dialog open={showRecordExpense} onOpenChange={(open) => {
+        setShowRecordExpense(open);
+        if (!open) {
+          setIsEditMode(false);
+          setEditingExpenseId(null);
+          resetExpenseForm();
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
-              <Tabs value={expenseTab} onValueChange={setExpenseTab}>
-                <TabsList>
-                  <TabsTrigger value="record-expense" data-testid="tab-record-expense">Record Expense</TabsTrigger>
-                  <TabsTrigger value="record-mileage" data-testid="tab-record-mileage">Record Mileage</TabsTrigger>
-                </TabsList>
-              </Tabs>
+              {isEditMode ? (
+                <DialogTitle data-testid="dialog-title-edit-expense">Edit Expense</DialogTitle>
+              ) : (
+                <Tabs value={expenseTab} onValueChange={setExpenseTab}>
+                  <TabsList>
+                    <TabsTrigger value="record-expense" data-testid="tab-record-expense">Record Expense</TabsTrigger>
+                    <TabsTrigger value="record-mileage" data-testid="tab-record-mileage">Record Mileage</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
             </div>
           </DialogHeader>
 
@@ -1319,19 +1379,21 @@ export default function Expenses() {
             <Button
               className="bg-indigo-600 hover:bg-indigo-700"
               onClick={expenseTab === "record-expense" ? handleSubmitExpense : handleSubmitMileage}
-              disabled={createExpenseMutation.isPending || createMileageMutation.isPending}
+              disabled={createExpenseMutation.isPending || createMileageMutation.isPending || updateExpenseMutation.isPending}
               data-testid="button-save-expense"
             >
-              Save (Alt+S)
+              {isEditMode ? "Save Changes (Alt+S)" : "Save (Alt+S)"}
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleSaveAndNew}
-              disabled={createExpenseMutation.isPending || createMileageMutation.isPending}
-              data-testid="button-save-and-new"
-            >
-              Save and New (Alt+N)
-            </Button>
+            {!isEditMode && (
+              <Button
+                variant="outline"
+                onClick={handleSaveAndNew}
+                disabled={createExpenseMutation.isPending || createMileageMutation.isPending}
+                data-testid="button-save-and-new"
+              >
+                Save and New (Alt+N)
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={() => setShowRecordExpense(false)}
