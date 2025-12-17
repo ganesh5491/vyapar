@@ -50,7 +50,7 @@
     - Payment includes invoice details (number, amount, balance due, payment amount)
     - Tracks customer info, payment mode, date, and payment reference
     - Users can now see recorded payments in the Payments Received section under Sales
-[x] 43. Updated Payments Received default status to "PAID" (Dec 15, 2025):
+[x] 43. Updated Payments Received default status to "PAID" (Dec 16, 2025):
     - Changed default status from "RECEIVED" to "PAID" for all new payments
     - Status shows "PAID" (green badge) by default
     - Status changes to "REFUNDED" (red badge) only when refund is processed
@@ -137,3 +137,4 @@
     - Added Journal tab with accounting entries (Accounts Payable, Input SGST, Input CGST, Cost of Goods Sold)
     - Updated API to include referenceNumber, cgst, sgst, igst, hsnSac fields
     - All data stored and fetched from server/data/vendorCredits.json
+[x] 59. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
