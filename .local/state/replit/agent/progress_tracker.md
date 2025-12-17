@@ -138,3 +138,4 @@
     - Updated API to include referenceNumber, cgst, sgst, igst, hsnSac fields
     - All data stored and fetched from server/data/vendorCredits.json
 [x] 59. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
+[x] 60. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - latest session)
