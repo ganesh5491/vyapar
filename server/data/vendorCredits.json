@@ -1,4 +1,42 @@
 {
-  "vendorCredits": [],
-  "nextCreditNumber": 1
+  "vendorCredits": [
+    {
+      "id": "vc-1765944627993",
+      "creditNumber": "VC-00001",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "orderNumber": "2323",
+      "date": "2025-12-17",
+      "subject": "",
+      "reverseCharge": false,
+      "taxType": "tds",
+      "tdsTcs": "",
+      "items": [
+        {
+          "id": "item-1765944606494",
+          "itemId": "2",
+          "itemName": "Cloud Server",
+          "description": "",
+          "account": "cost_of_goods_sold",
+          "quantity": 1,
+          "rate": "555.00",
+          "tax": "gst_12",
+          "amount": 555
+        }
+      ],
+      "subTotal": 555,
+      "discountType": "percentage",
+      "discountValue": "10",
+      "discountAmount": 55.5,
+      "tdsTcsAmount": 0,
+      "adjustment": 0,
+      "amount": 499.5,
+      "balance": 499.5,
+      "notes": "",
+      "status": "DRAFT",
+      "createdAt": "2025-12-17T04:10:27.993Z",
+      "updatedAt": "2025-12-17T04:10:27.993Z"
+    }
+  ],
+  "nextCreditNumber": 2
 }

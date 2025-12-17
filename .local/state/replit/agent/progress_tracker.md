@@ -122,3 +122,18 @@
     - Implemented number-to-words conversion for Amount Paid In Words field (Indian Rupee format)
     - All data stored and fetched from server/data/paymentsMade.json
 [x] 57. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025)
+[x] 58. Updated Vendor Credits section to match reference design (Dec 17, 2025):
+    - Updated list view columns: DATE, CREDIT NOTE#, REFERENCE NUMBER, VENDOR NAME, STATUS, AMOUNT, BALANCE
+    - Added "All Vendor Credits" dropdown filter header matching reference design
+    - Added split-view layout: list on left, detail panel on right when item selected
+    - Detail panel shows VENDOR CREDITS document with:
+      * Company header (SkilltonIT info, address, GSTIN)
+      * Status badge (OPEN/DRAFT/CLOSED)
+      * Credits Remaining box
+      * Vendor Address section
+      * Items table with columns: #, Item & Description, HSN/SAC, Qty, Rate, Amount
+      * Sub Total, CGST, SGST, Discount, Total, Credits Remaining
+      * Authorized Signature section
+    - Added Journal tab with accounting entries (Accounts Payable, Input SGST, Input CGST, Cost of Goods Sold)
+    - Updated API to include referenceNumber, cgst, sgst, igst, hsnSac fields
+    - All data stored and fetched from server/data/vendorCredits.json
