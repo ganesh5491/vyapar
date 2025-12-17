@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useCustomerSnapshot } from './use-customer-snapshot';
 import { 
@@ -48,17 +48,9 @@ export function useTransactionBootstrap(
 ): TransactionBootstrapReturn {
   const [location] = useLocation();
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [lastSearch, setLastSearch] = useState<string>('');
   
-  // Extract customerId from URL on mount
-  useEffect(() => {
-    const params = new URLSearchParams(location.split('?')[1] || '');
-    const urlCustomerId = params.get('customerId');
-    if (urlCustomerId) {
-      setCustomerId(urlCustomerId);
-    }
-  }, [location]);
-  
-  // Use customer snapshot hook
+  // Use customer snapshot hook (must be defined before useEffect that uses clearSnapshot)
   const {
     snapshot: customerSnapshot,
     taxRegime,
@@ -67,6 +59,29 @@ export function useTransactionBootstrap(
     fetchCustomer,
     clearSnapshot
   } = useCustomerSnapshot(customerId);
+  
+  // Extract customerId from URL whenever location or window.location.search changes
+  // Wouter's location doesn't include query params, so we use the native browser API
+  useEffect(() => {
+    const currentSearch = window.location.search;
+    
+    // Only re-process if the search string has changed
+    if (currentSearch !== lastSearch) {
+      setLastSearch(currentSearch);
+      const searchParams = new URLSearchParams(currentSearch);
+      const urlCustomerId = searchParams.get('customerId');
+      
+      // Set or clear customerId based on URL
+      if (urlCustomerId && urlCustomerId !== customerId) {
+        setCustomerId(urlCustomerId);
+      } else if (!urlCustomerId && customerId && lastSearch !== '') {
+        // Clear customerId when navigating to a page without customerId param
+        // Only clear if we had a previous search string (to avoid clearing on initial mount)
+        setCustomerId(null);
+        clearSnapshot();
+      }
+    }
+  }, [location, customerId, lastSearch, clearSnapshot]);
   
   // Handle customer change
   const onCustomerChange = useCallback((newCustomerId: string) => {

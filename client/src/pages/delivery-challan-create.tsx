@@ -8,7 +8,8 @@ import {
   Save,
   X,
   Search,
-  HelpCircle
+  HelpCircle,
+  AlertCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -23,6 +24,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { useTransactionBootstrap } from "@/hooks/use-transaction-bootstrap";
+import { formatAddressDisplay } from "@/lib/customer-snapshot";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 interface ChallanItem {
   id: number;
@@ -77,6 +82,17 @@ export default function DeliveryChallanCreate() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   
+  // Transaction bootstrap for auto-population
+  const {
+    customerId: bootstrapCustomerId,
+    customerSnapshot,
+    taxRegime,
+    isLoadingCustomer,
+    customerError,
+    formData: bootstrapFormData,
+    onCustomerChange
+  } = useTransactionBootstrap({ transactionType: 'delivery_challan' });
+  
   const [date, setDate] = useState<Date>(new Date());
   const [challanNumber, setChallanNumber] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
@@ -89,6 +105,27 @@ export default function DeliveryChallanCreate() {
   const [adjustment, setAdjustment] = useState(0);
   const [saving, setSaving] = useState(false);
   const [customerIdFromUrl, setCustomerIdFromUrl] = useState<string | null>(null);
+  const [shippingAddress, setShippingAddress] = useState("");
+  
+  // Sync with bootstrap customer
+  useEffect(() => {
+    if (bootstrapCustomerId && !selectedCustomerId) {
+      setSelectedCustomerId(bootstrapCustomerId);
+    }
+  }, [bootstrapCustomerId]);
+  
+  // Update shipping address when customer snapshot changes  
+  useEffect(() => {
+    if (customerSnapshot) {
+      const shippingAddr = formatAddressDisplay(customerSnapshot.shippingAddress);
+      if (shippingAddr) {
+        setShippingAddress(shippingAddr);
+      } else {
+        // Fallback to billing address
+        setShippingAddress(formatAddressDisplay(customerSnapshot.billingAddress));
+      }
+    }
+  }, [customerSnapshot]);
 
   const [items, setItems] = useState<ChallanItem[]>([
     {

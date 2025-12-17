@@ -17,10 +17,14 @@ import {
   Search,
   Check,
   Settings,
-  Edit3
+  Edit3,
+  AlertCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore, type ContactPerson } from "@/lib/store";
+import { useTransactionBootstrap } from "@/hooks/use-transaction-bootstrap";
+import { calculateItemTax, formatAddressDisplay } from "@/lib/customer-snapshot";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { addDays, endOfMonth, addMonths } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,6 +112,17 @@ export default function InvoiceCreate() {
   const { toast } = useToast();
   const { addInvoice, invoices, contactPersons, addContactPerson, pendingCustomerId, setPendingCustomerId } = useAppStore();
 
+  // Transaction bootstrap for auto-population
+  const {
+    customerId: bootstrapCustomerId,
+    customerSnapshot,
+    taxRegime,
+    isLoadingCustomer,
+    customerError,
+    formData,
+    onCustomerChange
+  } = useTransactionBootstrap({ transactionType: 'invoice' });
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
@@ -121,12 +136,41 @@ export default function InvoiceCreate() {
   const [paymentReceived, setPaymentReceived] = useState(false);
   const [adjustment, setAdjustment] = useState(0);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
+  const [shippingAddress, setShippingAddress] = useState<string>("");
 
   const [selectedTerms, setSelectedTerms] = useState<string>("net30");
   const [termsSearchQuery, setTermsSearchQuery] = useState("");
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [billingAddress, setBillingAddress] = useState<string>("");
   const [isEditingBillingAddress, setIsEditingBillingAddress] = useState(false);
+
+  // Sync with bootstrap customer
+  useEffect(() => {
+    if (bootstrapCustomerId && !selectedCustomerId) {
+      setSelectedCustomerId(bootstrapCustomerId);
+    }
+  }, [bootstrapCustomerId]);
+
+  // Update form data when customer snapshot changes
+  useEffect(() => {
+    if (customerSnapshot) {
+      setBillingAddress(formatAddressDisplay(customerSnapshot.billingAddress));
+      setShippingAddress(formatAddressDisplay(customerSnapshot.shippingAddress));
+      
+      // Update payment terms if customer has default
+      if (customerSnapshot.paymentTerms) {
+        const termsMap: Record<string, string> = {
+          'Due on Receipt': 'due_on_receipt',
+          'Net 15': 'net15',
+          'Net 30': 'net30',
+          'Net 45': 'net45',
+          'Net 60': 'net60'
+        };
+        const termValue = termsMap[customerSnapshot.paymentTerms] || 'net30';
+        setSelectedTerms(termValue);
+      }
+    }
+  }, [customerSnapshot]);
 
   useEffect(() => {
     if (pendingCustomerId) {
@@ -136,7 +180,7 @@ export default function InvoiceCreate() {
   }, [pendingCustomerId, setPendingCustomerId]);
 
   useEffect(() => {
-    if (selectedCustomerId) {
+    if (selectedCustomerId && !customerSnapshot) {
       const customer = customers.find(c => c.id === selectedCustomerId);
       if (customer) {
         let addressStr = '';
@@ -154,7 +198,7 @@ export default function InvoiceCreate() {
         setBillingAddress(defaultAddress);
       }
     }
-  }, [selectedCustomerId, customers]);
+  }, [selectedCustomerId, customers, customerSnapshot]);
 
   useEffect(() => {
     const termsOption = TERMS_OPTIONS.find(t => t.value === selectedTerms);
@@ -310,6 +354,7 @@ export default function InvoiceCreate() {
       setLocation("/customers/new?returnTo=invoice");
     } else {
       setSelectedCustomerId(value);
+      onCustomerChange(value);
     }
   };
 
@@ -377,20 +422,42 @@ export default function InvoiceCreate() {
       };
     });
 
+    // Calculate taxes based on tax regime (intra = CGST+SGST, inter = IGST, exempt = 0)
+    let cgstAmount = 0;
+    let sgstAmount = 0;
+    let igstAmount = 0;
+    
+    if (taxRegime.regime === 'exempt' || customerSnapshot?.taxPreference === 'tax_exempt') {
+      // Tax exempt - no taxes
+      cgstAmount = 0;
+      sgstAmount = 0;
+      igstAmount = 0;
+    } else if (taxRegime.regime === 'inter') {
+      // Inter-state - use IGST
+      cgstAmount = 0;
+      sgstAmount = 0;
+      igstAmount = totals.totalTax;
+    } else {
+      // Intra-state - split between CGST and SGST
+      cgstAmount = totals.totalTax / 2;
+      sgstAmount = totals.totalTax / 2;
+      igstAmount = 0;
+    }
+
     const invoiceData = {
       date: formattedDate,
       dueDate: formattedDueDate,
       customerId: selectedCustomerId,
-      customerName: selectedCustomer?.displayName || "Unknown Customer",
-      billingAddress: {
+      customerName: customerSnapshot?.displayName || selectedCustomer?.displayName || "Unknown Customer",
+      billingAddress: customerSnapshot?.billingAddress || {
         street: billingAddress,
         city: '',
         state: '',
         country: 'India',
         pincode: ''
       },
-      shippingAddress: {
-        street: '',
+      shippingAddress: customerSnapshot?.shippingAddress || {
+        street: shippingAddress,
         city: '',
         state: '',
         country: 'India',
@@ -401,14 +468,20 @@ export default function InvoiceCreate() {
       items: invoiceItems,
       subTotal: totals.taxableSubtotal,
       shippingCharges: shippingAmount,
-      cgst: totals.totalTax / 2,
-      sgst: totals.totalTax / 2,
-      igst: 0,
+      cgst: cgstAmount,
+      sgst: sgstAmount,
+      igst: igstAmount,
       adjustment: adjustment,
       total: finalTotal,
       customerNotes: '',
       termsAndConditions: '',
-      status: finalStatus
+      status: finalStatus,
+      // Store customer snapshot for immutability
+      gstTreatment: customerSnapshot?.gstTreatment || '',
+      taxPreference: customerSnapshot?.taxPreference || 'taxable',
+      placeOfSupply: customerSnapshot?.placeOfSupply || '',
+      gstin: customerSnapshot?.gstin || '',
+      customerSnapshot: customerSnapshot
     };
 
     try {

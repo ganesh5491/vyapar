@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, Trash2, Search, X, HelpCircle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Search, X, HelpCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,10 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { useTransactionBootstrap } from "@/hooks/use-transaction-bootstrap";
+import { formatAddressDisplay } from "@/lib/customer-snapshot";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 interface Customer {
   id: string;
@@ -89,8 +93,19 @@ const TAX_OPTIONS = [
 ];
 
 export default function CreditNoteCreate() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // Transaction bootstrap for auto-population
+  const {
+    customerId: bootstrapCustomerId,
+    customerSnapshot,
+    taxRegime,
+    isLoadingCustomer,
+    customerError,
+    formData: bootstrapFormData,
+    onCustomerChange
+  } = useTransactionBootstrap({ transactionType: 'credit_note' });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -111,6 +126,25 @@ export default function CreditNoteCreate() {
   });
   const [gstin, setGstin] = useState("");
   const [placeOfSupply, setPlaceOfSupply] = useState("");
+  
+  // Sync with bootstrap customer
+  useEffect(() => {
+    if (bootstrapCustomerId && !customerId) {
+      setCustomerId(bootstrapCustomerId);
+    }
+  }, [bootstrapCustomerId]);
+  
+  // Update form data when customer snapshot changes
+  useEffect(() => {
+    if (customerSnapshot) {
+      setCustomerName(customerSnapshot.displayName || customerSnapshot.customerName);
+      if (customerSnapshot.billingAddress) {
+        setBillingAddress(customerSnapshot.billingAddress);
+      }
+      if (customerSnapshot.gstin) setGstin(customerSnapshot.gstin);
+      if (customerSnapshot.placeOfSupply) setPlaceOfSupply(customerSnapshot.placeOfSupply);
+    }
+  }, [customerSnapshot]);
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
     { id: "1", itemId: "", name: "", description: "", account: "", quantity: 1, rate: 0, discount: 0, discountType: "percentage", tax: 0, taxName: "none", amount: 0 }

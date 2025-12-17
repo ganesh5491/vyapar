@@ -35,6 +35,33 @@ I want iterative development. Ask before making major changes. I prefer detailed
 - **API Pattern**: All modules expose their functionalities through versioned API endpoints, following a consistent `/{module}/{resource}` pattern.
 - **Module Architecture**: Frontend modules export pages, types, API functions, services, and hooks. Backend modules adhere to Clean Architecture principles with distinct layers for controllers, services, repositories, models, and validators.
 
+## Recent Changes (December 2025)
+
+### Sales Entry Point Flow Implementation
+- **Transaction Bootstrap Hooks**: Centralized customer auto-population for all transaction create pages
+  - `useTransactionBootstrap`: Main hook for transaction pages - reads customerId from URL, manages customer snapshot
+  - `useCustomerSnapshot`: Fetches and caches customer data as immutable snapshot
+  - `customer-snapshot.ts`: Utility functions for tax regime determination and address formatting
+
+- **Tax Calculation Logic**:
+  - Automatic CGST+SGST calculation for intra-state transactions (same state as company)
+  - Automatic IGST calculation for inter-state transactions (different state)
+  - Tax-exempt handling for customers with tax_exempt preference
+
+- **Customer Snapshot Architecture**:
+  - Immutable customer data preserved at transaction creation time
+  - Prevents retroactive changes when customer details are updated later
+  - Includes: billing address, shipping address, GSTIN, tax preference, payment terms, place of supply
+
+### Updated Create Pages
+All transaction create pages now integrate with transaction bootstrap hooks:
+- Invoice Create (`/invoices/create`)
+- Quote Create (`/quotes/create`)
+- Sales Order Create (`/sales-orders/create`)
+- Delivery Challan Create (`/delivery-challans/create`)
+- Credit Note Create (`/credit-notes/create`)
+- Payments Received Create (`/payments-received/create`)
+
 ## External Dependencies
 - **Database**: PostgreSQL (via Neon)
 - **ORM**: Drizzle ORM

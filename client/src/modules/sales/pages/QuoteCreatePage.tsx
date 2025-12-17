@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Plus, X, Search, Upload, Pencil } from "lucide-react";
+import { Plus, X, Search, Upload, Pencil, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ManageSalespersonsDialog } from "@/components/ManageSalespersonsDialog";
+import { useTransactionBootstrap } from "@/hooks/use-transaction-bootstrap";
+import { formatAddressDisplay } from "@/lib/customer-snapshot";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 interface Customer {
   id: string;
@@ -75,6 +79,18 @@ interface AttachedFile {
 
 export default function QuoteCreatePage() {
   const [location, setLocation] = useLocation();
+  
+  // Transaction bootstrap for auto-population
+  const {
+    customerId: bootstrapCustomerId,
+    customerSnapshot,
+    taxRegime,
+    isLoadingCustomer,
+    customerError,
+    formData: bootstrapFormData,
+    onCustomerChange
+  } = useTransactionBootstrap({ transactionType: 'quote' });
+  
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,6 +116,23 @@ export default function QuoteCreatePage() {
     adjustment: 0,
     adjustmentDescription: "",
   });
+  
+  // Sync with bootstrap customer
+  useEffect(() => {
+    if (bootstrapCustomerId && !formData.customerId) {
+      setFormData(prev => ({ ...prev, customerId: bootstrapCustomerId }));
+    }
+  }, [bootstrapCustomerId]);
+  
+  // Update form data when customer snapshot changes
+  useEffect(() => {
+    if (customerSnapshot) {
+      setFormData(prev => ({
+        ...prev,
+        customerName: customerSnapshot.displayName || customerSnapshot.customerName
+      }));
+    }
+  }, [customerSnapshot]);
 
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([
     {
