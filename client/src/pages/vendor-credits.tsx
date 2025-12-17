@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, MoreHorizontal, Trash2, Edit, FileText, ChevronDown, X, Printer, Receipt } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Trash2, Edit, FileText, ChevronDown, X, Printer, Receipt, Copy, Ban, BookOpen, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -97,6 +97,12 @@ export default function VendorCredits() {
   const [selectedCredit, setSelectedCredit] = useState<VendorCredit | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [creditToDelete, setCreditToDelete] = useState<string | null>(null);
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [voidDialogOpen, setVoidDialogOpen] = useState(false);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundReason, setRefundReason] = useState("");
+  const [activeTab, setActiveTab] = useState("document");
+  const journalTabRef = useRef<HTMLButtonElement>(null);
 
   const { data: vendorCreditsData, isLoading, refetch } = useQuery<{ success: boolean; data: VendorCredit[] }>({
     queryKey: ['/api/vendor-credits'],
@@ -132,6 +138,125 @@ export default function VendorCredits() {
       setDeleteDialogOpen(false);
       setCreditToDelete(null);
     }
+  };
+
+  const handleRefund = () => {
+    if (selectedCredit) {
+      setRefundAmount(selectedCredit.balance.toString());
+      setRefundReason("");
+      setRefundDialogOpen(true);
+    }
+  };
+
+  const confirmRefund = async () => {
+    if (!selectedCredit) return;
+    const amount = parseFloat(refundAmount);
+    if (isNaN(amount) || amount <= 0 || amount > selectedCredit.balance) {
+      toast({ title: "Invalid refund amount", variant: "destructive" });
+      return;
+    }
+    try {
+      const response = await fetch(`/api/vendor-credits/${selectedCredit.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          balance: selectedCredit.balance - amount,
+          status: selectedCredit.balance - amount <= 0 ? 'REFUNDED' : selectedCredit.status,
+        }),
+      });
+      if (response.ok) {
+        toast({ title: "Refund processed successfully" });
+        refetch();
+        setRefundDialogOpen(false);
+        const updatedCredit = await response.json();
+        if (updatedCredit.data) {
+          setSelectedCredit(updatedCredit.data);
+        }
+      } else {
+        toast({ title: "Failed to process refund", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Failed to process refund", variant: "destructive" });
+    }
+  };
+
+  const handleVoid = () => {
+    if (selectedCredit) {
+      setVoidDialogOpen(true);
+    }
+  };
+
+  const confirmVoid = async () => {
+    if (!selectedCredit) return;
+    try {
+      const response = await fetch(`/api/vendor-credits/${selectedCredit.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'VOID' }),
+      });
+      if (response.ok) {
+        toast({ title: "Vendor credit voided successfully" });
+        refetch();
+        setVoidDialogOpen(false);
+        const updatedCredit = await response.json();
+        if (updatedCredit.data) {
+          setSelectedCredit(updatedCredit.data);
+        }
+      } else {
+        toast({ title: "Failed to void vendor credit", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Failed to void vendor credit", variant: "destructive" });
+    }
+  };
+
+  const handleClone = async () => {
+    if (!selectedCredit) return;
+    try {
+      const clonedData = {
+        vendorId: selectedCredit.vendorId,
+        vendorName: selectedCredit.vendorName,
+        orderNumber: selectedCredit.orderNumber,
+        referenceNumber: selectedCredit.referenceNumber,
+        vendorCreditDate: new Date().toISOString().split('T')[0],
+        subject: selectedCredit.subject,
+        reverseCharge: selectedCredit.reverseCharge,
+        taxType: selectedCredit.taxType,
+        tdsTcs: selectedCredit.tdsTcs,
+        items: selectedCredit.items,
+        subTotal: selectedCredit.subTotal,
+        discountType: selectedCredit.discountType,
+        discountValue: selectedCredit.discountValue,
+        discountAmount: selectedCredit.discountAmount,
+        cgst: selectedCredit.cgst,
+        sgst: selectedCredit.sgst,
+        igst: selectedCredit.igst,
+        tdsTcsAmount: selectedCredit.tdsTcsAmount,
+        adjustment: selectedCredit.adjustment,
+        total: selectedCredit.amount,
+        notes: selectedCredit.notes,
+        status: 'DRAFT',
+      };
+      const response = await fetch('/api/vendor-credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clonedData),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        toast({ title: `Vendor credit cloned as ${result.data.creditNumber}` });
+        refetch();
+        setSelectedCredit(result.data);
+      } else {
+        toast({ title: "Failed to clone vendor credit", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Failed to clone vendor credit", variant: "destructive" });
+    }
+  };
+
+  const handleViewJournal = () => {
+    setActiveTab("journal");
   };
 
   const vendorCredits = vendorCreditsData?.data || [];
@@ -460,13 +585,36 @@ export default function VendorCredits() {
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Clone</DropdownMenuItem>
-                  <DropdownMenuItem>Send Email</DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem 
+                    onClick={handleRefund}
+                    className="text-primary font-medium"
+                    data-testid="menu-refund"
+                  >
+                    Refund
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleVoid}
+                    data-testid="menu-void"
+                  >
+                    Void
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleClone}
+                    data-testid="menu-clone"
+                  >
+                    Clone
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleViewJournal}
+                    data-testid="menu-view-journal"
+                  >
+                    View Journal
+                  </DropdownMenuItem>
                   <DropdownMenuItem 
                     className="text-destructive"
                     onClick={() => handleDelete(selectedCredit.id)}
+                    data-testid="menu-delete"
                   >
                     Delete
                   </DropdownMenuItem>
@@ -484,10 +632,10 @@ export default function VendorCredits() {
           </div>
 
           <div className="flex-1 overflow-auto p-4">
-            <Tabs defaultValue="document" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="mb-4">
                 <TabsTrigger value="document">Document</TabsTrigger>
-                <TabsTrigger value="journal">Journal</TabsTrigger>
+                <TabsTrigger value="journal" ref={journalTabRef}>Journal</TabsTrigger>
               </TabsList>
 
               <TabsContent value="document">
@@ -718,6 +866,66 @@ export default function VendorCredits() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Refund Vendor Credit</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter the amount to refund from this vendor credit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Amount</label>
+              <Input
+                type="number"
+                step="0.01"
+                value={refundAmount}
+                onChange={(e) => setRefundAmount(e.target.value)}
+                placeholder="Enter refund amount"
+                data-testid="input-refund-amount"
+              />
+              <p className="text-xs text-muted-foreground">
+                Maximum: {selectedCredit ? formatCurrency(selectedCredit.balance) : '0.00'}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Reason (optional)</label>
+              <Input
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+                placeholder="Enter reason for refund"
+                data-testid="input-refund-reason"
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRefund}>
+              Process Refund
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Void Vendor Credit</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to void this vendor credit ({selectedCredit?.creditNumber})? 
+              This will mark the credit as void and it cannot be applied to any bills.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmVoid} className="bg-orange-600 hover:bg-orange-700">
+              Void Credit
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
