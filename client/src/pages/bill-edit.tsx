@@ -74,6 +74,20 @@ interface Tax {
   rate: number;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  sku?: string;
+  type?: string;
+  unit?: string;
+  sellingPrice?: number;
+  costPrice?: number;
+  description?: string;
+  hsnCode?: string;
+  sacCode?: string;
+  taxPreference?: string;
+}
+
 export default function BillEdit() {
   const params = useParams();
   const billId = params.id;
@@ -82,8 +96,10 @@ export default function BillEdit() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [taxes, setTaxes] = useState<Tax[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingBill, setLoadingBill] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   
   const [formData, setFormData] = useState({
     vendorId: "",
@@ -123,10 +139,26 @@ export default function BillEdit() {
     fetchVendors();
     fetchAccounts();
     fetchTaxes();
+    fetchProducts();
     if (billId) {
       fetchBill();
     }
   }, [billId]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoadingProducts(true);
+      const response = await fetch('/api/items');
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
   const fetchBill = async () => {
     try {
@@ -309,6 +341,44 @@ export default function BillEdit() {
         total
       };
     });
+  };
+
+  const handleProductSelect = (itemId: string, productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      setFormData(prev => {
+        const updatedItems = prev.items.map(item => {
+          if (item.id === itemId) {
+            const rate = product.costPrice || product.sellingPrice || 0;
+            const amount = item.quantity * rate;
+            return {
+              ...item,
+              itemName: product.name,
+              description: product.description || "",
+              rate: rate,
+              amount: amount
+            };
+          }
+          return item;
+        });
+
+        const subTotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
+        const taxAmount = updatedItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
+        const discountAmount = prev.discountType === 'percent' 
+          ? (subTotal * prev.discountValue) / 100 
+          : prev.discountValue;
+        const total = subTotal - discountAmount + taxAmount + prev.adjustment;
+
+        return {
+          ...prev,
+          items: updatedItems,
+          subTotal,
+          taxAmount,
+          discountAmount,
+          total
+        };
+      });
+    }
   };
 
   const handleDiscountChange = (type: string, value: number) => {
@@ -540,13 +610,32 @@ export default function BillEdit() {
                     formData.items.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <Input 
-                            value={item.itemName}
-                            onChange={(e) => updateItem(item.id, 'itemName', e.target.value)}
-                            placeholder="Type or click to select an item"
-                            className="text-sm"
-                            data-testid={`input-item-name-${item.id}`}
-                          />
+                          <Select 
+                            value={item.itemName || ""}
+                            onValueChange={(value) => {
+                              const product = products.find(p => p.name === value);
+                              if (product) {
+                                handleProductSelect(item.id, product.id);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="text-sm" data-testid={`select-item-${item.id}`}>
+                              <SelectValue placeholder={loadingProducts ? "Loading items..." : "Select an item"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {loadingProducts ? (
+                                <SelectItem value="loading" disabled>Loading items...</SelectItem>
+                              ) : products.length === 0 ? (
+                                <SelectItem value="none" disabled>No items available</SelectItem>
+                              ) : (
+                                products.map(product => (
+                                  <SelectItem key={product.id} value={product.name}>
+                                    {product.name} {product.sku ? `(${product.sku})` : ''} - ₹{product.costPrice || product.sellingPrice || 0}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell>
                           <Select 

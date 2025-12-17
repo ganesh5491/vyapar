@@ -176,3 +176,16 @@
     - Added loading state while fetching bill data
     - Added "From Bill" badge indicator
 [x] 63. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
+[x] 64. Fixed item details not fetching in Bill Create and Bill Edit pages (Dec 17, 2025):
+    - Added Product interface and products state to both bill-create.tsx and bill-edit.tsx
+    - Added fetchProducts function to fetch items from /api/items endpoint
+    - Added handleProductSelect function to auto-fill item details when product is selected:
+      * Sets itemName from product name
+      * Sets description from product description
+      * Sets rate from product costPrice or sellingPrice
+      * Auto-calculates amount based on quantity and rate
+    - Replaced plain Input for ITEM DETAILS with Select dropdown
+    - Dropdown shows all available products with name, SKU, and price
+    - Loading state shows "Loading items..." while fetching
+    - Shows "No items available" if no products exist in the database
+    - When selecting an item, the rate is automatically populated from the product's cost price
