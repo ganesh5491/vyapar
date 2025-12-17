@@ -706,7 +706,45 @@
       "createdAt": "2025-12-16T06:35:21.373Z",
       "isRefund": true,
       "originalInvoiceId": "1765783987984"
+    },
+    {
+      "id": "pr-1765973460312",
+      "paymentNumber": "",
+      "customerId": "1",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED ",
+      "customerEmail": "rohan@cybaemtech.com",
+      "amount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-17",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "Karnataka",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 0,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 0,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 0
+        }
+      ],
+      "amountInWords": "Zero",
+      "createdAt": "2025-12-17T12:11:00.312Z"
     }
   ],
-  "nextPaymentNumber": 23
+  "nextPaymentNumber": 24
 }
