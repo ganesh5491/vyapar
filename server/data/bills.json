@@ -1,6 +1,70 @@
 {
   "bills": [
     {
+      "id": "1765956810761",
+      "billNumber": "2",
+      "orderNumber": "",
+      "vendorId": "2",
+      "vendorName": "Amazon",
+      "vendorAddress": {
+        "street1": "Bhumkar chown ",
+        "street2": "pune",
+        "city": "pune",
+        "state": "[UK] - Uttarakhand",
+        "pinCode": "",
+        "country": "India",
+        "gstin": ""
+      },
+      "billDate": "2025-12-17",
+      "dueDate": "2025-12-17",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "",
+      "items": [
+        {
+          "id": "1765956774912",
+          "itemName": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "account": "Cost of Goods Sold",
+          "quantity": 1,
+          "rate": 500,
+          "tax": "IGST18",
+          "taxAmount": 90,
+          "customerDetails": "none",
+          "amount": 500
+        }
+      ],
+      "subTotal": 500,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 90,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 590,
+      "amountPaid": 0,
+      "balanceDue": 590,
+      "notes": "",
+      "attachments": [],
+      "status": "OPEN",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-17T07:33:30.761Z",
+      "updatedAt": "2025-12-17T07:33:30.761Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-17T07:33:30.761Z",
+          "action": "created",
+          "description": "Bill created for ₹590",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765432138681",
       "billNumber": "32131",
       "orderNumber": "",
@@ -87,7 +151,7 @@
       "expectedPaymentDate": "2025-12-19"
     }
   ],
-  "nextBillNumber": 2,
+  "nextBillNumber": 3,
   "accounts": [
     {
       "id": "1",

@@ -97,6 +97,12 @@ export default function BillCreate() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingPO, setLoadingPO] = useState(false);
+  const [poDataLoaded, setPoDataLoaded] = useState(false);
+  
+  // Get query params from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const purchaseOrderId = urlParams.get('purchaseOrderId');
   
   const [formData, setFormData] = useState({
     vendorId: "",
@@ -137,7 +143,62 @@ export default function BillCreate() {
     fetchTaxes();
     fetchProducts();
     fetchNextBillNumber();
-  }, []);
+    if (purchaseOrderId) {
+      fetchPurchaseOrderData(purchaseOrderId);
+    }
+  }, [purchaseOrderId]);
+
+  const fetchPurchaseOrderData = async (poId: string) => {
+    try {
+      setLoadingPO(true);
+      const response = await fetch(`/api/purchase-orders/${poId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const po = data.data;
+        if (po && !poDataLoaded) {
+          // Map PO items to bill items
+          const billItems: BillItem[] = (po.items || []).map((item: any, index: number) => ({
+            id: `item-${Date.now()}-${index}`,
+            itemName: item.itemName || item.name || "",
+            description: item.description || "",
+            account: item.account || "Cost of Goods Sold",
+            quantity: item.quantity || 1,
+            rate: item.rate || 0,
+            tax: item.tax || "",
+            taxAmount: item.taxAmount || 0,
+            customerDetails: "",
+            amount: (item.quantity || 1) * (item.rate || 0)
+          }));
+
+          // Calculate totals
+          const subTotal = billItems.reduce((sum, item) => sum + item.amount, 0);
+          const taxAmount = billItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
+          const total = subTotal + taxAmount;
+
+          setFormData(prev => ({
+            ...prev,
+            vendorId: po.vendorId || "",
+            vendorName: po.vendorName || "",
+            vendorAddress: po.vendorAddress || prev.vendorAddress,
+            orderNumber: po.purchaseOrderNumber || "",
+            subject: `Bill for Purchase Order #${po.purchaseOrderNumber}`,
+            notes: po.notes || "",
+            items: billItems,
+            subTotal,
+            taxAmount,
+            total
+          }));
+          setPoDataLoaded(true);
+          toast({ title: `Loaded data from Purchase Order #${po.purchaseOrderNumber}` });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch purchase order:', error);
+      toast({ title: "Failed to load purchase order data", variant: "destructive" });
+    } finally {
+      setLoadingPO(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -408,6 +469,20 @@ export default function BillCreate() {
           <FileText className="h-6 w-6 text-slate-600" />
           <h1 className="text-2xl font-semibold text-slate-900" data-testid="text-page-title">New Bill</h1>
         </div>
+
+        {purchaseOrderId && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+            <FileText className="h-5 w-5 text-blue-600" />
+            <div>
+              <p className="text-sm font-medium text-blue-800">
+                {loadingPO ? "Loading purchase order data..." : `Creating bill from Purchase Order`}
+              </p>
+              {formData.orderNumber && (
+                <p className="text-xs text-blue-600">PO# {formData.orderNumber}</p>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
           <div className="grid gap-6">

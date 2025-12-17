@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, RefreshCw, Upload, Plus, Trash2, Search, FileText, Info } from "lucide-react";
+import { useLocation, useParams } from "wouter";
+import { ArrowLeft, RefreshCw, Upload, Plus, Trash2, Search, FileText, Info, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,10 +50,12 @@ interface Vendor {
   companyName?: string;
 }
 
-interface Item {
+interface Product {
   id: string;
   name: string;
-  rate: number;
+  rate?: number;
+  costPrice?: number;
+  sellingPrice?: number;
   description?: string;
   type?: string;
 }
@@ -70,22 +71,26 @@ interface LineItem {
   tax: string;
   taxAmount?: number;
   amount: number;
+  hsnSac?: string;
 }
 
-export default function VendorCreditCreate() {
+export default function VendorCreditEdit() {
   const [, setLocation] = useLocation();
+  const params = useParams();
+  const creditId = params.id;
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
-
-  // Get query params from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const billId = urlParams.get('billId');
-  const vendorIdFromUrl = urlParams.get('vendorId');
+  const [loading, setLoading] = useState(true);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [vendorsLoading, setVendorsLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     vendorId: "",
     vendorName: "",
     creditNoteNumber: "",
+    referenceNumber: "",
     orderNumber: "",
     vendorCreditDate: new Date().toISOString().split('T')[0],
     subject: "",
@@ -96,107 +101,100 @@ export default function VendorCreditCreate() {
     discountValue: "",
     adjustment: "",
     notes: "",
-    attachments: [] as File[],
-    billId: billId || "",
-    billNumber: "",
   });
 
   const [items, setItems] = useState<LineItem[]>([]);
-  const [billDataLoaded, setBillDataLoaded] = useState(false);
-
-  const { data: vendorsData, isLoading: vendorsLoading } = useQuery<{ success: boolean; data: Vendor[] }>({
-    queryKey: ['/api/vendors'],
-  });
-
-  const { data: productsData, isLoading: productsLoading } = useQuery<{ success: boolean; data: Item[] }>({
-    queryKey: ['/api/items'],
-  });
-
-  const { data: nextNumberData } = useQuery<{ success: boolean; data: { nextNumber: string } }>({
-    queryKey: ['/api/vendor-credits/next-number'],
-  });
-
-  // Fetch bill data if billId is provided
-  const { data: billData, isLoading: billLoading } = useQuery<{ success: boolean; data: any }>({
-    queryKey: ['/api/bills', billId],
-    enabled: !!billId,
-  });
 
   useEffect(() => {
-    if (nextNumberData?.data?.nextNumber) {
-      setFormData(prev => ({ ...prev, creditNoteNumber: nextNumberData.data.nextNumber }));
+    fetchVendors();
+    fetchProducts();
+    if (creditId) {
+      fetchVendorCredit();
     }
-  }, [nextNumberData]);
+  }, [creditId]);
 
-  // Pre-populate form with bill data when it loads
-  useEffect(() => {
-    if (billData?.data && !billDataLoaded) {
-      const bill = billData.data;
-      setFormData(prev => ({
-        ...prev,
-        vendorId: bill.vendorId || "",
-        vendorName: bill.vendorName || "",
-        subject: `Vendor Credit for Bill #${bill.billNumber}`,
-        reverseCharge: bill.reverseCharge || false,
-        notes: `Created from Bill #${bill.billNumber}`,
-        billId: bill.id,
-        billNumber: bill.billNumber,
-      }));
+  const fetchVendors = async () => {
+    try {
+      setVendorsLoading(true);
+      const response = await fetch('/api/vendors');
+      if (response.ok) {
+        const data = await response.json();
+        setVendors(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch vendors:', error);
+    } finally {
+      setVendorsLoading(false);
+    }
+  };
 
-      // Pre-populate items from bill
-      if (bill.items && bill.items.length > 0) {
-        const billItems: LineItem[] = bill.items.map((item: any, index: number) => {
-          const quantity = item.quantity || 1;
-          const rate = item.rate || 0;
-          const amount = quantity * rate;
-          const tax = item.tax || "";
-          let taxAmount = item.taxAmount || 0;
-          
-          // Calculate tax amount if not provided
-          if (!taxAmount && tax) {
-            const taxMatch = tax.match(/(\d+)/);
-            if (taxMatch) {
-              const taxPercent = parseFloat(taxMatch[1]);
-              taxAmount = (amount * taxPercent) / 100;
-            }
+  const fetchProducts = async () => {
+    try {
+      setProductsLoading(true);
+      const response = await fetch('/api/items');
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  const fetchVendorCredit = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/vendor-credits/${creditId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const credit = data.data;
+        if (credit) {
+          setFormData({
+            vendorId: credit.vendorId || "",
+            vendorName: credit.vendorName || "",
+            creditNoteNumber: credit.creditNumber || "",
+            referenceNumber: credit.referenceNumber || "",
+            orderNumber: credit.orderNumber || "",
+            vendorCreditDate: credit.date || new Date().toISOString().split('T')[0],
+            subject: credit.subject || "",
+            reverseCharge: credit.reverseCharge || false,
+            taxType: credit.taxType || "tds",
+            tdsTcs: credit.tdsTcs || "",
+            discountType: credit.discountType || "percentage",
+            discountValue: credit.discountValue?.toString() || "",
+            adjustment: credit.adjustment?.toString() || "",
+            notes: credit.notes || "",
+          });
+
+          if (credit.items && credit.items.length > 0) {
+            setItems(credit.items.map((item: any) => ({
+              id: item.id || `item-${Date.now()}-${Math.random()}`,
+              itemId: item.itemId || "",
+              itemName: item.itemName || "",
+              description: item.description || "",
+              account: item.account || "cost_of_goods_sold",
+              quantity: item.quantity || 1,
+              rate: parseFloat(item.rate) || 0,
+              tax: item.tax || "",
+              taxAmount: item.taxAmount || 0,
+              amount: item.amount || 0,
+              hsnSac: item.hsnSac || "",
+            })));
           }
-          
-          return {
-            id: `item-${Date.now()}-${index}`,
-            itemId: item.id || "",
-            itemName: item.itemName || item.name || "",
-            description: item.description || "",
-            account: item.account || "cost_of_goods_sold",
-            quantity,
-            rate,
-            tax,
-            taxAmount,
-            amount,
-          };
-        });
-        setItems(billItems);
+        }
+      } else {
+        toast({ title: "Failed to load vendor credit", variant: "destructive" });
+        setLocation('/vendor-credits');
       }
-
-      setBillDataLoaded(true);
+    } catch (error) {
+      console.error('Failed to fetch vendor credit:', error);
+      toast({ title: "Failed to load vendor credit", variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
-  }, [billData, billDataLoaded]);
-
-  // Also handle vendor from URL if provided without bill
-  useEffect(() => {
-    if (vendorIdFromUrl && !billId && vendorsData?.data) {
-      const vendor = vendorsData.data.find(v => v.id === vendorIdFromUrl);
-      if (vendor) {
-        setFormData(prev => ({
-          ...prev,
-          vendorId: vendor.id,
-          vendorName: vendor.displayName,
-        }));
-      }
-    }
-  }, [vendorIdFromUrl, billId, vendorsData]);
-
-  const vendors = vendorsData?.data || [];
-  const products = productsData?.data || [];
+  };
 
   const handleVendorChange = (vendorId: string) => {
     const vendor = vendors.find(v => v.id === vendorId);
@@ -219,7 +217,9 @@ export default function VendorCreditCreate() {
       quantity: 1,
       rate: 0,
       tax: "",
+      taxAmount: 0,
       amount: 0,
+      hsnSac: "",
     }]);
   };
 
@@ -236,8 +236,8 @@ export default function VendorCreditCreate() {
           if (product) {
             updated.itemName = product.name;
             updated.description = product.description || '';
-            updated.rate = product.rate;
-            updated.amount = updated.quantity * product.rate;
+            updated.rate = product.costPrice || product.sellingPrice || product.rate || 0;
+            updated.amount = updated.quantity * updated.rate;
           }
         }
         if (field === 'quantity' || field === 'rate') {
@@ -266,26 +266,12 @@ export default function VendorCreditCreate() {
     }));
   };
 
-  const calculateItemTaxAmount = () => {
-    return items.reduce((sum, item) => {
-      // Use stored taxAmount if available
-      if (item.taxAmount !== undefined && item.taxAmount > 0) {
-        return sum + item.taxAmount;
-      }
-      // Otherwise calculate from tax code
-      if (item.tax) {
-        const taxMatch = item.tax.match(/(\d+)/);
-        if (taxMatch) {
-          const taxPercent = parseFloat(taxMatch[1]);
-          return sum + (item.amount * taxPercent) / 100;
-        }
-      }
-      return sum;
-    }, 0);
-  };
-
   const calculateSubTotal = () => {
     return items.reduce((sum, item) => sum + item.amount, 0);
+  };
+
+  const calculateTaxAmount = () => {
+    return items.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
   };
 
   const calculateDiscount = () => {
@@ -309,18 +295,18 @@ export default function VendorCreditCreate() {
 
   const calculateTotal = () => {
     const subTotal = calculateSubTotal();
-    const itemTaxAmount = calculateItemTaxAmount();
+    const taxAmount = calculateTaxAmount();
     const discount = calculateDiscount();
     const tdsTcs = calculateTdsTcs();
     const adjustment = parseFloat(formData.adjustment) || 0;
     
     if (formData.taxType === 'tds') {
-      return subTotal + itemTaxAmount - discount - tdsTcs + adjustment;
+      return subTotal + taxAmount - discount - tdsTcs + adjustment;
     }
-    return subTotal + itemTaxAmount - discount + tdsTcs + adjustment;
+    return subTotal + taxAmount - discount + tdsTcs + adjustment;
   };
 
-  const handleSubmit = async (status: 'DRAFT' | 'OPEN') => {
+  const handleSubmit = async () => {
     if (!formData.vendorId) {
       toast({ title: "Please select a vendor", variant: "destructive" });
       return;
@@ -330,80 +316,93 @@ export default function VendorCreditCreate() {
     try {
       const payload = {
         ...formData,
+        creditNumber: formData.creditNoteNumber,
+        date: formData.vendorCreditDate,
         items,
         subTotal: calculateSubTotal(),
-        taxAmount: calculateItemTaxAmount(),
+        taxAmount: calculateTaxAmount(),
         discountAmount: calculateDiscount(),
         tdsTcsAmount: calculateTdsTcs(),
         adjustment: parseFloat(formData.adjustment) || 0,
         total: calculateTotal(),
         amount: calculateTotal(),
         balance: calculateTotal(),
-        status,
       };
 
-      const response = await fetch('/api/vendor-credits', {
-        method: 'POST',
+      const response = await fetch(`/api/vendor-credits/${creditId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        toast({ title: `Vendor credit ${status === 'DRAFT' ? 'saved as draft' : 'created'} successfully` });
+        toast({ title: "Vendor credit updated successfully" });
         setLocation('/vendor-credits');
       } else {
         const error = await response.json();
-        toast({ title: error.message || "Failed to save vendor credit", variant: "destructive" });
+        toast({ title: error.message || "Failed to update vendor credit", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "Failed to save vendor credit", variant: "destructive" });
+      toast({ title: "Failed to update vendor credit", variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
+          <span className="text-slate-600">Loading vendor credit...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="border-b border-slate-200 bg-white px-6 py-4 sticky top-0 z-10">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setLocation("/vendor-credits")}
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold">New Vendor Credits</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setLocation("/vendor-credits")}
+              data-testid="button-back"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-semibold">Edit Vendor Credit</h1>
+            <Badge variant="outline">{formData.creditNoteNumber}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setLocation("/vendor-credits")}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={saving}
+              className="bg-blue-600 hover:bg-blue-700"
+              data-testid="button-save"
+            >
+              {saving ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto p-6 space-y-6">
-        {/* Show bill reference banner when creating from bill */}
-        {billId && formData.billNumber && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
-            <Info className="h-5 w-5 text-blue-600 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm text-blue-800">
-                Creating vendor credit from <span className="font-semibold">Bill #{formData.billNumber}</span>. 
-                The vendor and items have been pre-populated from the bill.
-              </p>
-            </div>
-            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-              <FileText className="h-3 w-3 mr-1" />
-              From Bill
-            </Badge>
-          </div>
-        )}
-
-        {/* Loading state when fetching bill data */}
-        {billLoading && (
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3">
-            <RefreshCw className="h-5 w-5 text-slate-500 animate-spin" />
-            <p className="text-sm text-slate-600">Loading bill data...</p>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           <div className="md:col-span-2">
             <Label className="text-red-500">Vendor Name*</Label>
@@ -436,17 +435,23 @@ export default function VendorCreditCreate() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <Label className="text-red-500">Credit Note#*</Label>
-            <div className="relative">
-              <Input 
-                value={formData.creditNoteNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, creditNoteNumber: e.target.value }))}
-                data-testid="input-credit-note-number"
-              />
-              <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 cursor-pointer" />
-            </div>
+            <Input 
+              value={formData.creditNoteNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, creditNoteNumber: e.target.value }))}
+              data-testid="input-credit-note-number"
+            />
+          </div>
+
+          <div>
+            <Label>Reference Number</Label>
+            <Input 
+              value={formData.referenceNumber}
+              onChange={(e) => setFormData(prev => ({ ...prev, referenceNumber: e.target.value }))}
+              data-testid="input-reference-number"
+            />
           </div>
 
           <div>
@@ -499,7 +504,6 @@ export default function VendorCreditCreate() {
             <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b">
               <h3 className="font-medium">Item Table</h3>
               <Button variant="link" size="sm" className="text-blue-600">
-                <RefreshCw className="h-4 w-4 mr-1" />
                 Bulk Actions
               </Button>
             </div>
@@ -529,7 +533,7 @@ export default function VendorCreditCreate() {
                     items.map((item, index) => (
                       <tr key={item.id} className="border-b last:border-b-0">
                         <td className="px-4 py-3 text-center">
-                          <span className="text-slate-400">⋮⋮</span>
+                          <span className="text-slate-400">:</span>
                         </td>
                         <td className="px-4 py-3">
                           <Select 
@@ -537,7 +541,7 @@ export default function VendorCreditCreate() {
                             onValueChange={(v) => updateItem(item.id, 'itemId', v)}
                           >
                             <SelectTrigger data-testid={`select-item-${index}`}>
-                              <SelectValue placeholder="Type or click to select an item." />
+                              <SelectValue placeholder="Select an item" />
                             </SelectTrigger>
                             <SelectContent>
                               {productsLoading ? (
@@ -597,9 +601,10 @@ export default function VendorCreditCreate() {
                             onValueChange={(v) => updateItem(item.id, 'tax', v)}
                           >
                             <SelectTrigger data-testid={`select-tax-${index}`}>
-                              <SelectValue placeholder="Select a Tax" />
+                              <SelectValue placeholder="Select tax" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="none">No Tax</SelectItem>
                               {TAX_OPTIONS.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
                                   {option.label}
@@ -609,17 +614,16 @@ export default function VendorCreditCreate() {
                           </Select>
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
-                          {item.amount.toFixed(2)}
+                          {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-4 py-3">
                           <Button 
                             variant="ghost" 
                             size="icon"
                             onClick={() => removeItem(item.id)}
-                            className="text-red-500 h-8 w-8"
                             data-testid={`button-remove-item-${index}`}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
                         </td>
                       </tr>
@@ -628,86 +632,93 @@ export default function VendorCreditCreate() {
                 </tbody>
               </table>
             </div>
-          </div>
 
-          <div className="flex gap-4 mt-4">
-            <Button 
-              variant="link" 
-              className="text-blue-600 gap-1"
-              onClick={addItem}
-              data-testid="button-add-row"
-            >
-              <Plus className="h-4 w-4" />
-              Add New Row
-            </Button>
-            <Button variant="link" className="text-blue-600 gap-1">
-              <Plus className="h-4 w-4" />
-              Add Items in Bulk
-            </Button>
+            <div className="px-4 py-3 border-t">
+              <Button 
+                variant="link" 
+                className="text-blue-600 p-0"
+                onClick={addItem}
+                data-testid="button-add-item"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add New Row
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <div className="w-80 space-y-3 bg-slate-50 p-4 rounded-lg">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-600">Sub Total</span>
-              <span className="font-medium">{calculateSubTotal().toFixed(2)}</span>
-            </div>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <Label>Notes</Label>
+            <Textarea 
+              placeholder="Notes for internal use"
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              className="min-h-[100px]"
+              data-testid="input-notes"
+            />
+          </div>
 
+          <div className="space-y-3 bg-slate-50 p-4 rounded-lg">
+            <div className="flex justify-between text-sm">
+              <span>Sub Total</span>
+              <span className="font-medium">{calculateSubTotal().toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
+            
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600 flex-shrink-0">Discount</span>
-              <Input 
-                type="number"
-                step="0.01"
-                className="w-20 h-8"
-                value={formData.discountValue}
-                onChange={(e) => setFormData(prev => ({ ...prev, discountValue: e.target.value }))}
-                data-testid="input-discount"
-              />
+              <span className="text-sm">Discount</span>
               <Select 
-                value={formData.discountType} 
-                onValueChange={(v: "percentage" | "amount") => setFormData(prev => ({ ...prev, discountType: v }))}
+                value={formData.discountType}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, discountType: v as "percentage" | "amount" }))}
               >
-                <SelectTrigger className="w-16 h-8">
+                <SelectTrigger className="w-24">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="percentage">%</SelectItem>
-                  <SelectItem value="amount">₹</SelectItem>
+                  <SelectItem value="amount">Amount</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="ml-auto font-medium">{calculateDiscount().toFixed(2)}</span>
+              <Input 
+                type="number"
+                className="w-20 text-right"
+                value={formData.discountValue}
+                onChange={(e) => setFormData(prev => ({ ...prev, discountValue: e.target.value }))}
+                data-testid="input-discount"
+              />
+              <span className="text-sm font-medium">-{calculateDiscount().toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex gap-2">
-                <label className="flex items-center gap-1 text-sm">
-                  <input 
-                    type="radio" 
-                    name="taxType" 
-                    checked={formData.taxType === 'tds'}
-                    onChange={() => setFormData(prev => ({ ...prev, taxType: 'tds' }))}
-                  />
-                  TDS
-                </label>
-                <label className="flex items-center gap-1 text-sm">
-                  <input 
-                    type="radio" 
-                    name="taxType" 
-                    checked={formData.taxType === 'tcs'}
-                    onChange={() => setFormData(prev => ({ ...prev, taxType: 'tcs' }))}
-                  />
-                  TCS
-                </label>
+            {calculateTaxAmount() > 0 && (
+              <div className="flex justify-between text-sm">
+                <span>Tax</span>
+                <span className="font-medium">{calculateTaxAmount().toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm">TDS/TCS</span>
               <Select 
-                value={formData.tdsTcs} 
-                onValueChange={(v) => setFormData(prev => ({ ...prev, tdsTcs: v }))}
+                value={formData.taxType}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, taxType: v as "tds" | "tcs" }))}
               >
-                <SelectTrigger className="flex-1 h-8" data-testid="select-tds-tcs">
-                  <SelectValue placeholder="Select" />
+                <SelectTrigger className="w-20">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="tds">TDS</SelectItem>
+                  <SelectItem value="tcs">TCS</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select 
+                value={formData.tdsTcs}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, tdsTcs: v }))}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select TDS/TCS" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
                   {TDS_TCS_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -715,81 +726,24 @@ export default function VendorCreditCreate() {
                   ))}
                 </SelectContent>
               </Select>
-              <span className="font-medium text-sm">- {calculateTdsTcs().toFixed(2)}</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="text-xs h-8">
-                Adjustment
-              </Button>
+              <span className="text-sm">Adjustment</span>
               <Input 
                 type="number"
-                step="0.01"
-                className="w-24 h-8"
+                className="w-24 text-right"
                 value={formData.adjustment}
                 onChange={(e) => setFormData(prev => ({ ...prev, adjustment: e.target.value }))}
                 data-testid="input-adjustment"
               />
-              <span className="ml-auto font-medium">{(parseFloat(formData.adjustment) || 0).toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between font-semibold text-lg border-t pt-3">
-              <span>Total ( ₹ )</span>
-              <span>{calculateTotal().toFixed(2)}</span>
+            <div className="flex justify-between pt-3 border-t font-semibold">
+              <span>Total (INR)</span>
+              <span className="text-lg">{calculateTotal().toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <div>
-            <Label>Notes</Label>
-            <Textarea 
-              rows={3}
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              className="resize-none"
-              data-testid="input-notes"
-            />
-          </div>
-
-          <div>
-            <Label>Attach File(s) to Vendor Credits</Label>
-            <div className="flex items-center gap-2 mt-2">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Upload className="h-4 w-4" />
-                Upload File
-              </Button>
-            </div>
-            <p className="text-xs text-slate-500 mt-2">You can upload a maximum of 5 files, 10MB each</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-slate-200 bg-white px-6 py-4 sticky bottom-0">
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            onClick={() => handleSubmit('DRAFT')}
-            disabled={saving}
-            data-testid="button-save-draft"
-          >
-            {saving ? 'Saving...' : 'Save as Draft'}
-          </Button>
-          <Button 
-            className="bg-blue-600 hover:bg-blue-700"
-            onClick={() => handleSubmit('OPEN')}
-            disabled={saving}
-            data-testid="button-save-open"
-          >
-            {saving ? 'Saving...' : 'Save as Open'}
-          </Button>
-          <Button 
-            variant="ghost"
-            onClick={() => setLocation('/vendor-credits')}
-            data-testid="button-cancel"
-          >
-            Cancel
-          </Button>
         </div>
       </div>
     </div>

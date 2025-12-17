@@ -120,7 +120,49 @@
       "status": "OPEN",
       "createdAt": "2025-12-17T06:42:07.712Z",
       "updatedAt": "2025-12-17T06:42:07.712Z"
+    },
+    {
+      "id": "vc-1765956762795",
+      "creditNumber": "VC-00004",
+      "referenceNumber": "",
+      "vendorId": "1",
+      "vendorName": "RMD Sinhgad School of Computer Studies, Pune (Sinhgad Institutes)",
+      "orderNumber": "",
+      "date": "2025-12-17",
+      "subject": "Vendor Credit for Bill #32131",
+      "reverseCharge": false,
+      "taxType": "tds",
+      "tdsTcs": "",
+      "items": [
+        {
+          "id": "item-1765956748088-0",
+          "itemId": "2",
+          "itemName": "Cloud Server",
+          "description": "",
+          "account": "cost_of_goods_sold",
+          "quantity": 1,
+          "rate": "555.00",
+          "tax": "GST12",
+          "amount": 555,
+          "hsnSac": ""
+        }
+      ],
+      "subTotal": 555,
+      "discountType": "percentage",
+      "discountValue": "",
+      "discountAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "tdsTcsAmount": 0,
+      "adjustment": 0,
+      "amount": 555,
+      "balance": 555,
+      "notes": "Created from Bill #32131",
+      "status": "OPEN",
+      "createdAt": "2025-12-17T07:32:42.795Z",
+      "updatedAt": "2025-12-17T07:32:42.795Z"
     }
   ],
-  "nextCreditNumber": 4
+  "nextCreditNumber": 5
 }

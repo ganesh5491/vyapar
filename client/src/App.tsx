@@ -43,6 +43,7 @@ import PaymentsMade from "@/pages/payments-made";
 import PaymentsMadeCreate from "@/pages/payments-made-create";
 import VendorCredits from "@/pages/vendor-credits";
 import VendorCreditCreate from "@/pages/vendor-credit-create";
+import VendorCreditEdit from "@/pages/vendor-credit-edit";
 import TimeTracking from "@/pages/time-tracking";
 import Banking from "@/pages/banking";
 import FilingCompliance from "@/pages/filing-compliance";
@@ -114,6 +115,7 @@ function Router() {
         <Route path="/vendor-credits" component={VendorCredits} />
         <Route path="/vendor-credits/new" component={VendorCreditCreate} />
         <Route path="/vendor-credits/create" component={VendorCreditCreate} />
+        <Route path="/vendor-credits/:id/edit" component={VendorCreditEdit} />
         <Route path="/time-tracking" component={TimeTracking} />
         <Route path="/banking" component={Banking} />
         <Route path="/filing-compliance" component={FilingCompliance} />

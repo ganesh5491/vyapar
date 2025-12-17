@@ -108,10 +108,10 @@ function PurchaseOrderPDFView({ purchaseOrder }: { purchaseOrder: PurchaseOrder 
   };
 
   return (
-    <div className="bg-white border border-slate-200 shadow-sm">
-      <div className="flex">
-        <div className="w-2 bg-blue-600"></div>
-        <div className="flex-1 p-6">
+    <div className="bg-white border border-slate-200 shadow-sm w-full">
+      <div className="flex w-full">
+        <div className="w-2 bg-blue-600 shrink-0"></div>
+        <div className="flex-1 p-4 min-w-0">
           <div className="flex justify-between items-start mb-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -343,9 +343,11 @@ function PurchaseOrderDetailPanel({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-2">
         {showPdfView ? (
-          <PurchaseOrderPDFView purchaseOrder={purchaseOrder} />
+          <div className="w-full">
+            <PurchaseOrderPDFView purchaseOrder={purchaseOrder} />
+          </div>
         ) : (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -497,13 +499,16 @@ export default function PurchaseOrders() {
   const handleConvertToBill = async () => {
     if (!selectedPO) return;
     try {
+      // First update the PO status
       const response = await fetch(`/api/purchase-orders/${selectedPO.id}/convert-to-bill`, {
         method: 'POST'
       });
       if (response.ok) {
-        toast({ title: "Purchase order converted to bill successfully" });
-        fetchPurchaseOrders();
-        fetchPODetail(selectedPO.id);
+        toast({ title: "Converting purchase order to bill..." });
+        // Refresh PO list to update status before navigating
+        await fetchPurchaseOrders();
+        // Navigate to bill create with all PO data
+        setLocation(`/bills/new?purchaseOrderId=${selectedPO.id}`);
       }
     } catch (error) {
       toast({ title: "Failed to convert to bill", variant: "destructive" });
