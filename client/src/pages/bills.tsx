@@ -1024,7 +1024,7 @@ export default function Bills() {
 
   const handleCreateVendorCredits = () => {
     if (selectedBill) {
-      setLocation(`/vendor-credits/create?billId=${selectedBill.id}&vendorId=${selectedBill.vendorId}`);
+      setLocation(`/vendor-credits/new?billId=${selectedBill.id}&vendorId=${selectedBill.vendorId}`);
     }
   };
 

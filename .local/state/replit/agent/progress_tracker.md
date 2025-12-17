@@ -162,3 +162,16 @@
     - Added View Journal dialog showing accounting entries
     - Clone navigates to new bill form with pre-filled data
     - Create Vendor Credits navigates to vendor credits form with bill/vendor data
+[x] 62. Fixed "Create Vendor Credits" 404 error in Bills section (Dec 17, 2025):
+    - Fixed navigation URL from `/vendor-credits/create` to `/vendor-credits/new`
+    - Added `/vendor-credits/create` as additional route for flexibility
+    - Updated vendor-credit-create.tsx to handle billId and vendorId query parameters
+    - Pre-populates vendor credit form with bill data:
+      * Vendor name and ID from the bill
+      * All items from the bill (itemName, description, account, quantity, rate, tax, amount)
+      * Subject: "Vendor Credit for Bill #{billNumber}"
+      * Notes: "Created from Bill #{billNumber}"
+      * Reverse charge setting from bill
+    - Added blue info banner showing "Creating vendor credit from Bill #{billNumber}"
+    - Added loading state while fetching bill data
+    - Added "From Bill" badge indicator

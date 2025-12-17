@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, RefreshCw, Upload, Plus, Trash2, Search } from "lucide-react";
+import { ArrowLeft, RefreshCw, Upload, Plus, Trash2, Search, FileText, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,6 +76,11 @@ export default function VendorCreditCreate() {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
+  // Get query params from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const billId = urlParams.get('billId');
+  const vendorIdFromUrl = urlParams.get('vendorId');
+
   const [formData, setFormData] = useState({
     vendorId: "",
     vendorName: "",
@@ -90,9 +96,12 @@ export default function VendorCreditCreate() {
     adjustment: "",
     notes: "",
     attachments: [] as File[],
+    billId: billId || "",
+    billNumber: "",
   });
 
   const [items, setItems] = useState<LineItem[]>([]);
+  const [billDataLoaded, setBillDataLoaded] = useState(false);
 
   const { data: vendorsData, isLoading: vendorsLoading } = useQuery<{ success: boolean; data: Vendor[] }>({
     queryKey: ['/api/vendors'],
@@ -106,11 +115,66 @@ export default function VendorCreditCreate() {
     queryKey: ['/api/vendor-credits/next-number'],
   });
 
+  // Fetch bill data if billId is provided
+  const { data: billData, isLoading: billLoading } = useQuery<{ success: boolean; data: any }>({
+    queryKey: ['/api/bills', billId],
+    enabled: !!billId,
+  });
+
   useEffect(() => {
     if (nextNumberData?.data?.nextNumber) {
       setFormData(prev => ({ ...prev, creditNoteNumber: nextNumberData.data.nextNumber }));
     }
   }, [nextNumberData]);
+
+  // Pre-populate form with bill data when it loads
+  useEffect(() => {
+    if (billData?.data && !billDataLoaded) {
+      const bill = billData.data;
+      setFormData(prev => ({
+        ...prev,
+        vendorId: bill.vendorId || "",
+        vendorName: bill.vendorName || "",
+        subject: `Vendor Credit for Bill #${bill.billNumber}`,
+        reverseCharge: bill.reverseCharge || false,
+        notes: `Created from Bill #${bill.billNumber}`,
+        billId: bill.id,
+        billNumber: bill.billNumber,
+      }));
+
+      // Pre-populate items from bill
+      if (bill.items && bill.items.length > 0) {
+        const billItems: LineItem[] = bill.items.map((item: any, index: number) => ({
+          id: `item-${Date.now()}-${index}`,
+          itemId: item.id || "",
+          itemName: item.itemName || item.name || "",
+          description: item.description || "",
+          account: item.account || "cost_of_goods_sold",
+          quantity: item.quantity || 1,
+          rate: item.rate || 0,
+          tax: item.tax || "",
+          amount: (item.quantity || 1) * (item.rate || 0),
+        }));
+        setItems(billItems);
+      }
+
+      setBillDataLoaded(true);
+    }
+  }, [billData, billDataLoaded]);
+
+  // Also handle vendor from URL if provided without bill
+  useEffect(() => {
+    if (vendorIdFromUrl && !billId && vendorsData?.data) {
+      const vendor = vendorsData.data.find(v => v.id === vendorIdFromUrl);
+      if (vendor) {
+        setFormData(prev => ({
+          ...prev,
+          vendorId: vendor.id,
+          vendorName: vendor.displayName,
+        }));
+      }
+    }
+  }, [vendorIdFromUrl, billId, vendorsData]);
 
   const vendors = vendorsData?.data || [];
   const products = productsData?.data || [];
@@ -257,6 +321,31 @@ export default function VendorCreditCreate() {
       </div>
 
       <div className="max-w-5xl mx-auto p-6 space-y-6">
+        {/* Show bill reference banner when creating from bill */}
+        {billId && formData.billNumber && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+            <Info className="h-5 w-5 text-blue-600 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-blue-800">
+                Creating vendor credit from <span className="font-semibold">Bill #{formData.billNumber}</span>. 
+                The vendor and items have been pre-populated from the bill.
+              </p>
+            </div>
+            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+              <FileText className="h-3 w-3 mr-1" />
+              From Bill
+            </Badge>
+          </div>
+        )}
+
+        {/* Loading state when fetching bill data */}
+        {billLoading && (
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3">
+            <RefreshCw className="h-5 w-5 text-slate-500 animate-spin" />
+            <p className="text-sm text-slate-600">Loading bill data...</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           <div className="md:col-span-2">
             <Label className="text-red-500">Vendor Name*</Label>

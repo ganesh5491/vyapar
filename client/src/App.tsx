@@ -113,6 +113,7 @@ function Router() {
         <Route path="/payments-made/new" component={PaymentsMadeCreate} />
         <Route path="/vendor-credits" component={VendorCredits} />
         <Route path="/vendor-credits/new" component={VendorCreditCreate} />
+        <Route path="/vendor-credits/create" component={VendorCreditCreate} />
         <Route path="/time-tracking" component={TimeTracking} />
         <Route path="/banking" component={Banking} />
         <Route path="/filing-compliance" component={FilingCompliance} />
