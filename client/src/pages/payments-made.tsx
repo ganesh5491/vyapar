@@ -141,9 +141,9 @@ export default function PaymentsMade() {
   const vendors = vendorsData?.data || [];
 
   const filteredPayments = payments.filter(payment =>
-    payment.paymentNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    payment.vendorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    payment.reference?.toLowerCase().includes(searchQuery.toLowerCase())
+    String(payment.paymentNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    String(payment.vendorName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    String(payment.reference || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredPayments, 10);
