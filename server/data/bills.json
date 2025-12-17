@@ -1,6 +1,62 @@
 {
   "bills": [
     {
+      "id": "1765965596453",
+      "billNumber": "3",
+      "orderNumber": "PO-2025-0001",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "vendorAddress": {},
+      "billDate": "2025-12-17",
+      "dueDate": "2025-12-17",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0001",
+      "items": [
+        {
+          "id": "item-1765965580339-0",
+          "itemName": "EMPLOYEE ACTIVITY MONITORING APP",
+          "description": "",
+          "account": "Software",
+          "quantity": 1,
+          "rate": 106,
+          "tax": "none",
+          "taxAmount": 0,
+          "customerDetails": "",
+          "amount": 106
+        }
+      ],
+      "subTotal": 106,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 0,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 106,
+      "amountPaid": 0,
+      "balanceDue": 106,
+      "notes": "",
+      "attachments": [],
+      "status": "OPEN",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-17T09:59:56.453Z",
+      "updatedAt": "2025-12-17T09:59:56.453Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-17T09:59:56.453Z",
+          "action": "created",
+          "description": "Bill created for ₹106",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765956810761",
       "billNumber": "2",
       "orderNumber": "",
@@ -158,7 +214,7 @@
       "expectedPaymentDate": "2025-12-19"
     }
   ],
-  "nextBillNumber": 3,
+  "nextBillNumber": 4,
   "accounts": [
     {
       "id": "1",

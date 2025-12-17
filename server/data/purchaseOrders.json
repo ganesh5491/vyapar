@@ -5,7 +5,7 @@
       "purchaseOrderNumber": "PO-2025-0001",
       "referenceNumber": "6546132",
       "date": "2025-12-11",
-      "deliveryDate": "",
+      "deliveryDate": "2025-12-20",
       "vendorId": "1",
       "vendorName": "Nilraj Bhilare",
       "vendorAddress": {},
@@ -25,18 +25,18 @@
       "items": [
         {
           "id": "1",
-          "itemId": "2",
-          "itemName": "Cloud Server",
+          "itemId": "3",
+          "itemName": "EMPLOYEE ACTIVITY MONITORING APP",
           "description": "",
           "account": "Inventory Asset",
           "quantity": 1,
-          "rate": 0,
+          "rate": 106,
           "tax": "none",
           "taxAmount": 0,
-          "amount": 0
+          "amount": 106
         }
       ],
-      "subTotal": 0,
+      "subTotal": 106,
       "discountType": "percent",
       "discountValue": 0,
       "discountAmount": 0,
@@ -45,7 +45,7 @@
       "taxAmount": 0,
       "adjustment": 0,
       "adjustmentDescription": "",
-      "total": 0,
+      "total": 106,
       "notes": "",
       "termsAndConditions": "",
       "attachments": [],
@@ -54,7 +54,7 @@
       "billedStatus": "BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-11T04:58:05.994Z",
-      "updatedAt": "2025-12-17T09:13:44.555Z",
+      "updatedAt": "2025-12-17T09:59:42.052Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -81,6 +81,20 @@
         {
           "id": "4",
           "timestamp": "2025-12-17T09:13:44.555Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-17T09:59:31.776Z",
+          "action": "updated",
+          "description": "Purchase Order has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-17T09:59:42.052Z",
           "action": "converted_to_bill",
           "description": "Purchase Order converted to Bill",
           "user": "Admin User"
