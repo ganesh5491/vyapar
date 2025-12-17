@@ -50,9 +50,7 @@
     },
     {
       "id": "pm-1765964697396",
-      "paymentNumber": {
-        "nextNumber": "PM-00003"
-      },
+      "paymentNumber": "PM-00003",
       "vendorId": "2",
       "vendorName": "Amazon",
       "gstTreatment": "",
