@@ -238,3 +238,4 @@
     - When item is selected, rate field populates with correct value from Items section
     - Total calculations now work correctly with proper item rates
     - Applied fixes to both bill-create.tsx and bill-edit.tsx
+[x] 76. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
