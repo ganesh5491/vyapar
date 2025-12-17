@@ -55,7 +55,63 @@
       "createdAt": "2025-12-12T09:47:39.886Z",
       "updatedAt": "2025-12-12T09:47:39.886Z",
       "generatedAt": "2025-12-12T09:47:40.151Z"
+    },
+    {
+      "id": "ewb-1765966143929",
+      "ewayBillNumber": "EWB-000002",
+      "documentType": "credit_notes",
+      "transactionSubType": "supply",
+      "customerId": "4",
+      "customerName": "AABHA CONTRACEPTIVES PRIVATE LIMITED",
+      "customerGstin": "",
+      "documentNumber": "CN-00001",
+      "documentId": "1",
+      "date": "2025-12-17",
+      "expiryDate": "2026-01-01",
+      "transactionType": "regular",
+      "dispatchFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billTo": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "shipTo": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "placeOfDelivery": "[KA] - Karnataka",
+      "transporter": "transporter1",
+      "distance": 500,
+      "modeOfTransportation": "road",
+      "vehicleType": "regular",
+      "vehicleNo": "MH24 4323",
+      "transporterDocNo": "213123221",
+      "transporterDocDate": "2025-12-19",
+      "items": [],
+      "total": 0,
+      "status": "GENERATED",
+      "createdAt": "2025-12-17T10:09:03.929Z",
+      "updatedAt": "2025-12-17T10:10:16.488Z",
+      "generatedAt": "2025-12-17T10:10:16.724Z"
     }
   ],
-  "nextEWayBillNumber": 2
+  "nextEWayBillNumber": 3
 }

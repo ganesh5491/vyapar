@@ -208,3 +208,7 @@
     - Added min-widths to key columns: Item (200px), Account (140px), Tax (120px)
     - Applied fixes to both purchase-order-create.tsx and purchase-order-edit.tsx
 [x] 69. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
+[x] 70. Updated e-Way Bills filters to default to "All" (Dec 17, 2025):
+    - Changed e-Way Bill Status filter default from "NOT_GENERATED" to "all"
+    - Changed Transaction Type filter default from "invoices" to "all"
+    - Both filters now show all records by default when page loads

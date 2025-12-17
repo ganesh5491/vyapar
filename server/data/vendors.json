@@ -205,7 +205,81 @@
       "unusedCredits": 0,
       "createdAt": "2025-12-11T07:40:45.923Z",
       "updatedAt": "2025-12-16T10:55:35.358Z"
+    },
+    {
+      "id": "4",
+      "salutation": "Mr.",
+      "firstName": "Sham",
+      "lastName": "Prasad",
+      "companyName": "sham",
+      "displayName": "Sham",
+      "email": "sham@gmail.com",
+      "workPhone": "09899123412",
+      "mobile": "",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[HP] - Himachal Pradesh",
+      "pan": "AAGCA4900Q",
+      "msmeRegistered": true,
+      "currency": "INR",
+      "openingBalance": 100,
+      "paymentTerms": "Net 15",
+      "tds": "tds-194c",
+      "billingAddress": {
+        "attention": "wfwf",
+        "countryRegion": "India",
+        "street1": "flat No. 605, B wing ,Ganesh Galaxy, Dattangar",
+        "street2": "Aambegaoun, pune.",
+        "city": "Varodi Daymukh",
+        "state": "[TR] - Tripura",
+        "pinCode": "411046",
+        "phone": "98991234",
+        "faxNumber": "24334"
+      },
+      "shippingAddress": {
+        "attention": "wfwf",
+        "countryRegion": "India",
+        "street1": "flat No. 605, B wing ,Ganesh Galaxy, Dattangar",
+        "street2": "Aambegaoun, pune.",
+        "city": "Varodi Daymukh",
+        "state": "[TR] - Tripura",
+        "pinCode": "411046",
+        "phone": "98991234",
+        "faxNumber": "24334"
+      },
+      "bankDetails": {
+        "accountHolderName": "",
+        "bankName": "",
+        "accountNumber": "",
+        "ifscCode": "",
+        "swiftCode": "",
+        "branchName": ""
+      },
+      "remarks": "",
+      "contactPersons": [
+        {
+          "id": "1765966500549",
+          "salutation": "Mr.",
+          "firstName": "ragv",
+          "lastName": "raj",
+          "email": "ragv@gmail.com",
+          "workPhone": "31234414",
+          "mobile": "331231233"
+        }
+      ],
+      "status": "active",
+      "payables": 0,
+      "unusedCredits": 0,
+      "createdAt": "2025-12-17T10:15:47.869Z",
+      "updatedAt": "2025-12-17T10:16:11.914Z",
+      "comments": [
+        {
+          "id": "1765966584961",
+          "text": "dwefeec",
+          "author": "Admin User",
+          "createdAt": "2025-12-17T10:16:24.961Z"
+        }
+      ]
     }
   ],
-  "nextVendorId": 4
+  "nextVendorId": 5
 }

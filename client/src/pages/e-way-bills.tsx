@@ -405,8 +405,8 @@ export default function EWayBills() {
     const [viewMode, setViewMode] = useState(false);
 
     const [periodFilter, setPeriodFilter] = useState('this_month');
-    const [transactionTypeFilter, setTransactionTypeFilter] = useState('invoices');
-    const [statusFilter, setStatusFilter] = useState('NOT_GENERATED');
+    const [transactionTypeFilter, setTransactionTypeFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
