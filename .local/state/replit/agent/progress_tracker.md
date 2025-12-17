@@ -212,3 +212,15 @@
     - Changed e-Way Bill Status filter default from "NOT_GENERATED" to "all"
     - Changed Transaction Type filter default from "invoices" to "all"
     - Both filters now show all records by default when page loads
+[x] 71. Fixed Invoice More dropdown actions with proper navigation and data fetching (Dec 17, 2025):
+    - Create Credit Note: Updated credit-note-create.tsx to handle fromInvoice parameter
+      * Fetches invoice data and pre-populates customer, address, items
+      * Shows "From Invoice #" badge when creating from invoice
+      * Sets subject to "Credit Note for Invoice #..."
+    - Add e-Way Bill Details: Updated e-way-bills.tsx to handle fromInvoice parameter
+      * Opens create form and pre-populates with invoice data
+      * Sets document type to "Invoices" and transaction sub type to "Supply"
+      * Pre-fills customer info, billing address, shipping address
+      * Shows "From Invoice #" badge indicator
+    - Clone: Already working - navigates to /invoices/new?cloneFrom=id
+    - All dropdown actions now properly navigate and fetch related data

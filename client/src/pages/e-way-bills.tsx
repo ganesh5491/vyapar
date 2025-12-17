@@ -461,11 +461,76 @@ export default function EWayBills() {
         },
     });
 
+    const [fromInvoiceId, setFromInvoiceId] = useState<string | null>(null);
+    const [fromInvoiceNumber, setFromInvoiceNumber] = useState<string | null>(null);
+
     useEffect(() => {
         fetchEWayBills();
         fetchCustomers();
         fetchCreditNotes();
+        
+        // Check for fromInvoice parameter
+        const params = new URLSearchParams(window.location.search);
+        const invoiceId = params.get('fromInvoice');
+        if (invoiceId) {
+            setFromInvoiceId(invoiceId);
+            fetchInvoiceForEWayBill(invoiceId);
+        }
     }, [periodFilter, transactionTypeFilter, statusFilter]);
+
+    const fetchInvoiceForEWayBill = async (invoiceId: string) => {
+        try {
+            const response = await fetch(`/api/invoices/${invoiceId}`);
+            if (response.ok) {
+                const data = await response.json();
+                const invoice = data.data;
+                
+                setFromInvoiceNumber(invoice.invoiceNumber);
+                setShowCreateForm(true);
+                
+                // Pre-populate form with invoice data
+                setFormData({
+                    ...formData,
+                    documentType: 'invoices',
+                    transactionSubType: 'supply',
+                    customerId: invoice.customerId || '',
+                    customerName: invoice.customerName || '',
+                    documentNumber: invoice.invoiceNumber || '',
+                    documentId: invoice.id || '',
+                    date: new Date().toISOString().split('T')[0],
+                    transactionType: 'regular',
+                });
+                
+                // Update address data from invoice
+                if (invoice.billingAddress) {
+                    setAddressData(prev => ({
+                        ...prev,
+                        billTo: {
+                            street: invoice.billingAddress.street || '',
+                            city: invoice.billingAddress.city || '',
+                            state: invoice.billingAddress.state || '',
+                            country: invoice.billingAddress.country || 'India',
+                            pincode: invoice.billingAddress.pincode || '',
+                        }
+                    }));
+                }
+                if (invoice.shippingAddress) {
+                    setAddressData(prev => ({
+                        ...prev,
+                        shipTo: {
+                            street: invoice.shippingAddress.street || '',
+                            city: invoice.shippingAddress.city || '',
+                            state: invoice.shippingAddress.state || '',
+                            country: invoice.shippingAddress.country || 'India',
+                            pincode: invoice.shippingAddress.pincode || '',
+                        }
+                    }));
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch invoice for e-Way Bill:', error);
+        }
+    };
 
     const fetchEWayBills = async () => {
         try {
@@ -932,6 +997,11 @@ export default function EWayBills() {
                             <h2 className="text-lg font-semibold" data-testid="text-form-title">
                                 {selectedBill ? 'Edit E-Way Bill' : 'New e-Way Bill'}
                             </h2>
+                            {fromInvoiceNumber && (
+                                <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                                    From Invoice #{fromInvoiceNumber}
+                                </Badge>
+                            )}
                         </div>
                         <Button variant="ghost" size="icon" onClick={handleCloseDetail} data-testid="button-close-form">
                             <X className="w-4 h-4" />

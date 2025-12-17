@@ -162,10 +162,63 @@ export default function CreditNoteCreate() {
   const [salespersonDialogOpen, setSalespersonDialogOpen] = useState(false);
   const [newSalespersonName, setNewSalespersonName] = useState("");
   const [newSalespersonEmail, setNewSalespersonEmail] = useState("");
+  const [fromInvoiceId, setFromInvoiceId] = useState<string | null>(null);
+  const [fromInvoiceNumber, setFromInvoiceNumber] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // Check for fromInvoice parameter
+    const params = new URLSearchParams(location.split('?')[1]);
+    const invoiceId = params.get('fromInvoice');
+    if (invoiceId) {
+      setFromInvoiceId(invoiceId);
+      fetchInvoiceData(invoiceId);
+    }
+  }, [location]);
+  
+  const fetchInvoiceData = async (invoiceId: string) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoiceId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const invoice = data.data;
+        
+        // Pre-populate form with invoice data
+        setFromInvoiceNumber(invoice.invoiceNumber);
+        setCustomerId(invoice.customerId);
+        setCustomerName(invoice.customerName);
+        if (invoice.billingAddress) {
+          setBillingAddress(invoice.billingAddress);
+        }
+        if (invoice.placeOfSupply) setPlaceOfSupply(invoice.placeOfSupply);
+        setSubject(`Credit Note for Invoice #${invoice.invoiceNumber}`);
+        setReason("sales_return");
+        if (invoice.salesperson) setSalesperson(invoice.salesperson);
+        
+        // Pre-populate items from invoice
+        if (invoice.items && invoice.items.length > 0) {
+          const invoiceItems: LineItem[] = invoice.items.map((item: any, index: number) => ({
+            id: String(index + 1),
+            itemId: item.itemId || "",
+            name: item.name || "",
+            description: item.description || "",
+            account: item.account || "Sales",
+            quantity: item.quantity || 1,
+            rate: item.rate || 0,
+            discount: item.discount || 0,
+            discountType: item.discountType || "percentage",
+            tax: item.tax || 0,
+            taxName: item.taxName || "GST18",
+            amount: (item.quantity || 1) * (item.rate || 0) - (item.discount || 0)
+          }));
+          setLineItems(invoiceItems);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch invoice data:', error);
+      toast({ title: "Error", description: "Failed to load invoice data", variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     calculateTotals();
@@ -343,6 +396,11 @@ export default function CreditNoteCreate() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold" data-testid="text-page-title">New Credit Note</h1>
+        {fromInvoiceNumber && (
+          <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+            From Invoice #{fromInvoiceNumber}
+          </Badge>
+        )}
       </div>
 
       <div className="space-y-6">
