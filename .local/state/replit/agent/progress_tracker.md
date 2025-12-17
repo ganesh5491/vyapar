@@ -190,3 +190,20 @@
     - Shows "No items available" if no products exist in the database
     - When selecting an item, the rate is automatically populated from the product's cost price
 [x] 65. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
+[x] 66. Fixed Expenses Edit functionality (Dec 17, 2025):
+    - Added isEditMode and editingExpenseId state variables
+    - Added updateExpenseMutation calling PUT /api/expenses/:id
+    - handleEditExpense now opens dialog in edit mode with pre-populated data
+    - Dialog title shows "Edit Expense" when editing
+    - Save button shows "Save Changes (Alt+S)" when editing
+    - Hidden "Save and New" button when in edit mode
+    - Proper reset when dialog closes
+[x] 67. Fixed Purchase Orders layout - removed right-side blank space (Dec 17, 2025):
+    - List panel: fixed width 350px when detail open, flex-1 w-full when closed
+    - Detail panel: flex-1 min-w-0 for fluid layout
+    - Removed fixed w-[600px] that caused layout issues
+[x] 68. Fixed Purchase Order Item Tables with horizontal scroll (Dec 17, 2025):
+    - Added overflow-x-auto to table container for horizontal scrolling
+    - Added min-w-[800px] to ensure consistent table layout
+    - Added min-widths to key columns: Item (200px), Account (140px), Tax (120px)
+    - Applied fixes to both purchase-order-create.tsx and purchase-order-edit.tsx
