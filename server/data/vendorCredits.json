@@ -78,7 +78,49 @@
       "status": "DRAFT",
       "createdAt": "2025-12-17T04:36:16.285Z",
       "updatedAt": "2025-12-17T04:36:16.285Z"
+    },
+    {
+      "id": "vc-1765953727712",
+      "creditNumber": "VC-00003",
+      "referenceNumber": "",
+      "vendorId": "1",
+      "vendorName": "RMD Sinhgad School of Computer Studies, Pune (Sinhgad Institutes)",
+      "orderNumber": "",
+      "date": "2025-12-17",
+      "subject": "Vendor Credit for Bill #32131",
+      "reverseCharge": false,
+      "taxType": "tds",
+      "tdsTcs": "",
+      "items": [
+        {
+          "id": "item-1765953713111-0",
+          "itemId": "1",
+          "itemName": "Antivirus1",
+          "description": "",
+          "account": "Rent",
+          "quantity": 1,
+          "rate": "410",
+          "tax": "GST12",
+          "amount": 410,
+          "hsnSac": ""
+        }
+      ],
+      "subTotal": 410,
+      "discountType": "percentage",
+      "discountValue": "",
+      "discountAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "tdsTcsAmount": 0,
+      "adjustment": 0,
+      "amount": 410,
+      "balance": 410,
+      "notes": "Created from Bill #32131",
+      "status": "OPEN",
+      "createdAt": "2025-12-17T06:42:07.712Z",
+      "updatedAt": "2025-12-17T06:42:07.712Z"
     }
   ],
-  "nextCreditNumber": 3
+  "nextCreditNumber": 4
 }
