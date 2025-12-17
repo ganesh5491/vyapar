@@ -37,6 +37,28 @@ I want iterative development. Ask before making major changes. I prefer detailed
 
 ## Recent Changes (December 2025)
 
+### Vendor Credit and Purchase Order Improvements
+- **Vendor Credit Edit Page**: Added `/vendor-credits/:id/edit` route with full edit functionality
+  - Fetches existing vendor credit data and pre-populates form
+  - PUT request to `/api/vendor-credits/:id` for saving changes
+  - Proper tax amount recalculation when quantity/rate changes
+
+- **Vendor Credit Tax Calculation**:
+  - Added `taxAmount` field to LineItem interface
+  - `calculateItemTaxAmount` uses stored taxAmount first, falls back to calculation
+  - `updateItem` recalculates taxAmount when quantity, rate, or tax code changes
+  - Tax amounts properly included in total calculations and payloads
+
+- **Bill Creation from Purchase Orders**:
+  - Navigate to `/bills/new?purchaseOrderId=X` to create bill from PO
+  - Pre-populates vendor, items, and totals from purchase order data
+  - Refreshes PO list after conversion to reflect updated status
+
+- **Vendor Credit Creation from Bills**:
+  - Navigate to `/vendor-credits/new?billId=X` to create credit from bill
+  - Pre-populates vendor, items with taxAmount calculations
+  - Shows info banner indicating creation from bill
+
 ### Sales Entry Point Flow Implementation
 - **Transaction Bootstrap Hooks**: Centralized customer auto-population for all transaction create pages
   - `useTransactionBootstrap`: Main hook for transaction pages - reads customerId from URL, manages customer snapshot
