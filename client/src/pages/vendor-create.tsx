@@ -84,6 +84,12 @@ const CURRENCIES = [
   { value: "GBP", label: "GBP - British Pound" },
 ];
 
+const MSME_REGISTRATION_TYPES = [
+  { value: "micro", label: "Micro" },
+  { value: "small", label: "Small" },
+  { value: "medium", label: "Medium" },
+];
+
 interface ContactPerson {
   id: string;
   salutation: string;
@@ -113,6 +119,8 @@ export default function VendorCreate() {
     sourceOfSupply: "",
     pan: "",
     msmeRegistered: false,
+    msmeRegistrationType: "",
+    msmeRegistrationNumber: "",
     currency: "INR",
     openingBalance: "",
     paymentTerms: "Due on Receipt",
@@ -213,6 +221,21 @@ export default function VendorCreate() {
     if (!formData.sourceOfSupply) {
       toast({ title: "Source of Supply is required", variant: "destructive" });
       return;
+    }
+
+    if (formData.msmeRegistered) {
+      if (!formData.msmeRegistrationType) {
+        toast({ title: "MSME/Udyam Registration Type is required", variant: "destructive" });
+        return;
+      }
+      if (!formData.msmeRegistrationNumber) {
+        toast({ title: "MSME/Udyam Registration Number is required", variant: "destructive" });
+        return;
+      }
+      if (!/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/.test(formData.msmeRegistrationNumber)) {
+        toast({ title: "Invalid MSME/Udyam Registration Number format", variant: "destructive" });
+        return;
+      }
     }
 
     setSaving(true);
@@ -442,11 +465,58 @@ export default function VendorCreate() {
                 <div className="flex items-center gap-2">
                   <Checkbox 
                     checked={formData.msmeRegistered}
-                    onCheckedChange={(v) => handleInputChange('msmeRegistered', v)}
+                    onCheckedChange={(v) => {
+                      handleInputChange('msmeRegistered', v);
+                      if (!v) {
+                        handleInputChange('msmeRegistrationType', '');
+                        handleInputChange('msmeRegistrationNumber', '');
+                      }
+                    }}
                     data-testid="checkbox-msme"
                   />
                   <span className="text-sm text-slate-600">This vendor is MSME registered</span>
                 </div>
+
+                {formData.msmeRegistered && (
+                  <>
+                    <Label className="text-sm font-medium text-red-600 pt-2 flex items-center gap-1">
+                      MSME/Udyam Registration Type*
+                    </Label>
+                    <Select 
+                      value={formData.msmeRegistrationType} 
+                      onValueChange={(v) => handleInputChange('msmeRegistrationType', v)}
+                    >
+                      <SelectTrigger data-testid="select-msme-type">
+                        <SelectValue placeholder="Select the Registration Type..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MSME_REGISTRATION_TYPES.map(t => (
+                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Label className="text-sm font-medium text-red-600 pt-2 flex items-center gap-1">
+                      MSME/Udyam Registration Number
+                      <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+                      *
+                    </Label>
+                    <div>
+                      <Input 
+                        value={formData.msmeRegistrationNumber}
+                        onChange={(e) => handleInputChange('msmeRegistrationNumber', e.target.value.toUpperCase())}
+                        placeholder="Enter the Registration Number"
+                        data-testid="input-msme-number"
+                      />
+                      {formData.msmeRegistrationNumber && !/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/.test(formData.msmeRegistrationNumber) && (
+                        <p className="text-sm text-red-500 mt-1 flex items-start gap-1">
+                          <span className="text-red-500">⚠</span>
+                          Enter a valid MSME/Udyam Registration Number. Ensure that the number is in the format UDYAM-XX-00-0000000.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
 
                 <Label className="text-sm font-medium text-slate-700 pt-2">Currency</Label>
                 <Select value={formData.currency} onValueChange={(v) => handleInputChange('currency', v)}>

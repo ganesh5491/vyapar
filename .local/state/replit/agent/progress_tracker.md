@@ -239,3 +239,11 @@
     - Total calculations now work correctly with proper item rates
     - Applied fixes to both bill-create.tsx and bill-edit.tsx
 [x] 76. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
+[x] 77. Added MSME registration fields to New Vendor form (Dec 17, 2025):
+    - When "This vendor is MSME registered" checkbox is checked, shows additional fields:
+      * MSME/Udyam Registration Type dropdown with options: Micro, Small, Medium
+      * MSME/Udyam Registration Number input field
+    - Added format validation for registration number (UDYAM-XX-00-0000000)
+    - Shows warning message if registration number format is invalid
+    - Fields are cleared when checkbox is unchecked
+    - Both fields are required when MSME is checked (validation on save)
