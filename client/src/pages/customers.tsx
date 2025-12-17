@@ -302,13 +302,15 @@ function CustomerDetailPanel({ customer, onClose, onEdit, onClone, onToggleStatu
 
   const handleNewTransaction = (type: string) => {
     const availableRoutes: Record<string, string> = {
-      invoice: `/invoices/new?customerId=${customer.id}`,
+      invoice: `/invoices/create?customerId=${customer.id}`,
       quote: `/quotes/create?customerId=${customer.id}`,
       "sales-order": `/sales-orders/create?customerId=${customer.id}`,
-      "delivery-challan": `/delivery-challans/new?customerId=${customer.id}`,
+      "delivery-challan": `/delivery-challans/create?customerId=${customer.id}`,
+      payment: `/payments-received/create?customerId=${customer.id}`,
+      "credit-note": `/credit-notes/create?customerId=${customer.id}`,
       expense: `/expenses?customerId=${customer.id}`,
     };
-    const unavailableTypes = ["payment", "recurring-invoice", "journal", "credit-note", "project"];
+    const unavailableTypes = ["recurring-invoice", "journal", "project"];
     
     if (unavailableTypes.includes(type)) {
       toast({ 
@@ -317,7 +319,7 @@ function CustomerDetailPanel({ customer, onClose, onEdit, onClone, onToggleStatu
       });
       return;
     }
-    setLocation(availableRoutes[type] || `/invoices/new?customerId=${customer.id}`);
+    setLocation(availableRoutes[type] || `/invoices/create?customerId=${customer.id}`);
   };
 
   const transactionSections = [

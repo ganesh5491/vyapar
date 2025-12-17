@@ -55,6 +55,7 @@ import CreditNotes from "@/pages/credit-notes";
 import CreditNoteCreate from "@/pages/credit-note-create";
 import CreditNoteEdit from "@/pages/credit-note-edit";
 import PaymentsReceived from "@/pages/payments-received";
+import PaymentsReceivedCreate from "@/pages/payments-received-create";
 import EWayBills from "@/pages/e-way-bills";
 
 function Router() {
@@ -64,6 +65,7 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/invoices" component={Invoices} />
         <Route path="/invoices/new" component={InvoiceCreate} />
+        <Route path="/invoices/create" component={InvoiceCreate} />
         <Route path="/invoices/import" component={InvoiceImport} />
         <Route path="/invoices/:id/edit" component={InvoiceEdit} />
         <Route path="/estimates" component={QuotesPage} />
@@ -76,11 +78,13 @@ function Router() {
         <Route path="/sales-orders/:id/edit" component={SalesOrderEditPage} />
         <Route path="/delivery-challans" component={DeliveryChallans} />
         <Route path="/delivery-challans/new" component={DeliveryChallanCreate} />
+        <Route path="/delivery-challans/create" component={DeliveryChallanCreate} />
         <Route path="/delivery-challans/:id/edit" component={DeliveryChallanEdit} />
         <Route path="/credit-notes" component={CreditNotes} />
         <Route path="/credit-notes/create" component={CreditNoteCreate} />
         <Route path="/credit-notes/:id/edit" component={CreditNoteEdit} />
         <Route path="/payments-received" component={PaymentsReceived} />
+        <Route path="/payments-received/create" component={PaymentsReceivedCreate} />
         <Route path="/eway-bills" component={EWayBills} />
         <Route path="/e-way-bills" component={EWayBills} />
         <Route path="/customers" component={Customers} />
