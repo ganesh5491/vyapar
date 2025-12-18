@@ -16,7 +16,8 @@ import {
   Inbox,
   FileText,
   Tag,
-  Car
+  Car,
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -42,6 +45,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -119,28 +135,97 @@ const INDIAN_STATES = [
 ];
 
 const EXPENSE_ACCOUNTS = [
+  "Cost Of Goods Sold",
+  "Cost of Goods Sold",
+  "Job Costing",
+  "Labor",
+  "Materials",
+  "Subcontractor",
+  "Expense",
   "Advertising And Marketing",
   "Automobile Expense",
   "Bad Debt",
   "Bank Fees and Charges",
   "Consultant Expense",
+  "Contract Assets",
   "Credit Card Charges",
+  "Depreciation And Amortisation",
   "Depreciation Expense",
   "IT and Internet Expenses",
   "Janitorial Expense",
   "Lodging",
   "Meals and Entertainment",
+  "Merchandise",
   "Office Supplies",
   "Other Expenses",
   "Postage",
   "Printing and Stationery",
+  "Purchase Discounts",
+  "Raw Materials And Consumables",
   "Rent Expense",
   "Repairs and Maintenance",
   "Salaries and Employee Wages",
   "Telephone Expense",
   "Transportation Expense",
   "Travel Expense",
-  "Fuel/Mileage Expense"
+  "Non Current Liability",
+  "Construction Loans",
+  "Mortgages",
+  "Other Current Liability",
+  "Employee Reimbursements",
+  "GST Payable",
+  "Output CGST",
+  "Output IGST",
+  "Output SGST",
+  "Tax Payable",
+  "TDS Payable",
+  "Fixed Asset",
+  "Furniture and Equipment",
+  "Other Current Asset",
+  "Advance Tax",
+  "Employee Advance",
+  "Input Tax Credits",
+  "Input CGST",
+  "Input IGST",
+  "Input SGST",
+  "Prepaid Expenses",
+  "TDS Receivable"
+];
+
+const PAID_THROUGH_ACCOUNTS = [
+  "Cash",
+  "Petty Cash",
+  "Undeposited Funds",
+  "Other Current Asset",
+  "Advance Tax",
+  "Employee Advance",
+  "Input Tax Credits",
+  "Input CGST",
+  "Input IGST",
+  "Input SGST",
+  "Prepaid Expenses",
+  "Reverse Charge Tax Input but not due",
+  "TDS Receivable",
+  "Fixed Asset",
+  "Furniture and Equipment",
+  "Other Current Liability",
+  "Employee Reimbursements",
+  "GST Payable",
+  "Output CGST",
+  "Output IGST",
+  "Output SGST",
+  "TDS Payable",
+  "Non Current Liability",
+  "Construction Loans",
+  "Mortgages",
+  "Equity",
+  "Capital Stock",
+  "Distributions",
+  "Dividends Paid",
+  "Drawings",
+  "Investments",
+  "Opening Balance Offset",
+  "Owner's Equity"
 ];
 
 const TAX_OPTIONS = [
@@ -166,13 +251,6 @@ const GST_TREATMENTS = [
   "Deemed Export"
 ];
 
-const PAID_THROUGH_ACCOUNTS = [
-  "Petty Cash",
-  "Undeposited Funds",
-  "Cash on Hand",
-  "Bank Account"
-];
-
 export default function Expenses() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -186,6 +264,12 @@ export default function Expenses() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [expenseAccountOpen, setExpenseAccountOpen] = useState(false);
+  const [paidThroughOpen, setPaidThroughOpen] = useState(false);
+  const [showCreateExpenseAccountDialog, setShowCreateExpenseAccountDialog] = useState(false);
+  const [showCreatePaidThroughDialog, setShowCreatePaidThroughDialog] = useState(false);
+  const [newExpenseAccountName, setNewExpenseAccountName] = useState("");
+  const [newPaidThroughName, setNewPaidThroughName] = useState("");
 
   const [expenseForm, setExpenseForm] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
@@ -334,6 +418,39 @@ export default function Expenses() {
       toast({ title: "Mileage rate added" });
     },
   });
+
+  const handleCreateExpenseAccount = () => {
+    if (!newExpenseAccountName.trim()) {
+      toast({ title: "Account name is required", variant: "destructive" });
+      return;
+    }
+    setExpenseForm(prev => ({ ...prev, expenseAccount: newExpenseAccountName }));
+    setShowCreateExpenseAccountDialog(false);
+    setNewExpenseAccountName("");
+    toast({ title: "Expense account created and selected" });
+  };
+
+  const handleCreatePaidThrough = () => {
+    if (!newPaidThroughName.trim()) {
+      toast({ title: "Account name is required", variant: "destructive" });
+      return;
+    }
+    setExpenseForm(prev => ({ ...prev, paidThrough: newPaidThroughName }));
+    setShowCreatePaidThroughDialog(false);
+    setNewPaidThroughName("");
+    toast({ title: "Paid Through account created and selected" });
+  };
+
+  const handleCreateMileagePaidThrough = () => {
+    if (!newPaidThroughName.trim()) {
+      toast({ title: "Account name is required", variant: "destructive" });
+      return;
+    }
+    setMileageForm(prev => ({ ...prev, paidThrough: newPaidThroughName }));
+    setShowCreatePaidThroughDialog(false);
+    setNewPaidThroughName("");
+    toast({ title: "Paid Through account created and selected" });
+  };
 
   const resetExpenseForm = () => {
     setExpenseForm({
@@ -819,7 +936,10 @@ export default function Expenses() {
               <div className="lg:col-span-2 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-red-500">Date*</Label>
+                    <Label className="text-slate-700">
+                      Date
+                      <span className="text-red-600">*</span>
+                    </Label>
                     <Input
                       type="date"
                       value={expenseForm.date}
@@ -828,27 +948,76 @@ export default function Expenses() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-red-500">Expense Account*</Label>
-                    <Select
-                      value={expenseForm.expenseAccount}
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, expenseAccount: value }))}
-                    >
-                      <SelectTrigger data-testid="select-expense-account">
-                        <SelectValue placeholder="Select an account" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EXPENSE_ACCOUNTS.map(account => (
-                          <SelectItem key={account} value={account}>{account}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-slate-700">
+                      Expense Account
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Popover open={expenseAccountOpen} onOpenChange={setExpenseAccountOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={expenseAccountOpen}
+                          className="w-full justify-between font-normal"
+                          data-testid="select-expense-account"
+                        >
+                          {expenseForm.expenseAccount || "Search and select account..."}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search accounts..." />
+                          <CommandList>
+                            <CommandEmpty>No account found.</CommandEmpty>
+                            <CommandGroup>
+                              {EXPENSE_ACCOUNTS.map((account) => (
+                                <CommandItem
+                                  key={account}
+                                  value={account}
+                                  onSelect={() => {
+                                    setExpenseForm(prev => ({ ...prev, expenseAccount: account }));
+                                    setExpenseAccountOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      expenseForm.expenseAccount === account ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {account}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                            <div className="border-t px-2 py-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start gap-2"
+                                onClick={() => {
+                                  setShowCreateExpenseAccountDialog(true);
+                                  setExpenseAccountOpen(false);
+                                }}
+                                type="button"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Create New Account
+                              </Button>
+                            </div>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <button className="text-indigo-600 text-sm" data-testid="button-itemize">Itemize</button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-red-500">Amount*</Label>
+                    <Label className="text-slate-700">
+                      Amount
+                      <span className="text-red-600">*</span>
+                    </Label>
                     <div className="flex gap-2">
                       <Select
                         value={expenseForm.currency}
@@ -873,25 +1042,74 @@ export default function Expenses() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-red-500">Paid Through*</Label>
-                    <Select
-                      value={expenseForm.paidThrough}
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, paidThrough: value }))}
-                    >
-                      <SelectTrigger data-testid="select-paid-through">
-                        <SelectValue placeholder="Select an account" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PAID_THROUGH_ACCOUNTS.map(account => (
-                          <SelectItem key={account} value={account}>{account}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-slate-700">
+                      Paid Through
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Popover open={paidThroughOpen} onOpenChange={setPaidThroughOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={paidThroughOpen}
+                          className="w-full justify-between font-normal"
+                          data-testid="select-paid-through"
+                        >
+                          {expenseForm.paidThrough || "Search and select account..."}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search accounts..." />
+                          <CommandList>
+                            <CommandEmpty>No account found.</CommandEmpty>
+                            <CommandGroup>
+                              {PAID_THROUGH_ACCOUNTS.map((account) => (
+                                <CommandItem
+                                  key={account}
+                                  value={account}
+                                  onSelect={() => {
+                                    setExpenseForm(prev => ({ ...prev, paidThrough: account }));
+                                    setPaidThroughOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      expenseForm.paidThrough === account ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {account}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                            <div className="border-t px-2 py-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start gap-2"
+                                onClick={() => {
+                                  setShowCreatePaidThroughDialog(true);
+                                  setPaidThroughOpen(false);
+                                }}
+                                type="button"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Create New Account
+                              </Button>
+                            </div>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-red-500">Expense Type*</Label>
+                  <Label className="text-slate-700">
+                    Expense Type
+                    <span className="text-red-600">*</span>
+                  </Label>
                   <RadioGroup
                     value={expenseForm.expenseType}
                     onValueChange={(value) => setExpenseForm(prev => ({ ...prev, expenseType: value }))}
@@ -1226,7 +1444,10 @@ export default function Expenses() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-red-500">Amount*</Label>
+                    <Label className="text-slate-700">
+                      Amount
+                      <span className="text-red-600">*</span>
+                    </Label>
                     <div className="flex gap-2">
                       <Select
                         value={mileageForm.currency}
@@ -1257,20 +1478,66 @@ export default function Expenses() {
                     </button>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-red-500">Paid Through*</Label>
-                    <Select
-                      value={mileageForm.paidThrough}
-                      onValueChange={(value) => setMileageForm(prev => ({ ...prev, paidThrough: value }))}
-                    >
-                      <SelectTrigger data-testid="select-mileage-paid-through">
-                        <SelectValue placeholder="Select an account" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PAID_THROUGH_ACCOUNTS.map(account => (
-                          <SelectItem key={account} value={account}>{account}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-slate-700">
+                      Paid Through
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Popover open={paidThroughOpen} onOpenChange={setPaidThroughOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={paidThroughOpen}
+                          className="w-full justify-between font-normal"
+                          data-testid="select-mileage-paid-through"
+                        >
+                          {mileageForm.paidThrough || "Search and select account..."}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search accounts..." />
+                          <CommandList>
+                            <CommandEmpty>No account found.</CommandEmpty>
+                            <CommandGroup>
+                              {PAID_THROUGH_ACCOUNTS.map((account) => (
+                                <CommandItem
+                                  key={account}
+                                  value={account}
+                                  onSelect={() => {
+                                    setMileageForm(prev => ({ ...prev, paidThrough: account }));
+                                    setPaidThroughOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      mileageForm.paidThrough === account ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {account}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                            <div className="border-t px-2 py-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start gap-2"
+                                onClick={() => {
+                                  setShowCreatePaidThroughDialog(true);
+                                  setPaidThroughOpen(false);
+                                }}
+                                type="button"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Create New Account
+                              </Button>
+                            </div>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
@@ -1578,6 +1845,68 @@ export default function Expenses() {
               Cancel
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCreateExpenseAccountDialog} onOpenChange={setShowCreateExpenseAccountDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Expense Account</DialogTitle>
+            <DialogDescription>Enter the name for the new expense account</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Account Name"
+              value={newExpenseAccountName}
+              onChange={(e) => setNewExpenseAccountName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleCreateExpenseAccount();
+                }
+              }}
+              data-testid="input-new-expense-account"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateExpenseAccountDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateExpenseAccount} className="bg-blue-600 hover:bg-blue-700">
+              Save and Select
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCreatePaidThroughDialog} onOpenChange={setShowCreatePaidThroughDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Account</DialogTitle>
+            <DialogDescription>Enter the name for the new paid through account</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Account Name"
+              value={newPaidThroughName}
+              onChange={(e) => setNewPaidThroughName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  expenseTab === 'record-mileage' ? handleCreateMileagePaidThrough() : handleCreatePaidThrough();
+                }
+              }}
+              data-testid="input-new-paid-through"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreatePaidThroughDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              expenseTab === 'record-mileage' ? handleCreateMileagePaidThrough() : handleCreatePaidThrough();
+            }} className="bg-blue-600 hover:bg-blue-700">
+              Save and Select
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
