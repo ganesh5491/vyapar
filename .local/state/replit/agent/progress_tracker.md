@@ -248,3 +248,19 @@
     - Fields are cleared when checkbox is unchecked
     - Both fields are required when MSME is checked (validation on save)
 [x] 78. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025)
+[x] 79. Fixed file upload button in vendor-create.tsx and vendor-edit.tsx (Dec 18, 2025):
+    - Added file upload state management with useState<File[]>
+    - Added useRef hook for hidden file input reference
+    - Implemented handleFileUpload function with file validation:
+      * Validates maximum 10 files limit
+      * Validates 10MB per file limit
+      * Shows error toast for invalid files
+    - Added removeFile function to remove uploaded files from list
+    - Implemented file display UI showing:
+      * File name and size (in KB)
+      * File counter (X/10)
+      * Remove button for each file (X icon)
+    - Added hidden file input that opens when upload button is clicked
+    - Supports multiple file selection
+    - Upload button now has onClick handler triggering file input click
+    - Both vendor-create and vendor-edit files updated with full functionality

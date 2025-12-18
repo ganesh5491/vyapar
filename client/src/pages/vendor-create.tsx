@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
-import { Plus, Trash2, HelpCircle, Upload, Link as LinkIcon, Search, Check } from "lucide-react";
+import { Plus, Trash2, HelpCircle, Upload, Link as LinkIcon, Search, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -138,6 +138,8 @@ export default function VendorCreate() {
   const [activeTab, setActiveTab] = useState("other-details");
   const [saving, setSaving] = useState(false);
   const [tdsOpen, setTdsOpen] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     salutation: "",
@@ -238,6 +240,36 @@ export default function VendorCreate() {
 
   const removeContactPerson = (id: string) => {
     setContactPersons(prev => prev.filter(cp => cp.id !== id));
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      const totalFiles = uploadedFiles.length + newFiles.length;
+      
+      if (totalFiles > 10) {
+        toast({ title: "Maximum 10 files allowed", variant: "destructive" });
+        return;
+      }
+
+      const validFiles = newFiles.filter(file => {
+        if (file.size > 10 * 1024 * 1024) {
+          toast({ title: `${file.name} exceeds 10MB limit`, variant: "destructive" });
+          return false;
+        }
+        return true;
+      });
+
+      setUploadedFiles(prev => [...prev, ...validFiles]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async () => {
@@ -643,11 +675,51 @@ export default function VendorCreate() {
 
                 <Label className="text-sm font-medium text-slate-700 pt-2">Documents</Label>
                 <div>
-                  <Button variant="outline" className="gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2"
+                    onClick={() => fileInputRef.current?.click()}
+                    data-testid="button-upload-file"
+                    type="button"
+                  >
                     <Upload className="h-4 w-4" />
                     Upload File
                   </Button>
+                  <input 
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    hidden
+                    onChange={handleFileUpload}
+                    accept="*/*"
+                  />
                   <p className="text-xs text-slate-500 mt-1">You can upload a maximum of 10 files, 10MB each</p>
+                  
+                  {uploadedFiles.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm font-medium text-slate-700">Uploaded Files ({uploadedFiles.length}/10)</p>
+                      <div className="space-y-2">
+                        {uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between bg-slate-50 p-3 rounded-md border border-slate-200">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-slate-900 truncate">{file.name}</p>
+                              <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(2)} KB</p>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-8 w-8 text-slate-400 hover:text-red-600 flex-shrink-0"
+                              onClick={() => removeFile(index)}
+                              data-testid={`button-remove-file-${index}`}
+                              type="button"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
