@@ -266,6 +266,9 @@ export default function Expenses() {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [expenseAccountOpen, setExpenseAccountOpen] = useState(false);
   const [paidThroughOpen, setPaidThroughOpen] = useState(false);
+  const [gstTreatmentOpen, setGstTreatmentOpen] = useState(false);
+  const [sourceOfSupplyOpen, setSourceOfSupplyOpen] = useState(false);
+  const [destinationOfSupplyOpen, setDestinationOfSupplyOpen] = useState(false);
   const [showCreateExpenseAccountDialog, setShowCreateExpenseAccountDialog] = useState(false);
   const [showCreatePaidThroughDialog, setShowCreatePaidThroughDialog] = useState(false);
   const [newExpenseAccountName, setNewExpenseAccountName] = useState("");
@@ -278,6 +281,7 @@ export default function Expenses() {
     currency: "INR",
     paidThrough: "",
     expenseType: "services",
+    hsn: "",
     sac: "",
     vendorId: "",
     vendorName: "",
@@ -460,6 +464,7 @@ export default function Expenses() {
       currency: "INR",
       paidThrough: "",
       expenseType: "services",
+      hsn: "",
       sac: "",
       vendorId: "",
       vendorName: "",
@@ -613,6 +618,7 @@ export default function Expenses() {
         currency: selectedExpense.currency || "INR",
         paidThrough: selectedExpense.paidThrough || "",
         expenseType: selectedExpense.expenseType || "services",
+        hsn: (selectedExpense as any).hsn || "",
         sac: selectedExpense.sac || "",
         vendorId: selectedExpense.vendorId || "",
         vendorName: selectedExpense.vendorName || "",
@@ -1127,14 +1133,26 @@ export default function Expenses() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>SAC</Label>
-                    <Input
-                      value={expenseForm.sac}
-                      onChange={(e) => setExpenseForm(prev => ({ ...prev, sac: e.target.value }))}
-                      data-testid="input-sac"
-                    />
-                  </div>
+                  {expenseForm.expenseType === "goods" && (
+                    <div className="space-y-2">
+                      <Label>HSN Code</Label>
+                      <Input
+                        value={expenseForm.hsn}
+                        onChange={(e) => setExpenseForm(prev => ({ ...prev, hsn: e.target.value }))}
+                        data-testid="input-hsn"
+                      />
+                    </div>
+                  )}
+                  {expenseForm.expenseType === "services" && (
+                    <div className="space-y-2">
+                      <Label>SAC Code</Label>
+                      <Input
+                        value={expenseForm.sac}
+                        onChange={(e) => setExpenseForm(prev => ({ ...prev, sac: e.target.value }))}
+                        data-testid="input-sac"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label>Vendor</Label>
                     <div className="flex gap-2">
@@ -1169,57 +1187,148 @@ export default function Expenses() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-red-500">GST Treatment*</Label>
-                    <Select
-                      value={expenseForm.gstTreatment}
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, gstTreatment: value }))}
-                    >
-                      <SelectTrigger data-testid="select-gst-treatment">
-                        <SelectValue placeholder="Select GST Treatment" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {GST_TREATMENTS.map(treatment => (
-                          <SelectItem key={treatment} value={treatment}>{treatment}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-slate-700">
+                      GST Treatment
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Popover open={gstTreatmentOpen} onOpenChange={setGstTreatmentOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={gstTreatmentOpen}
+                          className="w-full justify-between font-normal"
+                          data-testid="select-gst-treatment"
+                        >
+                          {expenseForm.gstTreatment || "Search and select..."}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search treatments..." />
+                          <CommandList>
+                            <CommandEmpty>No treatment found.</CommandEmpty>
+                            <CommandGroup>
+                              {GST_TREATMENTS.map((treatment) => (
+                                <CommandItem
+                                  key={treatment}
+                                  value={treatment}
+                                  onSelect={() => {
+                                    setExpenseForm(prev => ({ ...prev, gstTreatment: treatment }));
+                                    setGstTreatmentOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      expenseForm.gstTreatment === treatment ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {treatment}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-red-500">Source of Supply*</Label>
-                    <Select
-                      value={expenseForm.sourceOfSupply}
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, sourceOfSupply: value }))}
-                    >
-                      <SelectTrigger data-testid="select-source-supply">
-                        <SelectValue placeholder="State/Province" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {INDIAN_STATES.map(state => (
-                          <SelectItem key={state} value={state}>{state}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-slate-700">
+                      Source of Supply
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Popover open={sourceOfSupplyOpen} onOpenChange={setSourceOfSupplyOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={sourceOfSupplyOpen}
+                          className="w-full justify-between font-normal"
+                          data-testid="select-source-supply"
+                        >
+                          {expenseForm.sourceOfSupply || "Search and select state..."}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search states..." />
+                          <CommandList>
+                            <CommandEmpty>No state found.</CommandEmpty>
+                            <CommandGroup>
+                              {INDIAN_STATES.map((state) => (
+                                <CommandItem
+                                  key={state}
+                                  value={state}
+                                  onSelect={() => {
+                                    setExpenseForm(prev => ({ ...prev, sourceOfSupply: state }));
+                                    setSourceOfSupplyOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      expenseForm.sourceOfSupply === state ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {state}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-red-500">Destination of Supply*</Label>
-                    <Select
-                      value={expenseForm.destinationOfSupply}
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, destinationOfSupply: value }))}
-                    >
-                      <SelectTrigger data-testid="select-destination-supply">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {INDIAN_STATES.map(state => (
-                          <SelectItem key={state} value={`[${state.substring(0, 2).toUpperCase()}] - ${state}`}>
-                            [{state.substring(0, 2).toUpperCase()}] - {state}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-slate-700">
+                      Destination of Supply
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Popover open={destinationOfSupplyOpen} onOpenChange={setDestinationOfSupplyOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={destinationOfSupplyOpen}
+                          className="w-full justify-between font-normal"
+                          data-testid="select-destination-supply"
+                        >
+                          {expenseForm.destinationOfSupply || "Search and select state..."}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search states..." />
+                          <CommandList>
+                            <CommandEmpty>No state found.</CommandEmpty>
+                            <CommandGroup>
+                              {INDIAN_STATES.map((state) => (
+                                <CommandItem
+                                  key={state}
+                                  value={`[${state.substring(0, 2).toUpperCase()}] - ${state}`}
+                                  onSelect={() => {
+                                    setExpenseForm(prev => ({ ...prev, destinationOfSupply: `[${state.substring(0, 2).toUpperCase()}] - ${state}` }));
+                                    setDestinationOfSupplyOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      expenseForm.destinationOfSupply === `[${state.substring(0, 2).toUpperCase()}] - ${state}` ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  [{state.substring(0, 2).toUpperCase()}] - {state}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
                     <Label>Reverse Charge</Label>
@@ -1256,23 +1365,25 @@ export default function Expenses() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Amount Is</Label>
-                    <RadioGroup
-                      value={expenseForm.amountIs}
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, amountIs: value }))}
-                      className="flex gap-4"
-                    >
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="tax_inclusive" id="tax_inclusive" data-testid="radio-tax-inclusive" />
-                        <Label htmlFor="tax_inclusive">Tax Inclusive</Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value="tax_exclusive" id="tax_exclusive" data-testid="radio-tax-exclusive" />
-                        <Label htmlFor="tax_exclusive">Tax Exclusive</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+                  {expenseForm.reverseCharge && (
+                    <div className="space-y-2">
+                      <Label className="text-slate-700">Amount Is</Label>
+                      <RadioGroup
+                        value={expenseForm.amountIs}
+                        onValueChange={(value) => setExpenseForm(prev => ({ ...prev, amountIs: value }))}
+                        className="flex gap-4"
+                      >
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="tax_inclusive" id="tax_inclusive" data-testid="radio-tax-inclusive" />
+                          <Label htmlFor="tax_inclusive">Tax Inclusive</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="tax_exclusive" id="tax_exclusive" data-testid="radio-tax-exclusive" />
+                          <Label htmlFor="tax_exclusive">Tax Exclusive</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
