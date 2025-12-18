@@ -132,6 +132,64 @@ const TDS_OPTIONS = [
   { value: "technical-fees-2", label: "Technical Fees", rate: "2%" },
 ];
 
+const ACCOUNTS = [
+  "Cost Of Goods Sold",
+  "Cost of Goods Sold",
+  "Job Costing",
+  "Labor",
+  "Materials",
+  "Subcontractor",
+  "Expense",
+  "Advertising And Marketing",
+  "Automobile Expense",
+  "Bad Debt",
+  "Bank Fees and Charges",
+  "Consultant Expense",
+  "Contract Assets",
+  "Credit Card Charges",
+  "Depreciation And Amortisation",
+  "Depreciation Expense",
+  "IT and Internet Expenses",
+  "Janitorial Expense",
+  "Lodging",
+  "Meals and Entertainment",
+  "Merchandise",
+  "Office Supplies",
+  "Other Expenses",
+  "Postage",
+  "Printing and Stationery",
+  "Purchase Discounts",
+  "Raw Materials And Consumables",
+  "Rent Expense",
+  "Repairs and Maintenance",
+  "Salaries and Employee Wages",
+  "Telephone Expense",
+  "Transportation Expense",
+  "Travel Expense",
+  "Non Current Liability",
+  "Construction Loans",
+  "Mortgages",
+  "Other Current Liability",
+  "Employee Reimbursements",
+  "GST Payable",
+  "Output CGST",
+  "Output IGST",
+  "Output SGST",
+  "Tax Payable",
+  "TDS Payable",
+  "Fixed Asset",
+  "Furniture and Equipment",
+  "Other Current Asset",
+  "Advance Tax",
+  "Employee Advance",
+  "Input Tax Credits",
+  "Input CGST",
+  "Input IGST",
+  "Input SGST",
+  "Prepaid Expenses",
+  "TDS Receivable",
+];
+
 interface ContactPerson {
   id: string;
   salutation: string;
@@ -148,6 +206,9 @@ export default function VendorCreate() {
   const [activeTab, setActiveTab] = useState("other-details");
   const [saving, setSaving] = useState(false);
   const [tdsOpen, setTdsOpen] = useState(false);
+  const [accountsOpen, setAccountsOpen] = useState(false);
+  const [showCreateAccountDialog, setShowCreateAccountDialog] = useState(false);
+  const [newAccountName, setNewAccountName] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [showAttachmentsDialog, setShowAttachmentsDialog] = useState(false);
   const [newAttachments, setNewAttachments] = useState<File[]>([]);
@@ -166,6 +227,7 @@ export default function VendorCreate() {
     gstTreatment: "",
     sourceOfSupply: "",
     pan: "",
+    expenseAccount: "",
     msmeRegistered: false,
     msmeRegistrationType: "",
     msmeRegistrationNumber: "",
@@ -307,6 +369,17 @@ export default function VendorCreate() {
 
   const removeAttachment = (index: number) => {
     setNewAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCreateAccount = () => {
+    if (!newAccountName.trim()) {
+      toast({ title: "Account name is required", variant: "destructive" });
+      return;
+    }
+    handleInputChange('expenseAccount', newAccountName);
+    setShowCreateAccountDialog(false);
+    setNewAccountName("");
+    toast({ title: "Account created and selected" });
   };
 
   const handleSave = async () => {
@@ -525,7 +598,71 @@ export default function VendorCreate() {
 
             <TabsContent value="other-details" className="mt-6">
               <div className="grid grid-cols-[200px_1fr] gap-6 items-start">
-                <Label className="text-sm font-medium text-red-600 pt-2">GST Treatment*</Label>
+                <Label className="text-sm font-medium text-slate-700 pt-2">
+                  Expense Account
+                  <span className="text-red-600">*</span>
+                </Label>
+                <Popover open={accountsOpen} onOpenChange={setAccountsOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={accountsOpen}
+                      className="w-full justify-between font-normal"
+                      data-testid="select-expense-account"
+                    >
+                      {formData.expenseAccount || "Search and select account..."}
+                      <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search accounts..." />
+                      <CommandList>
+                        <CommandEmpty>No account found.</CommandEmpty>
+                        <CommandGroup>
+                          {ACCOUNTS.map((account) => (
+                            <CommandItem
+                              key={account}
+                              value={account}
+                              onSelect={() => {
+                                handleInputChange('expenseAccount', account);
+                                setAccountsOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  formData.expenseAccount === account ? "opacity-100" : "opacity-0"
+                                }`}
+                              />
+                              {account}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        <div className="border-t px-2 py-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-start gap-2"
+                            onClick={() => {
+                              setShowCreateAccountDialog(true);
+                              setAccountsOpen(false);
+                            }}
+                            type="button"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Create New Account
+                          </Button>
+                        </div>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
+                <Label className="text-sm font-medium text-slate-700 pt-2">
+                  GST Treatment
+                  <span className="text-red-600">*</span>
+                </Label>
                 <Select value={formData.gstTreatment} onValueChange={(v) => handleInputChange('gstTreatment', v)}>
                   <SelectTrigger data-testid="select-gst-treatment">
                     <SelectValue placeholder="Select a GST treatment" />
@@ -537,7 +674,10 @@ export default function VendorCreate() {
                   </SelectContent>
                 </Select>
 
-                <Label className="text-sm font-medium text-red-600 pt-2">Source of Supply*</Label>
+                <Label className="text-sm font-medium text-slate-700 pt-2">
+                  Source of Supply
+                  <span className="text-red-600">*</span>
+                </Label>
                 <Select value={formData.sourceOfSupply} onValueChange={(v) => handleInputChange('sourceOfSupply', v)}>
                   <SelectTrigger data-testid="select-source-of-supply">
                     <SelectValue placeholder="Select" />
@@ -1190,6 +1330,36 @@ export default function VendorCreate() {
           Cancel
         </Button>
       </div>
+
+      <Dialog open={showCreateAccountDialog} onOpenChange={setShowCreateAccountDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Account</DialogTitle>
+            <DialogDescription>Enter the name for the new expense account</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Account Name"
+              value={newAccountName}
+              onChange={(e) => setNewAccountName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleCreateAccount();
+                }
+              }}
+              data-testid="input-new-account"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateAccountDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateAccount} className="bg-blue-600 hover:bg-blue-700">
+              Save and Select
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showAttachmentsDialog} onOpenChange={setShowAttachmentsDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">

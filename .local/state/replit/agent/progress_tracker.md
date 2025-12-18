@@ -287,3 +287,13 @@
     - Attachments are stored as metadata (name, size, type, uploadedAt) in vendor JSON object
     - All data persisted to server/data/vendors.json
 [x] 81. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
+[x] 82. Added Expense Account* searchable dropdown field to vendor create/edit forms (Dec 18, 2025):
+    - Added ACCOUNTS constant with comprehensive list of all account types (Cost Of Goods Sold, Labor, Materials, Subcontractor, etc.)
+    - Added searchable Popover dropdown with Command/CommandInput for real-time search
+    - Added "Create New Account" button at bottom of dropdown with Plus icon
+    - Clicking "Create New Account" opens a dialog for entering new account name
+    - New account is automatically selected after creation
+    - Updated label styling to show only asterisk as red (label text remains black)
+    - Applied searchable dropdown pattern to both vendor-create.tsx and vendor-edit.tsx
+    - All account data is saved with the vendor record
+    - Users can search, select, and create new accounts on the fly
