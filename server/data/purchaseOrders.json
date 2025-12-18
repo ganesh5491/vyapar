@@ -1,4 +1,71 @@
 {
-  "purchaseOrders": [],
-  "nextPurchaseOrderNumber": 3
+  "purchaseOrders": [
+    {
+      "id": "1766051860049",
+      "purchaseOrderNumber": "PO-2025-0003",
+      "referenceNumber": "",
+      "date": "2025-12-18",
+      "deliveryDate": "",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "vendorAddress": {},
+      "deliveryAddress": {
+        "attention": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "countryRegion": "India"
+      },
+      "deliveryAddressType": "organization",
+      "paymentTerms": "Due on Receipt",
+      "shipmentPreference": "Overnight Shipping",
+      "reverseCharge": false,
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "itemName": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "account": "Inventory Asset",
+          "quantity": 1,
+          "rate": 60,
+          "tax": "gst5",
+          "taxAmount": 3,
+          "amount": 63
+        }
+      ],
+      "subTotal": 60,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "tds194c",
+      "taxAmount": 3,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 63,
+      "notes": "",
+      "termsAndConditions": "",
+      "attachments": [],
+      "status": "ISSUED",
+      "receiveStatus": "YET TO BE RECEIVED",
+      "billedStatus": "YET TO BE BILLED",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-18T09:57:40.049Z",
+      "updatedAt": "2025-12-18T09:57:40.049Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T09:57:40.049Z",
+          "action": "created",
+          "description": "Purchase Order created for ₹63",
+          "user": "Admin User"
+        }
+      ]
+    }
+  ],
+  "nextPurchaseOrderNumber": 4
 }
