@@ -297,3 +297,4 @@
     - Applied searchable dropdown pattern to both vendor-create.tsx and vendor-edit.tsx
     - All account data is saved with the vendor record
     - Users can search, select, and create new accounts on the fly
+[x] 83. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
