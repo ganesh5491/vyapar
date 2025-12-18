@@ -307,43 +307,142 @@ function VendorDetailPanel({
   const handleDownloadPDF = () => {
     try {
       const doc = new jsPDF();
-      const title = `Vendor Statement - ${vendor.displayName}`;
       const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      
-      doc.setFontSize(16);
-      doc.text(title, pageWidth / 2, 20, { align: 'center' });
-      
+      let yPos = 10;
+
+      // Title
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Vendor Statement - ${vendor.displayName || ''}`, pageWidth / 2, yPos, { align: 'center' });
+      yPos += 8;
+
+      // Date Range
       doc.setFontSize(10);
-      doc.text(`From 01/12/2025 To 31/12/2025`, pageWidth / 2, 30, { align: 'center' });
-      
-      doc.setFontSize(12);
-      doc.text('SkilltonIT', 20, 45);
-      
-      doc.setFontSize(10);
-      doc.text(`To: ${vendor.displayName}`, 20, 60);
-      if (vendor.companyName) doc.text(vendor.companyName, 20, 67);
-      
+      doc.setFont(undefined, 'normal');
+      doc.text('From 01/12/2025 To 31/12/2025', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 12;
+
+      // Company Header (Two columns)
       doc.setFontSize(11);
-      doc.text('Account Summary', 20, 85);
+      doc.setFont(undefined, 'bold');
+      doc.text('SkilltonIT', 20, yPos);
       
-      const summaryData = [
+      // Vendor info on right side
+      const vendorInfoX = 120;
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text('SkilltonIT', vendorInfoX, yPos);
+      yPos += 6;
+      
+      doc.setFontSize(9);
+      doc.text('Hinjewadi - Wakad road', vendorInfoX, yPos);
+      yPos += 5;
+      doc.text('Hinjewadi', vendorInfoX, yPos);
+      yPos += 5;
+      doc.text('Pune Maharashtra 411057', vendorInfoX, yPos);
+      yPos += 5;
+      doc.text('India', vendorInfoX, yPos);
+      yPos += 5;
+      doc.text('GSTIN 27AZCPA5145K1ZH', vendorInfoX, yPos);
+      yPos += 5;
+      doc.text('Sales.SkilltonIT@skilltonit.com', vendorInfoX, yPos);
+      yPos += 5;
+      doc.text('www.skilltonit.com', vendorInfoX, yPos);
+      yPos += 10;
+
+      // "To:" Section
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      doc.text('To', 20, yPos);
+      yPos += 6;
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.text(vendor.displayName || '', 20, yPos);
+      yPos += 5;
+      
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      if (vendor.companyName) {
+        doc.text(vendor.companyName, 20, yPos);
+        yPos += 5;
+      }
+      
+      // Address details
+      if (vendor.billingAddress?.street1) {
+        doc.text(vendor.billingAddress.street1, 20, yPos);
+        yPos += 5;
+      }
+      if (vendor.billingAddress?.street2) {
+        doc.text(vendor.billingAddress.street2, 20, yPos);
+        yPos += 5;
+      }
+      if (vendor.billingAddress?.city) {
+        doc.text(vendor.billingAddress.city, 20, yPos);
+        yPos += 5;
+      }
+      if (vendor.pan) {
+        doc.text(`PAN ${vendor.pan}`, 20, yPos);
+        yPos += 5;
+      }
+      yPos += 5;
+
+      // Account Summary Section
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('Account Summary', 20, yPos);
+      yPos += 8;
+
+      // Summary Table
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      
+      const summaryRows = [
         ['Opening Balance', formatCurrency(vendor.openingBalance || 0)],
         ['Billed Amount', formatCurrency(0)],
         ['Amount Paid', formatCurrency(0)],
         ['Balance Due', formatCurrency(vendor.payables || 0)]
       ];
+
+      const leftCol = 30;
+      const rightCol = pageWidth - 30;
       
-      let yPos = 95;
-      summaryData.forEach(([label, value]) => {
-        doc.text(label, 20, yPos);
-        doc.text(value, pageWidth - 40, yPos, { align: 'right' });
-        yPos += 7;
+      summaryRows.forEach(([label, value]) => {
+        doc.text(label || '', leftCol, yPos);
+        doc.text(value || '', rightCol, yPos, { align: 'right' });
+        yPos += 6;
       });
+
+      yPos += 8;
+
+      // Transactions Table Header
+      doc.setFont(undefined, 'bold');
+      doc.setFontSize(9);
+      doc.text('Date', 20, yPos);
+      doc.text('Transactions', 40, yPos);
+      doc.text('Details', 80, yPos);
+      doc.text('Amount', 120, yPos, { align: 'right' });
+      doc.text('Payments', 150, yPos, { align: 'right' });
+      doc.text('Balance', pageWidth - 20, yPos, { align: 'right' });
+      yPos += 5;
       
+      // Draw line under header
+      doc.setDrawColor(200);
+      doc.line(20, yPos - 1, pageWidth - 20, yPos - 1);
+      yPos += 3;
+
+      // Opening Balance Row
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(9);
+      doc.text('01/12/2025', 20, yPos);
+      doc.text('***Opening Balance***', 40, yPos);
+      doc.text(String((vendor.openingBalance || 0).toFixed(2)), 120, yPos, { align: 'right' });
+      doc.text(String((vendor.openingBalance || 0).toFixed(2)), pageWidth - 20, yPos, { align: 'right' });
+
       doc.save(`vendor-statement-${vendor.displayName}.pdf`);
       toast({ title: "Statement downloaded as PDF" });
     } catch (error) {
+      console.error('PDF generation error:', error);
       toast({ title: "Failed to download PDF", variant: "destructive" });
     }
   };
