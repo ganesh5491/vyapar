@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
-import { ArrowLeft, Plus, X, Upload, FileText, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, X, Upload, FileText, Trash2, Info, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,176 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+
+const GST_TREATMENTS = [
+  {
+    value: "registered_regular",
+    label: "Registered Business – Regular",
+    description: "Regular business registered under GST"
+  },
+  {
+    value: "registered_composition",
+    label: "Registered Business – Composition",
+    description: "Registered under GST Composition Scheme"
+  },
+  {
+    value: "unregistered_business",
+    label: "Unregistered Business",
+    description: "Business not registered under GST"
+  },
+  {
+    value: "consumer",
+    label: "Consumer",
+    description: "A normal consumer"
+  },
+  {
+    value: "overseas",
+    label: "Overseas",
+    description: "International import/export parties"
+  },
+  {
+    value: "sez_unit",
+    label: "Special Economic Zone (SEZ Unit)",
+    description: "Business operating inside SEZ"
+  },
+  {
+    value: "deemed_export",
+    label: "Deemed Export",
+    description: "Sales to EOU or EPCG license holders"
+  },
+  {
+    value: "tax_deductor",
+    label: "Tax Deductor",
+    description: "Govt agencies deducting TDS under GST"
+  },
+  {
+    value: "sez_developer",
+    label: "SEZ Developer",
+    description: "Owner/Developer of SEZ unit"
+  },
+  {
+    value: "isd",
+    label: "Input Service Distributor (ISD)",
+    description: "Head office distributing GST credits internally"
+  }
+];
+
+const INDIAN_STATES = [
+  { code: "01", name: "Jammu and Kashmir" },
+  { code: "02", name: "Himachal Pradesh" },
+  { code: "03", name: "Punjab" },
+  { code: "04", name: "Chandigarh" },
+  { code: "05", name: "Uttarakhand" },
+  { code: "06", name: "Haryana" },
+  { code: "07", name: "Delhi" },
+  { code: "08", name: "Rajasthan" },
+  { code: "09", name: "Uttar Pradesh" },
+  { code: "10", name: "Bihar" },
+  { code: "11", name: "Sikkim" },
+  { code: "12", name: "Arunachal Pradesh" },
+  { code: "13", name: "Nagaland" },
+  { code: "14", name: "Manipur" },
+  { code: "15", name: "Mizoram" },
+  { code: "16", name: "Tripura" },
+  { code: "17", name: "Meghalaya" },
+  { code: "18", name: "Assam" },
+  { code: "19", name: "West Bengal" },
+  { code: "20", name: "Jharkhand" },
+  { code: "21", name: "Odisha" },
+  { code: "22", name: "Chhattisgarh" },
+  { code: "23", name: "Madhya Pradesh" },
+  { code: "24", name: "Gujarat" },
+  { code: "25", name: "Daman and Diu (Old)" },
+  { code: "26", name: "Dadra and Nagar Haveli and Daman and Diu" },
+  { code: "27", name: "Maharashtra" },
+  { code: "28", name: "Andhra Pradesh (Old)" },
+  { code: "29", name: "Karnataka" },
+  { code: "30", name: "Goa" },
+  { code: "31", name: "Lakshadweep" },
+  { code: "32", name: "Kerala" },
+  { code: "33", name: "Tamil Nadu" },
+  { code: "34", name: "Puducherry" },
+  { code: "35", name: "Andaman and Nicobar Islands" },
+  { code: "36", name: "Telangana" },
+  { code: "37", name: "Andhra Pradesh" },
+  { code: "38", name: "Ladakh" },
+  { code: "97", name: "Other Territory" },
+];
+
+const EXEMPTION_REASONS = [
+  "Exempt supply under GST",
+  "Export without payment of tax",
+  "SEZ supply",
+  "Deemed export",
+  "Zero-rated supply",
+  "Supply to EOU/STP/EHTP",
+  "Government entity",
+  "Charitable organization",
+  "Educational institution",
+  "Healthcare services",
+];
+
+const PAYMENT_TERMS_OPTIONS = [
+  { value: "due_on_receipt", label: "Due on Receipt" },
+  { value: "net_15", label: "Net 15" },
+  { value: "net_30", label: "Net 30" },
+  { value: "net_45", label: "Net 45" },
+  { value: "net_60", label: "Net 60" },
+  { value: "due_end_of_month", label: "Due end of the month" },
+  { value: "due_end_of_next_month", label: "Due end of next month" }
+];
+
+const CURRENCIES = [
+  { value: "INR", label: "INR - Indian Rupee" },
+  { value: "USD", label: "USD - US Dollar" },
+  { value: "EUR", label: "EUR - Euro" },
+  { value: "GBP", label: "GBP - British Pound" },
+  { value: "AED", label: "AED - UAE Dirham" }
+];
+
+function validateGSTIN(gstin: string): { valid: boolean; message?: string } {
+  if (!gstin) return { valid: true };
+
+  if (gstin.length !== 15) {
+    return { valid: false, message: "GSTIN must be 15 characters" };
+  }
+
+  const gstinPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  if (!gstinPattern.test(gstin)) {
+    return { valid: false, message: "Invalid GSTIN format" };
+  }
+
+  return { valid: true };
+}
+
+function validatePAN(pan: string): { valid: boolean; message?: string } {
+  if (!pan) return { valid: true };
+
+  if (pan.length !== 10) {
+    return { valid: false, message: "PAN must be 10 characters" };
+  }
+
+  const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  if (!panPattern.test(pan)) {
+    return { valid: false, message: "Invalid PAN format (e.g., ABCDE1234F)" };
+  }
+
+  return { valid: true };
+}
 
 interface Customer {
   id: string;
@@ -64,6 +234,17 @@ export default function CustomerEdit() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState<Customer | null>(null);
+
+  // Dropdown state management
+  const [gstTreatmentOpen, setGstTreatmentOpen] = useState(false);
+  const [gstTreatmentSearch, setGstTreatmentSearch] = useState("");
+  const [placeOfSupplyOpen, setPlaceOfSupplyOpen] = useState(false);
+  const [placeOfSupplySearch, setPlaceOfSupplySearch] = useState("");
+  const [exemptionOpen, setExemptionOpen] = useState(false);
+  const [exemptionSearch, setExemptionSearch] = useState("");
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [currencySearch, setCurrencySearch] = useState("");
+  const [paymentTermsOpen, setPaymentTermsOpen] = useState(false);
 
   interface AttachedFile {
     id: string;
@@ -227,7 +408,7 @@ export default function CustomerEdit() {
     if (!params.id) return;
 
     setIsSubmitting(true);
-    
+
     try {
       const updateData = {
         name: formData.displayName,
@@ -237,7 +418,7 @@ export default function CustomerEdit() {
         phone: formData.workPhone,
         workPhone: formData.workPhone,
         mobile: formData.mobile,
-        gstTreatment: formData.taxPreference === "taxable" ? formData.gstTreatment : "",
+        gstTreatment: (formData.taxPreference === "taxable" || formData.taxPreference === "tax_exempt") ? formData.gstTreatment : "",
         placeOfSupply: formData.placeOfSupply,
         gstin: formData.taxPreference === "taxable" ? formData.gstin : "",
         pan: formData.pan,
@@ -439,86 +620,231 @@ export default function CustomerEdit() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                {formData.taxPreference === "taxable" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="gstTreatment" className="text-red-500">GST Treatment *</Label>
-                    <Select
-                      value={formData.gstTreatment}
-                      onValueChange={(val) => setFormData({ ...formData, gstTreatment: val })}
-                    >
-                      <SelectTrigger data-testid="select-gst-treatment">
-                        <SelectValue placeholder="Select GST Treatment" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Registered Business - Regular">Registered Business - Regular</SelectItem>
-                        <SelectItem value="Registered Business - Composition">Registered Business - Composition</SelectItem>
-                        <SelectItem value="Unregistered Business">Unregistered Business</SelectItem>
-                        <SelectItem value="Consumer">Consumer</SelectItem>
-                        <SelectItem value="Overseas">Overseas</SelectItem>
-                      </SelectContent>
-                    </Select>
+                {(formData.taxPreference === "taxable" || formData.taxPreference === "tax_exempt") && (
+                  <div className="flex flex-col space-y-2">
+                    <Label>GST Treatment<span className="text-red-500 ml-0.5">*</span></Label>
+                    <Popover open={gstTreatmentOpen} onOpenChange={setGstTreatmentOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={gstTreatmentOpen}
+                          className={cn(
+                            "justify-between",
+                            !formData.gstTreatment && "text-muted-foreground"
+                          )}
+                          data-testid="button-gst-treatment"
+                        >
+                          {formData.gstTreatment ?
+                            GST_TREATMENTS.find(g => g.value === formData.gstTreatment)?.label || formData.gstTreatment :
+                            "Select a GST treatment"
+                          }
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search GST treatment..."
+                            value={gstTreatmentSearch}
+                            onValueChange={setGstTreatmentSearch}
+                            data-testid="input-gst-treatment-search"
+                          />
+                          <CommandList className="max-h-[300px]">
+                            <CommandEmpty>No GST treatment found</CommandEmpty>
+                            <CommandGroup>
+                              {GST_TREATMENTS
+                                .filter(treatment =>
+                                  treatment.label.toLowerCase().includes(gstTreatmentSearch.toLowerCase()) ||
+                                  treatment.description.toLowerCase().includes(gstTreatmentSearch.toLowerCase())
+                                )
+                                .map((treatment) => (
+                                  <CommandItem
+                                    key={treatment.value}
+                                    value={treatment.label}
+                                    onSelect={() => {
+                                      setFormData({ ...formData, gstTreatment: treatment.value });
+                                      setGstTreatmentSearch("");
+                                      setGstTreatmentOpen(false);
+                                    }}
+                                    className="flex flex-col items-start p-3 cursor-pointer"
+                                    data-testid={`option-gst-treatment-${treatment.value}`}
+                                  >
+                                    <div className="flex items-center w-full">
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          formData.gstTreatment === treatment.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex-1">
+                                        <div className="font-medium">{treatment.label}</div>
+                                        <div className="text-sm text-slate-500 mt-0.5">{treatment.description}</div>
+                                      </div>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {formData.gstTreatment && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {GST_TREATMENTS.find(g => g.value === formData.gstTreatment)?.description}
+                      </p>
+                    )}
                   </div>
                 )}
 
                 {formData.taxPreference === "tax_exempt" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="exemptionReason" className="text-red-500">Exemption Reason *</Label>
-                    <Select
-                      value={formData.exemptionReason || ""}
-                      onValueChange={(val) => setFormData({ ...formData, exemptionReason: val })}
-                    >
-                      <SelectTrigger data-testid="select-exemption-reason">
-                        <SelectValue placeholder="Select or type to add" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Exempt supply under GST">Exempt supply under GST</SelectItem>
-                        <SelectItem value="Export without payment of tax">Export without payment of tax</SelectItem>
-                        <SelectItem value="SEZ supply">SEZ supply</SelectItem>
-                        <SelectItem value="Deemed export">Deemed export</SelectItem>
-                        <SelectItem value="Zero-rated supply">Zero-rated supply</SelectItem>
-                        <SelectItem value="Supply to EOU/STP/EHTP">Supply to EOU/STP/EHTP</SelectItem>
-                        <SelectItem value="Government entity">Government entity</SelectItem>
-                        <SelectItem value="Charitable organization">Charitable organization</SelectItem>
-                        <SelectItem value="Educational institution">Educational institution</SelectItem>
-                        <SelectItem value="Healthcare services">Healthcare services</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center gap-1">
+                      <Label>Exemption Reason<span className="text-red-500 ml-0.5">*</span></Label>
+                      <Info className="h-3.5 w-3.5 text-slate-400" />
+                    </div>
+                    <Popover open={exemptionOpen} onOpenChange={setExemptionOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={exemptionOpen}
+                          className={cn(
+                            "justify-between",
+                            !formData.exemptionReason && "text-muted-foreground"
+                          )}
+                          data-testid="button-exemption-reason"
+                        >
+                          {formData.exemptionReason || "Select or type to add"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[350px] p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search or type..."
+                            value={exemptionSearch}
+                            onValueChange={setExemptionSearch}
+                            data-testid="input-exemption-search"
+                          />
+                          <CommandList className="max-h-[200px]">
+                            <CommandEmpty>
+                              {exemptionSearch ? (
+                                <div
+                                  className="py-2 px-3 cursor-pointer hover:bg-accent rounded-sm"
+                                  onClick={() => {
+                                    setFormData({ ...formData, exemptionReason: exemptionSearch.trim() });
+                                    setExemptionOpen(false);
+                                    setExemptionSearch("");
+                                  }}
+                                >
+                                  Use "{exemptionSearch.trim()}"
+                                </div>
+                              ) : (
+                                "No exemption reasons found"
+                              )}
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {EXEMPTION_REASONS
+                                .filter(reason => reason.toLowerCase().includes(exemptionSearch.toLowerCase()))
+                                .map((reason) => (
+                                  <CommandItem
+                                    key={reason}
+                                    value={reason}
+                                    onSelect={() => {
+                                      setFormData({ ...formData, exemptionReason: reason });
+                                      setExemptionSearch("");
+                                      setExemptionOpen(false);
+                                    }}
+                                    data-testid={`option-exemption-${reason.replace(/\s+/g, '-').toLowerCase()}`}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        formData.exemptionReason === reason ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {reason}
+                                  </CommandItem>
+                                ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="placeOfSupply" className="text-red-500">Place of Supply *</Label>
-                  <Select
-                    value={formData.placeOfSupply}
-                    onValueChange={(val) => setFormData({ ...formData, placeOfSupply: val })}
-                  >
-                    <SelectTrigger data-testid="select-place-of-supply">
-                      <SelectValue placeholder="Select State" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="01 - Jammu and Kashmir">01 - Jammu and Kashmir</SelectItem>
-                      <SelectItem value="02 - Himachal Pradesh">02 - Himachal Pradesh</SelectItem>
-                      <SelectItem value="03 - Punjab">03 - Punjab</SelectItem>
-                      <SelectItem value="04 - Chandigarh">04 - Chandigarh</SelectItem>
-                      <SelectItem value="05 - Uttarakhand">05 - Uttarakhand</SelectItem>
-                      <SelectItem value="06 - Haryana">06 - Haryana</SelectItem>
-                      <SelectItem value="07 - Delhi">07 - Delhi</SelectItem>
-                      <SelectItem value="08 - Rajasthan">08 - Rajasthan</SelectItem>
-                      <SelectItem value="09 - Uttar Pradesh">09 - Uttar Pradesh</SelectItem>
-                      <SelectItem value="10 - Bihar">10 - Bihar</SelectItem>
-                      <SelectItem value="27 - Maharashtra">27 - Maharashtra</SelectItem>
-                      <SelectItem value="29 - Karnataka">29 - Karnataka</SelectItem>
-                      <SelectItem value="32 - Kerala">32 - Kerala</SelectItem>
-                      <SelectItem value="33 - Tamil Nadu">33 - Tamil Nadu</SelectItem>
-                      <SelectItem value="36 - Telangana">36 - Telangana</SelectItem>
-                      <SelectItem value="37 - Andhra Pradesh">37 - Andhra Pradesh</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col space-y-2">
+                  <Label>Place of Supply<span className="text-red-500 ml-0.5">*</span></Label>
+                  <Popover open={placeOfSupplyOpen} onOpenChange={setPlaceOfSupplyOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={placeOfSupplyOpen}
+                        className={cn(
+                          "justify-between",
+                          !formData.placeOfSupply && "text-muted-foreground"
+                        )}
+                        data-testid="button-place-of-supply"
+                      >
+                        {formData.placeOfSupply
+                          ? INDIAN_STATES.find(s => s.code === formData.placeOfSupply)?.name || formData.placeOfSupply
+                          : "Please select a place of supply"
+                        }
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[350px] p-0">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search state..."
+                          value={placeOfSupplySearch}
+                          onValueChange={setPlaceOfSupplySearch}
+                          data-testid="input-place-of-supply-search"
+                        />
+                        <CommandList className="max-h-[300px]">
+                          <CommandEmpty>No state found</CommandEmpty>
+                          <CommandGroup>
+                            {INDIAN_STATES
+                              .filter(state =>
+                                state.name.toLowerCase().includes(placeOfSupplySearch.toLowerCase()) ||
+                                state.code.toLowerCase().includes(placeOfSupplySearch.toLowerCase())
+                              )
+                              .map((state) => (
+                                <CommandItem
+                                  key={state.code}
+                                  value={`${state.code} ${state.name}`}
+                                  onSelect={() => {
+                                    setFormData({ ...formData, placeOfSupply: state.code });
+                                    setPlaceOfSupplySearch("");
+                                    setPlaceOfSupplyOpen(false);
+                                  }}
+                                  data-testid={`option-state-${state.code}`}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      formData.placeOfSupply === state.code ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {state.name}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
                   <div className="space-y-2">
-                    <Label htmlFor="pan">PAN</Label>
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="pan">PAN</Label>
+                      <Info className="h-3.5 w-3.5 text-slate-400" />
+                    </div>
                     <Input
                       id="pan"
                       value={formData.pan}
@@ -530,6 +856,9 @@ export default function CustomerEdit() {
                       placeholder="e.g., ABCDE1234F"
                       data-testid="input-pan"
                     />
+                    {formData.pan && !validatePAN(formData.pan).valid && (
+                      <p className="text-red-500 text-sm mt-1">{validatePAN(formData.pan).message}</p>
+                    )}
                   </div>
 
                   {formData.taxPreference === "taxable" && (
@@ -546,43 +875,123 @@ export default function CustomerEdit() {
                         placeholder="e.g., 27AAGCA4900Q1ZE"
                         data-testid="input-gstin"
                       />
+                      {formData.gstin && !validateGSTIN(formData.gstin).valid && (
+                        <p className="text-red-500 text-sm mt-1">{validateGSTIN(formData.gstin).message}</p>
+                      )}
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="currency">Currency</Label>
-                  <Select
-                    value={formData.currency}
-                    onValueChange={(val) => setFormData({ ...formData, currency: val })}
-                  >
-                    <SelectTrigger data-testid="select-currency">
-                      <SelectValue placeholder="Currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="INR">INR - Indian Rupee</SelectItem>
-                      <SelectItem value="USD">USD - US Dollar</SelectItem>
-                      <SelectItem value="EUR">EUR - Euro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col space-y-2">
+                  <Label>Currency</Label>
+                  <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={currencyOpen}
+                        className={cn(
+                          "justify-between",
+                          !formData.currency && "text-muted-foreground"
+                        )}
+                        data-testid="button-currency"
+                      >
+                        {formData.currency ?
+                          CURRENCIES.find(c => c.value === formData.currency)?.label || formData.currency :
+                          "INR - Indian Rupee"
+                        }
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[300px] p-0">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search currency..."
+                          value={currencySearch}
+                          onValueChange={setCurrencySearch}
+                          data-testid="input-currency-search"
+                        />
+                        <CommandList className="max-h-[200px]">
+                          <CommandEmpty>No currency found</CommandEmpty>
+                          <CommandGroup>
+                            {CURRENCIES
+                              .filter(currency => currency.label.toLowerCase().includes(currencySearch.toLowerCase()))
+                              .map((currency) => (
+                                <CommandItem
+                                  key={currency.value}
+                                  value={currency.label}
+                                  onSelect={() => {
+                                    setFormData({ ...formData, currency: currency.value });
+                                    setCurrencySearch("");
+                                    setCurrencyOpen(false);
+                                  }}
+                                  data-testid={`option-currency-${currency.value}`}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      formData.currency === currency.value ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {currency.label}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="paymentTerms">Payment Terms</Label>
-                  <Select
-                    value={formData.paymentTerms}
-                    onValueChange={(val) => setFormData({ ...formData, paymentTerms: val })}
-                  >
-                    <SelectTrigger data-testid="select-payment-terms">
-                      <SelectValue placeholder="Due on Receipt" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Due on Receipt">Due on Receipt</SelectItem>
-                      <SelectItem value="Net 15">Net 15</SelectItem>
-                      <SelectItem value="Net 30">Net 30</SelectItem>
-                      <SelectItem value="Net 45">Net 45</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col space-y-2">
+                  <Label>Payment Terms</Label>
+                  <Popover open={paymentTermsOpen} onOpenChange={setPaymentTermsOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={paymentTermsOpen}
+                        className={cn(
+                          "justify-between",
+                          !formData.paymentTerms && "text-muted-foreground"
+                        )}
+                        data-testid="button-payment-terms"
+                      >
+                        {formData.paymentTerms ?
+                          PAYMENT_TERMS_OPTIONS.find(p => p.value === formData.paymentTerms)?.label || formData.paymentTerms :
+                          "Due on Receipt"
+                        }
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-0">
+                      <Command>
+                        <CommandList>
+                          <CommandGroup>
+                            {PAYMENT_TERMS_OPTIONS.map((term) => (
+                              <CommandItem
+                                key={term.value}
+                                value={term.label}
+                                onSelect={() => {
+                                  setFormData({ ...formData, paymentTerms: term.value });
+                                  setPaymentTermsOpen(false);
+                                }}
+                                data-testid={`option-payment-terms-${term.value}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.paymentTerms === term.value ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {term.label}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </TabsContent>
@@ -836,7 +1245,7 @@ export default function CustomerEdit() {
                   accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif"
                   data-testid="input-file-upload"
                 />
-                <div 
+                <div
                   className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
                   data-testid="button-upload-area"

@@ -1,12 +1,24 @@
 import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
-import { ArrowLeft, Plus, X, Search, Upload } from "lucide-react";
+import { ArrowLeft, Plus, X, Search, Upload, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -23,6 +35,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+interface Customer {
+  id: string;
+  name: string;
+  displayName: string;
+  email?: string;
+  phone?: string;
+  billingAddress?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    pincode?: string;
+  };
+  shippingAddress?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    pincode?: string;
+  };
+}
 
 interface Vendor {
   id: string;
@@ -119,6 +153,12 @@ export default function PurchaseOrderEdit() {
       pinCode: "",
       countryRegion: "India"
     },
+    organizationDetails: {
+      name: "CYBAEM TECH PRIVATE LIMITED",
+      address: "Hinjewadi\nPune\nMaharashtra 411057\nIndia"
+    },
+    selectedCustomer: null,
+    customerSearchQuery: "",
     referenceNumber: "",
     date: new Date().toISOString().split('T')[0],
     deliveryDate: "",
@@ -137,6 +177,9 @@ export default function PurchaseOrderEdit() {
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
+  const [filteredCustomers, setFilteredCustomers] = useState<any[]>([]);
 
   useEffect(() => {
     fetchInitialData();
@@ -144,10 +187,11 @@ export default function PurchaseOrderEdit() {
 
   const fetchInitialData = async () => {
     try {
-      const [vendorsRes, itemsRes, poRes] = await Promise.all([
+      const [vendorsRes, itemsRes, poRes, customersRes] = await Promise.all([
         fetch('/api/vendors'),
         fetch('/api/items'),
-        fetch(`/api/purchase-orders/${params.id}`)
+        fetch(`/api/purchase-orders/${params.id}`),
+        fetch('/api/customers')
       ]);
 
       let vendorsList: Vendor[] = [];
@@ -162,10 +206,17 @@ export default function PurchaseOrderEdit() {
         setItems(data.data || []);
       }
 
+      if (customersRes.ok) {
+        const data = await customersRes.json();
+        const customersList = data.customers || data.data || [];
+        setCustomers(customersList);
+        setFilteredCustomers(customersList);
+      }
+
       if (poRes.ok) {
         const data = await poRes.json();
         const po = data.data;
-        
+
         setPurchaseOrderNumber(po.purchaseOrderNumber);
         setFormData({
           vendorId: po.vendorId || "",
@@ -187,7 +238,7 @@ export default function PurchaseOrderEdit() {
           adjustment: po.adjustment || 0,
           adjustmentDescription: po.adjustmentDescription || ""
         });
-        
+
         setLineItems(po.items?.length > 0 ? po.items : [{
           id: "1",
           itemId: "",
@@ -224,11 +275,33 @@ export default function PurchaseOrderEdit() {
     }
   };
 
+  const handleCustomerSearch = (query: string) => {
+    setFormData({ ...formData, customerSearchQuery: query });
+    if (!query.trim()) {
+      setFilteredCustomers(customers);
+    } else {
+      const filtered = customers.filter(customer =>
+        customer.name.toLowerCase().includes(query.toLowerCase()) ||
+        customer.displayName.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredCustomers(filtered);
+    }
+  };
+
+  const handleCustomerSelect = (customer: Customer) => {
+    setFormData({
+      ...formData,
+      selectedCustomer: customer,
+      customerSearchQuery: customer.displayName
+    });
+    setCustomerDropdownOpen(false);
+  };
+
   const updateLineItem = (id: string, field: keyof LineItem, value: any) => {
     setLineItems(prev => prev.map(item => {
       if (item.id === id) {
         const updated = { ...item, [field]: value };
-        
+
         if (field === 'quantity' || field === 'rate' || field === 'tax') {
           const baseAmount = updated.quantity * updated.rate;
           let taxRate = 0;
@@ -238,7 +311,7 @@ export default function PurchaseOrderEdit() {
           updated.taxAmount = (baseAmount * taxRate) / 100;
           updated.amount = baseAmount + updated.taxAmount;
         }
-        
+
         return updated;
       }
       return item;
@@ -373,9 +446,9 @@ export default function PurchaseOrderEdit() {
       <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setLocation('/purchase-orders')}
               data-testid="button-back"
             >
@@ -384,7 +457,7 @@ export default function PurchaseOrderEdit() {
             <h1 className="text-xl font-semibold">Edit Purchase Order - {purchaseOrderNumber}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={loading}
               className="bg-blue-600 hover:bg-blue-700"
@@ -392,8 +465,8 @@ export default function PurchaseOrderEdit() {
             >
               {loading ? "Saving..." : "Save Changes"}
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => setLocation('/purchase-orders')}
               data-testid="button-cancel"
             >
@@ -429,11 +502,11 @@ export default function PurchaseOrderEdit() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <Label className="text-blue-600">Delivery Address*</Label>
-                  <RadioGroup 
-                    value={formData.deliveryAddressType} 
-                    onValueChange={(value) => setFormData({...formData, deliveryAddressType: value})}
+                  <RadioGroup
+                    value={formData.deliveryAddressType}
+                    onValueChange={(value) => setFormData({ ...formData, deliveryAddressType: value, selectedCustomer: null, customerSearchQuery: "" })}
                     className="flex gap-4"
                   >
                     <div className="flex items-center space-x-2">
@@ -445,23 +518,146 @@ export default function PurchaseOrderEdit() {
                       <Label htmlFor="customer">Customer</Label>
                     </div>
                   </RadioGroup>
+
+                  {formData.deliveryAddressType === "organization" && (
+                    <div className="space-y-3 bg-slate-50 p-4 rounded-lg border">
+                      <div className="space-y-2">
+                        <Label htmlFor="orgName" className="text-sm font-medium">Organization Name</Label>
+                        <Input
+                          id="orgName"
+                          value={formData.organizationDetails.name}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            organizationDetails: {
+                              ...formData.organizationDetails,
+                              name: e.target.value
+                            }
+                          })}
+                          placeholder="Enter organization name"
+                          className="bg-white"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="orgAddress" className="text-sm font-medium">Organization Address</Label>
+                        <Textarea
+                          id="orgAddress"
+                          value={formData.organizationDetails.address}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            organizationDetails: {
+                              ...formData.organizationDetails,
+                              address: e.target.value
+                            }
+                          })}
+                          placeholder="Enter complete address"
+                          className="bg-white min-h-[80px]"
+                          rows={4}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.deliveryAddressType === "customer" && (
+                    <div className="space-y-3">
+                      <Popover open={customerDropdownOpen} onOpenChange={setCustomerDropdownOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={customerDropdownOpen}
+                            className="w-full justify-between h-10 bg-white"
+                            onClick={() => setCustomerDropdownOpen(!customerDropdownOpen)}
+                          >
+                            <span className="text-left flex-1">
+                              {formData.selectedCustomer ? formData.selectedCustomer.displayName : "Select a Customer"}
+                            </span>
+                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[400px] p-0" align="start">
+                          <Command>
+                            <div className="flex items-center border-b px-3">
+                              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                              <CommandInput
+                                placeholder="Search customers..."
+                                value={formData.customerSearchQuery}
+                                onValueChange={handleCustomerSearch}
+                              />
+                            </div>
+                            <div className="p-2 border-b">
+                              <Button
+                                size="sm"
+                                className="w-full bg-blue-600 hover:bg-blue-700"
+                                onClick={() => {
+                                  setCustomerDropdownOpen(false);
+                                  setLocation('/customers/new');
+                                }}
+                              >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Create Customer
+                              </Button>
+                            </div>
+                            <div className="max-h-[200px] overflow-y-auto">
+                              <CommandEmpty>No customers found.</CommandEmpty>
+                              <CommandGroup>
+                                {filteredCustomers.map((customer) => (
+                                  <CommandItem
+                                    key={customer.id}
+                                    onSelect={() => handleCustomerSelect(customer)}
+                                    className="cursor-pointer"
+                                  >
+                                    <div className="flex flex-col w-full">
+                                      <span className="font-medium">{customer.displayName || customer.name}</span>
+                                      {customer.email && (
+                                        <span className="text-sm text-slate-500">{customer.email}</span>
+                                      )}
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </div>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+
+                      {formData.selectedCustomer && (
+                        <div className="bg-slate-50 p-4 rounded-lg border space-y-2">
+                          <div className="font-medium text-slate-900">
+                            {formData.selectedCustomer.displayName || formData.selectedCustomer.name}
+                          </div>
+                          {formData.selectedCustomer.billingAddress && (
+                            <div className="text-sm text-slate-600">
+                              <div className="whitespace-pre-line">
+                                {[formData.selectedCustomer.billingAddress.street,
+                                formData.selectedCustomer.billingAddress.city,
+                                formData.selectedCustomer.billingAddress.state,
+                                formData.selectedCustomer.billingAddress.country,
+                                formData.selectedCustomer.billingAddress.pincode
+                                ].filter(Boolean).join('\n')}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-blue-600">Purchase Order#*</Label>
-                    <Input 
-                      value={purchaseOrderNumber} 
-                      readOnly 
+                    <Input
+                      value={purchaseOrderNumber}
+                      readOnly
                       className="bg-slate-50"
                       data-testid="input-po-number"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Reference#</Label>
-                    <Input 
+                    <Input
                       value={formData.referenceNumber}
-                      onChange={(e) => setFormData({...formData, referenceNumber: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
                       data-testid="input-reference"
                     />
                   </div>
@@ -470,19 +666,19 @@ export default function PurchaseOrderEdit() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Date</Label>
-                    <Input 
-                      type="date" 
+                    <Input
+                      type="date"
                       value={formData.date}
-                      onChange={(e) => setFormData({...formData, date: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                       data-testid="input-date"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Delivery Date</Label>
-                    <Input 
-                      type="date" 
+                    <Input
+                      type="date"
                       value={formData.deliveryDate}
-                      onChange={(e) => setFormData({...formData, deliveryDate: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
                       data-testid="input-delivery-date"
                     />
                   </div>
@@ -491,9 +687,9 @@ export default function PurchaseOrderEdit() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Shipment Preference</Label>
-                    <Select 
-                      value={formData.shipmentPreference} 
-                      onValueChange={(value) => setFormData({...formData, shipmentPreference: value})}
+                    <Select
+                      value={formData.shipmentPreference}
+                      onValueChange={(value) => setFormData({ ...formData, shipmentPreference: value })}
                     >
                       <SelectTrigger data-testid="select-shipment">
                         <SelectValue placeholder="Choose the shipment preference" />
@@ -507,9 +703,9 @@ export default function PurchaseOrderEdit() {
                   </div>
                   <div className="space-y-2">
                     <Label>Payment Terms</Label>
-                    <Select 
-                      value={formData.paymentTerms} 
-                      onValueChange={(value) => setFormData({...formData, paymentTerms: value})}
+                    <Select
+                      value={formData.paymentTerms}
+                      onValueChange={(value) => setFormData({ ...formData, paymentTerms: value })}
                     >
                       <SelectTrigger data-testid="select-payment-terms">
                         <SelectValue />
@@ -524,10 +720,10 @@ export default function PurchaseOrderEdit() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Checkbox 
+                  <Checkbox
                     id="reverseCharge"
                     checked={formData.reverseCharge}
-                    onCheckedChange={(checked) => setFormData({...formData, reverseCharge: checked as boolean})}
+                    onCheckedChange={(checked) => setFormData({ ...formData, reverseCharge: checked as boolean })}
                   />
                   <Label htmlFor="reverseCharge" className="text-sm">
                     This transaction is applicable for reverse charge
@@ -557,8 +753,8 @@ export default function PurchaseOrderEdit() {
                         <TableCell className="text-center">{index + 1}</TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            <Select 
-                              value={item.itemId} 
+                            <Select
+                              value={item.itemId}
                               onValueChange={(value) => selectItem(item.id, value)}
                             >
                               <SelectTrigger className="border-0 shadow-none p-0 h-auto">
@@ -572,7 +768,7 @@ export default function PurchaseOrderEdit() {
                                 ))}
                               </SelectContent>
                             </Select>
-                            <Input 
+                            <Input
                               placeholder="Description"
                               value={item.description}
                               onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
@@ -581,8 +777,8 @@ export default function PurchaseOrderEdit() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Select 
-                            value={item.account} 
+                          <Select
+                            value={item.account}
                             onValueChange={(value) => updateLineItem(item.id, 'account', value)}
                           >
                             <SelectTrigger className="border-0 shadow-none">
@@ -596,7 +792,7 @@ export default function PurchaseOrderEdit() {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          <Input 
+                          <Input
                             type="number"
                             value={item.quantity}
                             onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
@@ -604,7 +800,7 @@ export default function PurchaseOrderEdit() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Input 
+                          <Input
                             type="number"
                             value={item.rate}
                             onChange={(e) => updateLineItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
@@ -612,8 +808,8 @@ export default function PurchaseOrderEdit() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Select 
-                            value={item.tax} 
+                          <Select
+                            value={item.tax}
                             onValueChange={(value) => updateLineItem(item.id, 'tax', value)}
                           >
                             <SelectTrigger className="border-0 shadow-none">
@@ -630,9 +826,9 @@ export default function PurchaseOrderEdit() {
                           {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="text-red-500 h-8 w-8"
                             onClick={() => removeLineItem(item.id)}
                           >
@@ -646,8 +842,8 @@ export default function PurchaseOrderEdit() {
               </div>
 
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="gap-2"
                   onClick={addLineItem}
                   data-testid="button-add-row"
@@ -660,10 +856,10 @@ export default function PurchaseOrderEdit() {
             <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
               <div className="space-y-2">
                 <Label>Notes</Label>
-                <Textarea 
+                <Textarea
                   placeholder="Will be displayed on purchase order"
                   value={formData.notes}
-                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   data-testid="input-notes"
                 />
               </div>
@@ -671,10 +867,10 @@ export default function PurchaseOrderEdit() {
 
             <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
               <Label className="font-semibold">Terms & Conditions</Label>
-              <Textarea 
+              <Textarea
                 placeholder="Enter the terms and conditions of your business"
                 value={formData.termsAndConditions}
-                onChange={(e) => setFormData({...formData, termsAndConditions: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, termsAndConditions: e.target.value })}
                 className="min-h-24"
                 data-testid="input-terms"
               />
@@ -690,15 +886,15 @@ export default function PurchaseOrderEdit() {
 
               <div className="flex items-center gap-2">
                 <span className="text-slate-600 w-20">Discount</span>
-                <Input 
+                <Input
                   type="number"
                   value={formData.discountValue}
-                  onChange={(e) => setFormData({...formData, discountValue: parseFloat(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, discountValue: parseFloat(e.target.value) || 0 })}
                   className="w-20 text-right"
                 />
-                <Select 
-                  value={formData.discountType} 
-                  onValueChange={(value) => setFormData({...formData, discountType: value})}
+                <Select
+                  value={formData.discountType}
+                  onValueChange={(value) => setFormData({ ...formData, discountType: value })}
                 >
                   <SelectTrigger className="w-16">
                     <SelectValue />
@@ -715,10 +911,10 @@ export default function PurchaseOrderEdit() {
 
               <div className="flex items-center gap-2">
                 <span className="text-slate-600 w-20">Adjustment</span>
-                <Input 
+                <Input
                   type="number"
                   value={formData.adjustment}
-                  onChange={(e) => setFormData({...formData, adjustment: parseFloat(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, adjustment: parseFloat(e.target.value) || 0 })}
                   className="w-20 text-right"
                 />
               </div>

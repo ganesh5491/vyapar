@@ -295,7 +295,7 @@ export default function ItemsPage() {
                     />
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                    NAME ↕
+                    NAME 
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     PURCHASE DESCRIPTION

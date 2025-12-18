@@ -88,6 +88,59 @@ const INDIAN_STATES = [
   { code: "97", name: "Other Territory" },
 ];
 
+const GST_TREATMENTS = [
+  {
+    value: "registered_regular",
+    label: "Registered Business – Regular",
+    description: "Regular business registered under GST"
+  },
+  {
+    value: "registered_composition",
+    label: "Registered Business – Composition",
+    description: "Registered under GST Composition Scheme"
+  },
+  {
+    value: "unregistered_business",
+    label: "Unregistered Business",
+    description: "Business not registered under GST"
+  },
+  {
+    value: "consumer",
+    label: "Consumer",
+    description: "A normal consumer"
+  },
+  {
+    value: "overseas",
+    label: "Overseas",
+    description: "International import/export parties"
+  },
+  {
+    value: "sez_unit",
+    label: "Special Economic Zone (SEZ Unit)",
+    description: "Business operating inside SEZ"
+  },
+  {
+    value: "deemed_export",
+    label: "Deemed Export",
+    description: "Sales to EOU or EPCG license holders"
+  },
+  {
+    value: "tax_deductor",
+    label: "Tax Deductor",
+    description: "Govt agencies deducting TDS under GST"
+  },
+  {
+    value: "sez_developer",
+    label: "SEZ Developer",
+    description: "Owner/Developer of SEZ unit"
+  },
+  {
+    value: "isd",
+    label: "Input Service Distributor (ISD)",
+    description: "Head office distributing GST credits internally"
+  }
+];
+
 const EXEMPTION_REASONS = [
   "Exempt supply under GST",
   "Export without payment of tax",
@@ -99,6 +152,24 @@ const EXEMPTION_REASONS = [
   "Charitable organization",
   "Educational institution",
   "Healthcare services",
+];
+
+const PAYMENT_TERMS_OPTIONS = [
+  { value: "due_on_receipt", label: "Due on Receipt" },
+  { value: "net_15", label: "Net 15" },
+  { value: "net_30", label: "Net 30" },
+  { value: "net_45", label: "Net 45" },
+  { value: "net_60", label: "Net 60" },
+  { value: "due_end_of_month", label: "Due end of the month" },
+  { value: "due_end_of_next_month", label: "Due end of next month" }
+];
+
+const CURRENCIES = [
+  { value: "INR", label: "INR - Indian Rupee" },
+  { value: "USD", label: "USD - US Dollar" },
+  { value: "EUR", label: "EUR - Euro" },
+  { value: "GBP", label: "GBP - British Pound" },
+  { value: "AED", label: "AED - UAE Dirham" }
 ];
 
 const SALUTATIONS: Record<string, string> = {
@@ -210,6 +281,7 @@ const defaultValues: CustomerFormValues = {
   taxPreference: "taxable",
   exemptionReason: "",
   currency: "INR",
+  paymentTerms: "due_on_receipt",
   enablePortal: false,
   billingAddress: { street1: "", street2: "", city: "", state: "", country: "", pincode: "" },
   shippingAddress: { street1: "", street2: "", city: "", state: "", country: "", pincode: "" },
@@ -219,16 +291,31 @@ const defaultValues: CustomerFormValues = {
 
 function validateGSTIN(gstin: string): { valid: boolean; message?: string } {
   if (!gstin) return { valid: true };
-  
+
   if (gstin.length !== 15) {
     return { valid: false, message: "GSTIN must be 15 characters" };
   }
-  
+
   const gstinPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
   if (!gstinPattern.test(gstin)) {
     return { valid: false, message: "Invalid GSTIN format" };
   }
-  
+
+  return { valid: true };
+}
+
+function validatePAN(pan: string): { valid: boolean; message?: string } {
+  if (!pan) return { valid: true };
+
+  if (pan.length !== 10) {
+    return { valid: false, message: "PAN must be 10 characters" };
+  }
+
+  const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  if (!panPattern.test(pan)) {
+    return { valid: false, message: "Invalid PAN format (e.g., ABCDE1234F)" };
+  }
+
   return { valid: true };
 }
 
@@ -253,6 +340,13 @@ export default function CustomerCreate() {
   const [exemptionOpen, setExemptionOpen] = useState(false);
   const [exemptionSearch, setExemptionSearch] = useState("");
   const [gstinWarning, setGstinWarning] = useState<string | null>(null);
+  const [gstTreatmentOpen, setGstTreatmentOpen] = useState(false);
+  const [gstTreatmentSearch, setGstTreatmentSearch] = useState("");
+  const [placeOfSupplyOpen, setPlaceOfSupplyOpen] = useState(false);
+  const [placeOfSupplySearch, setPlaceOfSupplySearch] = useState("");
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [currencySearch, setCurrencySearch] = useState("");
+  const [paymentTermsOpen, setPaymentTermsOpen] = useState(false);
 
   interface AttachedFile {
     id: string;
@@ -335,6 +429,8 @@ export default function CustomerCreate() {
   const watchLastName = form.watch("lastName");
   const watchCompanyName = form.watch("companyName");
   const watchTaxPreference = form.watch("taxPreference");
+
+
   const watchPlaceOfSupply = form.watch("placeOfSupply");
   const watchGstin = form.watch("gstin");
 
@@ -404,7 +500,7 @@ export default function CustomerCreate() {
     if (!stateSearch) return INDIAN_STATES;
     const searchLower = stateSearch.toLowerCase();
     return INDIAN_STATES.filter(
-      state => 
+      state =>
         state.name.toLowerCase().includes(searchLower) ||
         state.code.includes(searchLower)
     );
@@ -413,7 +509,7 @@ export default function CustomerCreate() {
   const filteredExemptionReasons = useMemo(() => {
     if (!exemptionSearch) return EXEMPTION_REASONS;
     const searchLower = exemptionSearch.toLowerCase();
-    return EXEMPTION_REASONS.filter(reason => 
+    return EXEMPTION_REASONS.filter(reason =>
       reason.toLowerCase().includes(searchLower)
     );
   }, [exemptionSearch]);
@@ -456,7 +552,7 @@ export default function CustomerCreate() {
       phone: data.workPhone || "",
       workPhone: data.workPhone || "",
       mobile: data.mobile || "",
-      gstTreatment: data.taxPreference === "taxable" 
+      gstTreatment: data.taxPreference === "taxable"
         ? (gstTreatmentLabels[data.gstTreatment || ""] || data.gstTreatment || "")
         : "",
       gstin: data.taxPreference === "taxable" ? (data.gstin || "") : "",
@@ -694,8 +790,8 @@ export default function CustomerCreate() {
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                           <Command>
-                            <CommandInput 
-                              placeholder="Select or type to add..." 
+                            <CommandInput
+                              placeholder="Select or type to add..."
                               value={displayNameSearch}
                               onValueChange={(value) => {
                                 setDisplayNameSearch(value);
@@ -706,7 +802,7 @@ export default function CustomerCreate() {
                             <CommandList>
                               <CommandEmpty>
                                 {displayNameSearch ? (
-                                  <div 
+                                  <div
                                     className="py-2 px-3 cursor-pointer hover:bg-accent rounded-sm"
                                     onClick={() => {
                                       field.onChange(displayNameSearch.trim());
@@ -826,7 +922,7 @@ export default function CustomerCreate() {
                   name="taxPreference"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">Tax Preference</FormLabel>
+                      <FormLabel>Tax Preference<span className="text-red-500 ml-0.5">*</span></FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -857,26 +953,85 @@ export default function CustomerCreate() {
                     <FormField
                       control={form.control}
                       name="gstTreatment"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">GST Treatment</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-gst-treatment">
-                                <SelectValue placeholder="Select GST Treatment" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="registered_regular">Registered Business - Regular</SelectItem>
-                              <SelectItem value="registered_composition">Registered Business - Composition</SelectItem>
-                              <SelectItem value="unregistered">Unregistered Business</SelectItem>
-                              <SelectItem value="consumer">Consumer</SelectItem>
-                              <SelectItem value="overseas">Overseas</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const selectedGstTreatment = GST_TREATMENTS.find(g => g.value === field.value);
+                        const filteredGstTreatments = GST_TREATMENTS.filter(treatment =>
+                          treatment.label.toLowerCase().includes(gstTreatmentSearch.toLowerCase()) ||
+                          treatment.description.toLowerCase().includes(gstTreatmentSearch.toLowerCase())
+                        );
+
+                        return (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>GST Treatment<span className="text-red-500 ml-0.5">*</span></FormLabel>
+                            <Popover open={gstTreatmentOpen} onOpenChange={setGstTreatmentOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={gstTreatmentOpen}
+                                    className={cn(
+                                      "justify-between",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                    data-testid="button-gst-treatment"
+                                  >
+                                    {selectedGstTreatment ? selectedGstTreatment.label : "Select a GST treatment"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[400px] p-0">
+                                <Command>
+                                  <CommandInput
+                                    placeholder="Search GST treatment..."
+                                    value={gstTreatmentSearch}
+                                    onValueChange={setGstTreatmentSearch}
+                                    data-testid="input-gst-treatment-search"
+                                  />
+                                  <CommandList className="max-h-[300px]">
+                                    <CommandEmpty>No GST treatment found</CommandEmpty>
+                                    <CommandGroup>
+                                      {filteredGstTreatments.map((treatment) => (
+                                        <CommandItem
+                                          key={treatment.value}
+                                          value={treatment.label}
+                                          onSelect={() => {
+                                            field.onChange(treatment.value);
+                                            setGstTreatmentSearch("");
+                                            setGstTreatmentOpen(false);
+                                          }}
+                                          className="flex flex-col items-start p-3 cursor-pointer"
+                                          data-testid={`option-gst-treatment-${treatment.value}`}
+                                        >
+                                          <div className="flex items-center w-full">
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === treatment.value ? "opacity-100" : "opacity-0"
+                                              )}
+                                            />
+                                            <div className="flex-1">
+                                              <div className="font-medium">{treatment.label}</div>
+                                              <div className="text-sm text-slate-500 mt-0.5">{treatment.description}</div>
+                                            </div>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            {field.value && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {selectedGstTreatment?.description}
+                              </p>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                   )}
 
@@ -887,7 +1042,7 @@ export default function CustomerCreate() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <div className="flex items-center gap-1">
-                            <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">Exemption Reason</FormLabel>
+                            <FormLabel>Exemption Reason<span className="text-red-500 ml-0.5">*</span></FormLabel>
                             <Info className="h-3.5 w-3.5 text-slate-400" />
                           </div>
                           <Popover open={exemptionOpen} onOpenChange={setExemptionOpen}>
@@ -910,8 +1065,8 @@ export default function CustomerCreate() {
                             </PopoverTrigger>
                             <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                               <Command>
-                                <CommandInput 
-                                  placeholder="Search or type..." 
+                                <CommandInput
+                                  placeholder="Search or type..."
                                   value={exemptionSearch}
                                   onValueChange={(value) => {
                                     setExemptionSearch(value);
@@ -921,7 +1076,7 @@ export default function CustomerCreate() {
                                 <CommandList>
                                   <CommandEmpty>
                                     {exemptionSearch ? (
-                                      <div 
+                                      <div
                                         className="py-2 px-3 cursor-pointer hover:bg-accent rounded-sm"
                                         onClick={() => {
                                           field.onChange(exemptionSearch.trim());
@@ -972,7 +1127,7 @@ export default function CustomerCreate() {
                     name="placeOfSupply"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel className="text-red-500 after:content-['*'] after:ml-0.5">Place of Supply</FormLabel>
+                        <FormLabel>Place of Supply<span className="text-red-500 ml-0.5">*</span></FormLabel>
                         <Popover open={stateOpen} onOpenChange={setStateOpen}>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -986,7 +1141,7 @@ export default function CustomerCreate() {
                                 )}
                                 data-testid="combobox-place-of-supply"
                               >
-                                {field.value 
+                                {field.value
                                   ? INDIAN_STATES.find(s => s.code === field.value)?.name || field.value
                                   : "Select State"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -995,8 +1150,8 @@ export default function CustomerCreate() {
                           </PopoverTrigger>
                           <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                             <Command>
-                              <CommandInput 
-                                placeholder="Search state..." 
+                              <CommandInput
+                                placeholder="Search state..."
                                 value={stateSearch}
                                 onValueChange={setStateSearch}
                                 data-testid="input-state-search"
@@ -1021,7 +1176,7 @@ export default function CustomerCreate() {
                                           field.value === state.code ? "opacity-100" : "opacity-0"
                                         )}
                                       />
-                                      {state.code} - {state.name}
+                                      {state.name}
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
@@ -1035,6 +1190,7 @@ export default function CustomerCreate() {
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* PAN */}
                     <FormField
                       control={form.control}
                       name="pan"
@@ -1045,78 +1201,132 @@ export default function CustomerCreate() {
                             <Info className="h-3.5 w-3.5 text-slate-400" />
                           </div>
                           <FormControl>
-                            <Input 
-                              placeholder="e.g., ABCDE1234F" 
-                              {...field} 
+                            <Input
+                              placeholder="e.g., ABCDE1234F"
+                              {...field}
                               onChange={(e) => {
                                 const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
                                 field.onChange(value.substring(0, 10));
                               }}
                               maxLength={10}
-                              data-testid="input-pan" 
+                              data-testid="input-pan"
                             />
                           </FormControl>
-                          <FormMessage />
+                          {field.value && !validatePAN(field.value).valid && (
+                            <p className="text-red-500 text-sm mt-1">{validatePAN(field.value).message}</p>
+                          )}
                         </FormItem>
                       )}
                     />
 
-                    {watchTaxPreference === "taxable" && (
-                      <FormField
-                        control={form.control}
-                        name="gstin"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>GSTIN</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="e.g., 27AAGCA4900Q1ZE" 
-                                {...field} 
-                                onChange={(e) => {
-                                  const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                                  field.onChange(value.substring(0, 15));
-                                }}
-                                maxLength={15}
-                                data-testid="input-gstin"
-                              />
-                            </FormControl>
-                            {gstinWarning && (
-                              <div className="flex items-center gap-1 text-amber-600 text-sm mt-1">
-                                <AlertTriangle className="h-3.5 w-3.5" />
-                                <span>{gstinWarning}</span>
-                              </div>
-                            )}
-                            {field.value && !validateGSTIN(field.value).valid && (
-                              <p className="text-red-500 text-sm mt-1">{validateGSTIN(field.value).message}</p>
-                            )}
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
+                    {/* GSTIN */}
+                    <FormField
+                      control={form.control}
+                      name="gstin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-black">
+                            GSTIN
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g., 09ABCDE1234F2Z5"
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                field.onChange(value.substring(0, 15));
+                              }}
+                              maxLength={15}
+                              data-testid="input-gstin"
+                            />
+                          </FormControl>
+                          {field.value && !validateGSTIN(field.value).valid && (
+                            <p className="text-red-500 text-sm mt-1">{validateGSTIN(field.value).message}</p>
+                          )}
+                          {gstinWarning && (
+                            <div className="flex items-center gap-1 text-amber-600 text-sm mt-1">
+                              <AlertTriangle className="h-3.5 w-3.5" />
+                              <span>{gstinWarning}</span>
+                            </div>
+                          )}
+                        </FormItem>
+                      )}
+                    />
                   </div>
+                </div>
 
+                {/* Currency and Payment Terms */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="currency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Currency</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-currency">
-                              <SelectValue placeholder="Currency" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="INR">INR - Indian Rupee</SelectItem>
-                            <SelectItem value="USD">USD - US Dollar</SelectItem>
-                            <SelectItem value="EUR">EUR - Euro</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const selectedCurrency = CURRENCIES.find(c => c.value === field.value);
+                      const filteredCurrencies = CURRENCIES.filter(currency =>
+                        currency.label.toLowerCase().includes(currencySearch.toLowerCase())
+                      );
+
+                      return (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Currency</FormLabel>
+                          <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={currencyOpen}
+                                  className={cn(
+                                    "justify-between",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                  data-testid="button-currency"
+                                >
+                                  {selectedCurrency ? selectedCurrency.label : "INR - Indian Rupee"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[300px] p-0">
+                              <Command>
+                                <CommandInput
+                                  placeholder="Search currency..."
+                                  value={currencySearch}
+                                  onValueChange={setCurrencySearch}
+                                  data-testid="input-currency-search"
+                                />
+                                <CommandList className="max-h-[200px]">
+                                  <CommandEmpty>No currency found</CommandEmpty>
+                                  <CommandGroup>
+                                    {filteredCurrencies.map((currency) => (
+                                      <CommandItem
+                                        key={currency.value}
+                                        value={currency.label}
+                                        onSelect={() => {
+                                          field.onChange(currency.value);
+                                          setCurrencySearch("");
+                                          setCurrencyOpen(false);
+                                        }}
+                                        data-testid={`option-currency-${currency.value}`}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === currency.value ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {currency.label}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
 
                   <FormField
@@ -1139,25 +1349,62 @@ export default function CustomerCreate() {
                   <FormField
                     control={form.control}
                     name="paymentTerms"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Payment Terms</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-payment-terms">
-                              <SelectValue placeholder="Due on Receipt" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="receipt">Due on Receipt</SelectItem>
-                            <SelectItem value="net15">Net 15</SelectItem>
-                            <SelectItem value="net30">Net 30</SelectItem>
-                            <SelectItem value="net45">Net 45</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const selectedPaymentTerm = PAYMENT_TERMS_OPTIONS.find(p => p.value === field.value);
+
+                      return (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Payment Terms</FormLabel>
+                          <Popover open={paymentTermsOpen} onOpenChange={setPaymentTermsOpen}>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={paymentTermsOpen}
+                                  className={cn(
+                                    "justify-between",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                  data-testid="button-payment-terms"
+                                >
+                                  {selectedPaymentTerm ? selectedPaymentTerm.label : "Due on Receipt"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[280px] p-0">
+                              <Command>
+                                <CommandList>
+                                  <CommandGroup>
+                                    {PAYMENT_TERMS_OPTIONS.map((term) => (
+                                      <CommandItem
+                                        key={term.value}
+                                        value={term.label}
+                                        onSelect={() => {
+                                          field.onChange(term.value);
+                                          setPaymentTermsOpen(false);
+                                        }}
+                                        data-testid={`option-payment-terms-${term.value}`}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === term.value ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        {term.label}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
 
@@ -1196,7 +1443,7 @@ export default function CustomerCreate() {
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif"
                     data-testid="input-file-upload"
                   />
-                  <div 
+                  <div
                     className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                     data-testid="button-upload-area"
@@ -1685,7 +1932,7 @@ export default function CustomerCreate() {
                     <FormItem>
                       <FormLabel>Remarks</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="For internal use only. These remarks won't appear on any documents."
                           className="min-h-[100px]"
                           {...field}
@@ -1709,7 +1956,7 @@ export default function CustomerCreate() {
             </Button>
           </div>
         </form>
-      </Form>
-    </div>
+      </Form >
+    </div >
   );
 }
