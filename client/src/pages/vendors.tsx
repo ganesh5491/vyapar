@@ -7,6 +7,15 @@ import {
   Printer, Calendar, Link2, Clock, User, Filter, Send, Mail,
   Receipt, CreditCard, Wallet, BookOpen, Package, Paperclip
 } from "lucide-react";
+import jsPDF from "jspdf";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/hooks/use-pagination";
 import { TablePagination } from "@/components/table-pagination";
@@ -231,6 +240,8 @@ function VendorDetailPanel({
   
   const [statementPeriod, setStatementPeriod] = useState("this-month");
   const [statementFilter, setStatementFilter] = useState("all");
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [emailTo, setEmailTo] = useState(vendor.email || "");
 
   useEffect(() => {
     fetchVendorData();
@@ -287,6 +298,111 @@ function VendorDetailPanel({
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const title = `Vendor Statement - ${vendor.displayName}`;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      doc.setFontSize(16);
+      doc.text(title, pageWidth / 2, 20, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.text(`From 01/12/2025 To 31/12/2025`, pageWidth / 2, 30, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.text('SkilltonIT', 20, 45);
+      
+      doc.setFontSize(10);
+      doc.text(`To: ${vendor.displayName}`, 20, 60);
+      if (vendor.companyName) doc.text(vendor.companyName, 20, 67);
+      
+      doc.setFontSize(11);
+      doc.text('Account Summary', 20, 85);
+      
+      const summaryData = [
+        ['Opening Balance', formatCurrency(vendor.openingBalance || 0)],
+        ['Billed Amount', formatCurrency(0)],
+        ['Amount Paid', formatCurrency(0)],
+        ['Balance Due', formatCurrency(vendor.payables || 0)]
+      ];
+      
+      let yPos = 95;
+      summaryData.forEach(([label, value]) => {
+        doc.text(label, 20, yPos);
+        doc.text(value, pageWidth - 40, yPos, { align: 'right' });
+        yPos += 7;
+      });
+      
+      doc.save(`vendor-statement-${vendor.displayName}.pdf`);
+      toast({ title: "Statement downloaded as PDF" });
+    } catch (error) {
+      toast({ title: "Failed to download PDF", variant: "destructive" });
+    }
+  };
+
+  const handleDownloadWord = () => {
+    try {
+      const content = `
+VENDOR STATEMENT
+${vendor.displayName}
+
+Date Range: 01/12/2025 To 31/12/2025
+
+From: SkilltonIT
+To: ${vendor.displayName}
+${vendor.companyName ? `Company: ${vendor.companyName}` : ''}
+
+ACCOUNT SUMMARY
+Opening Balance: ${formatCurrency(vendor.openingBalance || 0)}
+Billed Amount: ${formatCurrency(0)}
+Amount Paid: ${formatCurrency(0)}
+Balance Due: ${formatCurrency(vendor.payables || 0)}
+
+Generated on ${new Date().toLocaleDateString('en-IN')}`;
+
+      const blob = new Blob([content], { type: 'application/msword' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `vendor-statement-${vendor.displayName}.doc`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      toast({ title: "Statement downloaded as Word document" });
+    } catch (error) {
+      toast({ title: "Failed to download Word document", variant: "destructive" });
+    }
+  };
+
+  const handleSendEmail = async () => {
+    try {
+      const response = await fetch(`/api/vendors/${vendor.id}/mails`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: emailTo,
+          subject: `Vendor Statement - ${vendor.displayName}`,
+          description: `Please find attached the vendor statement for ${vendor.displayName} from 01/12/2025 to 31/12/2025.`
+        })
+      });
+      if (response.ok) {
+        toast({ title: "Statement sent via email" });
+        setShowEmailDialog(false);
+        setEmailTo(vendor.email || "");
+        fetchVendorData();
+      } else {
+        toast({ title: "Failed to send email", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Failed to send email", variant: "destructive" });
+    }
   };
 
   const handleNewTransaction = (type: string) => {
@@ -880,16 +996,42 @@ function VendorDetailPanel({
                 </Select>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-9 w-9" data-testid="button-print">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-9 w-9" 
+                  onClick={handlePrint}
+                  data-testid="button-print"
+                  title="Print Statement"
+                >
                   <Printer className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9" data-testid="button-download-pdf">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-9 w-9" 
+                  onClick={handleDownloadPDF}
+                  data-testid="button-download-pdf"
+                  title="Download as PDF"
+                >
                   <Download className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9" data-testid="button-download-excel">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-9 w-9" 
+                  onClick={handleDownloadWord}
+                  data-testid="button-download-word"
+                  title="Download as Word"
+                >
                   <FileText className="h-4 w-4" />
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 gap-1.5" size="sm" data-testid="button-send-email">
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 gap-1.5" 
+                  size="sm" 
+                  onClick={() => setShowEmailDialog(true)}
+                  data-testid="button-send-email"
+                >
                   <Send className="h-4 w-4" />
                   Send Email
                 </Button>
@@ -992,6 +1134,41 @@ function VendorDetailPanel({
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Statement via Email</DialogTitle>
+            <DialogDescription>
+              Send the vendor statement to {vendor.displayName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700">Email Address</label>
+              <Input 
+                type="email"
+                value={emailTo}
+                onChange={(e) => setEmailTo(e.target.value)}
+                placeholder="Enter email address"
+                data-testid="input-email"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEmailDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={handleSendEmail}
+              data-testid="button-send-email-confirm"
+            >
+              Send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
