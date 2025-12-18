@@ -698,7 +698,20 @@ export default function PurchaseOrderEdit() {
                   data-testid="input-date"
                 />
               </div>
-              <div className="grid grid-cols-[100px_1fr] gap-4 items-center">
+              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
+                <Label>Delivery Date</Label>
+                <Input
+                  type="date"
+                  value={formData.deliveryDate}
+                  onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
+                  className="bg-white"
+                  data-testid="input-delivery-date"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
                 <Label>Payment Terms</Label>
                 <Select
                   value={formData.paymentTerms}
@@ -713,19 +726,6 @@ export default function PurchaseOrderEdit() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                <Label>Delivery Date</Label>
-                <Input
-                  type="date"
-                  value={formData.deliveryDate}
-                  onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
-                  className="bg-white"
-                  data-testid="input-delivery-date"
-                />
               </div>
               <div></div>
             </div>
@@ -745,6 +745,22 @@ export default function PurchaseOrderEdit() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* TDS/TCS Section */}
+            <div className="flex items-center gap-6 ml-[156px]">
+              <div className="flex items-center gap-3">
+                <RadioGroup value={formData.taxType} onValueChange={(value) => setFormData({ ...formData, taxType: value })} className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="TDS" id="tds" className="border-blue-600 text-blue-600" />
+                    <Label htmlFor="tds" className="cursor-pointer text-sm font-medium">TDS</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="TCS" id="tcs" className="border-blue-600 text-blue-600" />
+                    <Label htmlFor="tcs" className="cursor-pointer text-sm font-medium">TCS</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
 
             {/* Reverse Charge Checkbox */}

@@ -300,7 +300,56 @@
       "contactPersons": [],
       "createdAt": "2025-12-16T09:00:44.801Z",
       "updatedAt": "2025-12-16T09:00:44.801Z"
+    },
+    {
+      "id": "10",
+      "name": "Anii",
+      "displayName": "Anii",
+      "companyName": "Anii",
+      "email": "anni@gmail.com",
+      "phone": "9078675545",
+      "workPhone": "9078675545",
+      "mobile": "9122334455",
+      "gstTreatment": "Registered Business - Regular",
+      "gstin": "27AAMCC3732G1ZN",
+      "receivables": "0.00",
+      "avatar": "AN",
+      "pan": "AAGCA4900Q",
+      "customerType": "business",
+      "status": "active",
+      "billingAddress": {
+        "street": "605 B wing Ganesh Galaxy Dattanagar Ambegaon BK",
+        "city": "PUNE",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411046"
+      },
+      "shippingAddress": {
+        "street": "605 B wing Ganesh Galaxy Dattanagar Ambegaon BK",
+        "city": "PUNE",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411046"
+      },
+      "currency": "INR",
+      "paymentTerms": "net_15",
+      "placeOfSupply": "27 - Maharashtra",
+      "taxPreference": "taxable",
+      "exemptionReason": "",
+      "portalStatus": "disabled",
+      "contactPersons": [
+        {
+          "salutation": "mr",
+          "firstName": "Amol",
+          "lastName": "jadhav",
+          "email": "amol@gmail.com",
+          "workPhone": "7001855410",
+          "mobile": ""
+        }
+      ],
+      "createdAt": "2025-12-18T09:23:14.895Z",
+      "updatedAt": "2025-12-18T09:23:14.895Z"
     }
   ],
-  "nextCustomerId": 10
+  "nextCustomerId": 11
 }

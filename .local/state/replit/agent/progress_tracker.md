@@ -328,3 +328,10 @@
     - Save as Draft and Save as Open buttons at bottom
     - All styling matched to reference image colors and spacing
 [x] 86. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
+[x] 87. Updated Purchase Order UI to match screenshot (Dec 18, 2025):
+    - Reorganized form layout: Date and Delivery Date now on same row
+    - Moved Payment Terms to separate row below
+    - Added TDS/TCS radio buttons section before Reverse Charge checkbox
+    - Updated both purchase-order-create.tsx and purchase-order-edit.tsx
+    - Applied changes to both "New Purchase Order" and "Edit Purchase Order" pages
+    - Workflow restarted and verified running
