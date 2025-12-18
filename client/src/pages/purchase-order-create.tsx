@@ -422,7 +422,7 @@ export default function PurchaseOrderCreate() {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/20">
-      <div className="fixed inset-y-0 right-0 w-full max-w-4xl bg-slate-50 shadow-xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300">
+      <div className="fixed inset-y-0 left-0 right-0 bg-slate-50 shadow-xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300" style={{ marginLeft: 'calc(100vw - 80vw)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
           <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">

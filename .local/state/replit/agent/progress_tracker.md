@@ -343,3 +343,9 @@
     - Grouped TDS/TCS and Reverse Charge sections in container with bg-slate-50 border
     - Applied UI improvements to both purchase-order-create.tsx and purchase-order-edit.tsx
     - Workflow restarted and verified running
+[x] 89. Removed space between sidebar and Purchase Order panel (Dec 18, 2025):
+    - Changed panel positioning from "fixed inset-y-0 right-0 w-full max-w-4xl" to "fixed inset-y-0 left-0 right-0"
+    - Added marginLeft style calculation to position panel right after sidebar
+    - Applied to both purchase-order-create.tsx and purchase-order-edit.tsx
+    - Panel now extends seamlessly from sidebar to right edge with no gap
+    - Workflow restarted and verified running
