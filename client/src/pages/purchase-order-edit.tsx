@@ -599,14 +599,21 @@ export default function PurchaseOrderEdit() {
                     <button className="text-blue-600 text-xs">✎</button>
                   </div>
                   <div className="text-sm text-slate-600 space-y-0.5">
-                    <div className="font-medium">pune</div>
-                    <div>Flat No. 505, B wing, Ganesh Galaxy,</div>
-                    <div>Dattanagar</div>
-                    <div>Aambegaaon, pune.</div>
-                    <div>pune</div>
-                    <div>Andhra Pradesh 410046</div>
-                    <div>India</div>
-                    <div>Phone: 09373533564</div>
+                    {selectedVendor.billingAddress ? (
+                      <>
+                        {selectedVendor.billingAddress.attention && <div className="font-medium">{selectedVendor.billingAddress.attention}</div>}
+                        {selectedVendor.billingAddress.street && <div>{selectedVendor.billingAddress.street}</div>}
+                        {selectedVendor.billingAddress.street2 && <div>{selectedVendor.billingAddress.street2}</div>}
+                        {selectedVendor.billingAddress.city && <div>{selectedVendor.billingAddress.city}</div>}
+                        {selectedVendor.billingAddress.state && selectedVendor.billingAddress.pincode && (
+                          <div>{selectedVendor.billingAddress.state} {selectedVendor.billingAddress.pincode}</div>
+                        )}
+                        {selectedVendor.billingAddress.country && <div>{selectedVendor.billingAddress.country}</div>}
+                        {selectedVendor.phone && <div>Phone: {selectedVendor.phone}</div>}
+                      </>
+                    ) : (
+                      <div className="text-slate-400 italic">No billing address on file</div>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -615,14 +622,21 @@ export default function PurchaseOrderEdit() {
                     <button className="text-blue-600 text-xs">✎</button>
                   </div>
                   <div className="text-sm text-slate-600 space-y-0.5">
-                    <div className="font-medium">pune</div>
-                    <div>Flat No. 505, B wing, Ganesh Galaxy,</div>
-                    <div>Dattanagar</div>
-                    <div>Aambegaaon, pune.</div>
-                    <div>pune</div>
-                    <div>Andhra Pradesh 410046</div>
-                    <div>India</div>
-                    <div>Phone: 09373533564</div>
+                    {selectedVendor.shippingAddress ? (
+                      <>
+                        {selectedVendor.shippingAddress.attention && <div className="font-medium">{selectedVendor.shippingAddress.attention}</div>}
+                        {selectedVendor.shippingAddress.street && <div>{selectedVendor.shippingAddress.street}</div>}
+                        {selectedVendor.shippingAddress.street2 && <div>{selectedVendor.shippingAddress.street2}</div>}
+                        {selectedVendor.shippingAddress.city && <div>{selectedVendor.shippingAddress.city}</div>}
+                        {selectedVendor.shippingAddress.state && selectedVendor.shippingAddress.pincode && (
+                          <div>{selectedVendor.shippingAddress.state} {selectedVendor.shippingAddress.pincode}</div>
+                        )}
+                        {selectedVendor.shippingAddress.country && <div>{selectedVendor.shippingAddress.country}</div>}
+                        {selectedVendor.phone && <div>Phone: {selectedVendor.phone}</div>}
+                      </>
+                    ) : (
+                      <div className="text-slate-400 italic">No shipping address on file</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1198,20 +1212,39 @@ export default function PurchaseOrderEdit() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Label className="font-semibold text-sm">Email Communications</Label>
-                <span className="text-blue-600 text-sm cursor-pointer">Select All</span>
+                <span 
+                  className="text-blue-600 text-sm cursor-pointer"
+                  onClick={() => {
+                    const allEmails = selectedVendor?.email ? [selectedVendor.email] : [];
+                    setFormData({ ...formData, emailCommunications: allEmails });
+                  }}
+                >
+                  Select All
+                </span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" className="text-blue-600 border-blue-600">
                   <Plus className="h-4 w-4 mr-1" /> Add New
                 </Button>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-md text-sm">
-                  <Checkbox id="email1" />
-                  <label htmlFor="email1">Nikhil Kumar &lt;sujay.palande@cytosentech.com&gt;</label>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-md text-sm">
-                  <Checkbox id="email2" />
-                  <label htmlFor="email2">sujay palande &lt;ganesh.kale@cytosentech.com&gt;</label>
-                </div>
+                {selectedVendor?.email && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-md text-sm">
+                    <Checkbox 
+                      id="vendorEmail" 
+                      checked={formData.emailCommunications.includes(selectedVendor.email)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData({ ...formData, emailCommunications: [...formData.emailCommunications, selectedVendor.email] });
+                        } else {
+                          setFormData({ ...formData, emailCommunications: formData.emailCommunications.filter(e => e !== selectedVendor.email) });
+                        }
+                      }}
+                    />
+                    <label htmlFor="vendorEmail">{selectedVendor.displayName} &lt;{selectedVendor.email}&gt;</label>
+                  </div>
+                )}
+                {!selectedVendor?.email && (
+                  <span className="text-sm text-slate-400 italic">No vendor email available</span>
+                )}
               </div>
             </div>
 
