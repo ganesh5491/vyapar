@@ -127,6 +127,55 @@ const ACCOUNTS = [
   "Raw Materials"
 ];
 
+const INDIAN_STATES = [
+  "AN - Andaman and Nicobar Islands",
+  "AP - Andhra Pradesh",
+  "AR - Arunachal Pradesh",
+  "AS - Assam",
+  "BR - Bihar",
+  "CH - Chandigarh",
+  "CT - Chhattisgarh",
+  "DD - Daman and Diu",
+  "DL - Delhi",
+  "GA - Goa",
+  "GJ - Gujarat",
+  "HP - Himachal Pradesh",
+  "HR - Haryana",
+  "JH - Jharkhand",
+  "JK - Jammu and Kashmir",
+  "KA - Karnataka",
+  "KL - Kerala",
+  "LA - Ladakh",
+  "LD - Lakshadweep",
+  "MH - Maharashtra",
+  "ML - Meghalaya",
+  "MN - Manipur",
+  "MP - Madhya Pradesh",
+  "MZ - Mizoram",
+  "NL - Nagaland",
+  "OR - Odisha",
+  "PB - Punjab",
+  "PY - Puducherry",
+  "RJ - Rajasthan",
+  "SK - Sikkim",
+  "TN - Tamil Nadu",
+  "TR - Tripura",
+  "TS - Telangana",
+  "UK - Uttarakhand",
+  "UP - Uttar Pradesh",
+  "WB - West Bengal"
+];
+
+const GST_TREATMENTS = [
+  "Registered Business - Regular",
+  "Registered Business - Composition",
+  "Unregistered Business",
+  "Consumer",
+  "Overseas",
+  "Special Economic Zone",
+  "Deemed Export"
+];
+
 export default function PurchaseOrderEdit() {
   const [, setLocation] = useLocation();
   const params = useParams();
@@ -142,6 +191,9 @@ export default function PurchaseOrderEdit() {
   const [formData, setFormData] = useState({
     vendorId: "",
     vendorName: "",
+    gstTreatment: "Unregistered Business",
+    sourceOfSupply: "MH - Maharashtra",
+    destinationOfSupply: "MH - Maharashtra",
     deliveryAddressType: "organization",
     deliveryAddress: {
       attention: "",
@@ -153,7 +205,7 @@ export default function PurchaseOrderEdit() {
       countryRegion: "India"
     },
     organizationDetails: {
-      name: "Rohan Bhosale",
+      name: "Ganesh Kale",
       address: "Hinjewadi - Wakad road\nHinjewadi\nPune, Maharashtra\nIndia, 411057"
     },
     selectedCustomer: null as Customer | null,
@@ -171,7 +223,8 @@ export default function PurchaseOrderEdit() {
     taxType: "TDS",
     taxCategory: "",
     adjustment: 0,
-    adjustmentDescription: ""
+    adjustmentDescription: "",
+    emailCommunications: [] as string[]
   });
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -221,10 +274,13 @@ export default function PurchaseOrderEdit() {
         setFormData({
           vendorId: po.vendorId || "",
           vendorName: po.vendorName || "",
+          gstTreatment: po.gstTreatment || "Unregistered Business",
+          sourceOfSupply: po.sourceOfSupply || "MH - Maharashtra",
+          destinationOfSupply: po.destinationOfSupply || "MH - Maharashtra",
           deliveryAddressType: po.deliveryAddressType || "organization",
           deliveryAddress: po.deliveryAddress || {},
           organizationDetails: po.organizationDetails || {
-            name: "Rohan Bhosale",
+            name: "Ganesh Kale",
             address: "Hinjewadi - Wakad road\nHinjewadi\nPune, Maharashtra\nIndia, 411057"
           },
           selectedCustomer: null,
@@ -242,7 +298,8 @@ export default function PurchaseOrderEdit() {
           taxType: po.taxType || "TDS",
           taxCategory: po.taxCategory || "",
           adjustment: po.adjustment || 0,
-          adjustmentDescription: po.adjustmentDescription || ""
+          adjustmentDescription: po.adjustmentDescription || "",
+          emailCommunications: po.emailCommunications || []
         });
 
         setLineItems(po.items?.length > 0 ? po.items : [{
@@ -462,16 +519,14 @@ export default function PurchaseOrderEdit() {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/20">
-      <div className="fixed inset-y-0 left-0 right-0 bg-slate-50 shadow-xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300" style={{ marginLeft: 'calc(100vw - 80vw)' }}>
+      <div className="fixed inset-y-0 left-0 right-0 bg-slate-50 shadow-xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300" style={{ marginLeft: 'calc(100vw - 85vw)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
-          <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-            <span className="text-slate-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </span>
-            Edit Purchase Order - {purchaseOrderNumber}
+        <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200">
+          <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Edit Purchase Order
           </h1>
           <Button
             variant="ghost"
@@ -486,24 +541,24 @@ export default function PurchaseOrderEdit() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
-            {/* Vendor Section */}
-            <div className="grid grid-cols-[140px_1fr] gap-4 items-start">
-              <Label className="text-blue-600 pt-2.5">Vendor Name<span className="text-red-500">*</span></Label>
-              <div className="flex gap-2">
+          <div className="p-6 space-y-5">
+            {/* Vendor Section with Action Buttons */}
+            <div className="flex items-center gap-4">
+              <Label className="text-blue-600 font-medium w-28 shrink-0">Vendor Name<span className="text-red-500">*</span></Label>
+              <div className="flex-1 flex gap-2">
                 <Popover open={vendorDropdownOpen} onOpenChange={setVendorDropdownOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
-                      className="flex-1 justify-between bg-white"
+                      className="flex-1 max-w-sm justify-between bg-white text-sm"
                       data-testid="select-vendor"
                     >
                       {selectedVendor ? selectedVendor.displayName : "Select a Vendor"}
                       <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0" align="start">
+                  <PopoverContent className="w-[350px] p-0" align="start">
                     <Command>
                       <CommandInput placeholder="Search vendors..." />
                       <CommandEmpty>No vendor found.</CommandEmpty>
@@ -520,16 +575,93 @@ export default function PurchaseOrderEdit() {
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-blue-600 text-white hover:bg-blue-700"
-                  onClick={() => setLocation('/vendors/new')}
-                  data-testid="button-add-vendor"
-                >
+                <Button size="icon" variant="outline" className="bg-blue-600 text-white hover:bg-blue-700" data-testid="button-search-vendor">
                   <Search className="h-4 w-4" />
                 </Button>
+                <Button size="sm" variant="outline" className="text-slate-600">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  IN-E
+                </Button>
               </div>
+              {selectedVendor && (
+                <Button variant="link" className="text-blue-600 text-sm ml-auto" data-testid="link-vendor-details">
+                  {selectedVendor.displayName}'s Details <span className="ml-1">→</span>
+                </Button>
+              )}
+            </div>
+
+            {/* Billing and Shipping Address */}
+            {selectedVendor && (
+              <div className="grid grid-cols-2 gap-6 bg-slate-100 rounded-lg p-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium text-slate-700">BILLING ADDRESS</span>
+                    <button className="text-blue-600 text-xs">✎</button>
+                  </div>
+                  <div className="text-sm text-slate-600 space-y-0.5">
+                    <div className="font-medium">pune</div>
+                    <div>Flat No. 505, B wing, Ganesh Galaxy,</div>
+                    <div>Dattanagar</div>
+                    <div>Aambegaaon, pune.</div>
+                    <div>pune</div>
+                    <div>Andhra Pradesh 410046</div>
+                    <div>India</div>
+                    <div>Phone: 09373533564</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium text-slate-700">SHIPPING ADDRESS</span>
+                    <button className="text-blue-600 text-xs">✎</button>
+                  </div>
+                  <div className="text-sm text-slate-600 space-y-0.5">
+                    <div className="font-medium">pune</div>
+                    <div>Flat No. 505, B wing, Ganesh Galaxy,</div>
+                    <div>Dattanagar</div>
+                    <div>Aambegaaon, pune.</div>
+                    <div>pune</div>
+                    <div>Andhra Pradesh 410046</div>
+                    <div>India</div>
+                    <div>Phone: 09373533564</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* GST Treatment */}
+            <div className="flex items-center gap-4">
+              <Label className="w-28 shrink-0 text-sm">GST Treatment:</Label>
+              <span className="text-blue-600 text-sm">{formData.gstTreatment} ✎</span>
+            </div>
+
+            {/* Source of Supply */}
+            <div className="flex items-center gap-4">
+              <Label className="text-blue-600 font-medium w-28 shrink-0 text-sm">Source of Supply<span className="text-red-500">*</span></Label>
+              <Select value={formData.sourceOfSupply} onValueChange={(value) => setFormData({ ...formData, sourceOfSupply: value })}>
+                <SelectTrigger className="max-w-xs bg-white text-sm" data-testid="select-source-supply">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDIAN_STATES.map(state => (
+                    <SelectItem key={state} value={state}>{state}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Destination of Supply */}
+            <div className="flex items-center gap-4">
+              <Label className="text-blue-600 font-medium w-28 shrink-0 text-sm">Destination of Supply<span className="text-red-500">*</span></Label>
+              <Select value={formData.destinationOfSupply} onValueChange={(value) => setFormData({ ...formData, destinationOfSupply: value })}>
+                <SelectTrigger className="max-w-xs bg-white text-sm" data-testid="select-dest-supply">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {INDIAN_STATES.map(state => (
+                    <SelectItem key={state} value={state}>{state}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Delivery Address Section */}
@@ -1019,64 +1151,96 @@ export default function PurchaseOrderEdit() {
             </div>
 
             {/* Terms & Conditions and File Upload */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="font-semibold">Terms & Conditions</Label>
-                <Textarea
-                  placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
-                  value={formData.termsAndConditions}
-                  onChange={(e) => setFormData({ ...formData, termsAndConditions: e.target.value })}
-                  className="bg-white min-h-[100px]"
-                  data-testid="input-terms"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-semibold">Attach File(s) to Purchase Order</Label>
-                <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    multiple
-                    className="hidden"
+            <div className="bg-slate-100 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="font-semibold text-sm">Terms & Conditions</Label>
+                  <Textarea
+                    placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
+                    value={formData.termsAndConditions}
+                    onChange={(e) => setFormData({ ...formData, termsAndConditions: e.target.value })}
+                    className="bg-white min-h-[100px] text-sm"
+                    data-testid="input-terms"
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="h-4 w-4" /> Upload File
-                  </Button>
-                  <p className="text-xs text-slate-500 mt-2">
-                    You can upload a maximum of 10 files, 10MB each
-                  </p>
-                  {uploadedFiles.length > 0 && (
-                    <div className="mt-2 text-sm text-slate-600">
-                      {uploadedFiles.length} file(s) selected
-                    </div>
-                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-semibold text-sm">Attach File(s) to Purchase Order</Label>
+                  <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      multiple
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4" /> Upload File
+                    </Button>
+                    <p className="text-xs text-slate-500 mt-2">
+                      You can upload a maximum of 10 files, 10MB each
+                    </p>
+                    {uploadedFiles.length > 0 && (
+                      <div className="mt-2 text-sm text-slate-600">
+                        {uploadedFiles.length} file(s) selected
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Email Communications */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Label className="font-semibold text-sm">Email Communications</Label>
+                <span className="text-blue-600 text-sm cursor-pointer">Select All</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" className="text-blue-600 border-blue-600">
+                  <Plus className="h-4 w-4 mr-1" /> Add New
+                </Button>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-md text-sm">
+                  <Checkbox id="email1" />
+                  <label htmlFor="email1">Nikhil Kumar &lt;sujay.palande@cytosentech.com&gt;</label>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-md text-sm">
+                  <Checkbox id="email2" />
+                  <label htmlFor="email2">sujay palande &lt;ganesh.kale@cytosentech.com&gt;</label>
                 </div>
               </div>
             </div>
 
             {/* Additional Fields Info */}
             <div className="text-sm text-slate-500">
-              <span className="font-medium text-blue-600">Additional Fields:</span> Start adding custom fields for your purchase orders by going to Settings - Purchases - Purchase Orders.
+              <span className="font-medium text-blue-600">Additional Fields:</span> Start adding custom fields for your purchase orders by going to Settings → Purchases → Purchase Orders.
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200">
+        <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-slate-200">
           <div className="flex items-center gap-3">
+            <Button
+              onClick={() => handleSubmit()}
+              disabled={loading}
+              variant="outline"
+              className="text-slate-700"
+              data-testid="button-save-draft"
+            >
+              Save
+            </Button>
             <Button
               onClick={handleSubmit}
               disabled={loading}
               className="bg-blue-600 hover:bg-blue-700"
-              data-testid="button-save"
+              data-testid="button-save-send"
             >
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? "Saving..." : "Save and Send"}
             </Button>
             <Button
               variant="ghost"
