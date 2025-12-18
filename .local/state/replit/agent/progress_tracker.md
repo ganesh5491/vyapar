@@ -247,3 +247,4 @@
     - Shows warning message if registration number format is invalid
     - Fields are cleared when checkbox is unchecked
     - Both fields are required when MSME is checked (validation on save)
+[x] 78. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025)
