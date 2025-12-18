@@ -318,17 +318,13 @@
     - Redesigned as slide-out panel with close (X) button in header
     - Vendor Name dropdown with searchable Popover/Command and blue search button (data-testid="button-add-vendor")
     - Delivery Address section with Organization/Customer radio toggle
-    - Organization view with EDITABLE Organization Name input (data-testid="input-org-name") and Address textarea (data-testid="input-org-address")
-    - Customer view with searchable dropdown and "Create Customer" button
-    - Form fields in responsive grid layout: Purchase Order#, Reference#, Date, Delivery Date, Payment Terms, Shipment Preference
-    - "This transaction is applicable for reverse charge" checkbox
-    - Transaction Level selector with radio buttons
-    - Item Table with blue header: #, ITEM DETAILS, ACCOUNT, QUANTITY, RATE, TAX, AMOUNT columns
-    - "Bulk Actions" link in table header
-    - "Add New Row" and "Add Items in Bulk" buttons with blue styling
-    - Summary section: Sub Total, Discount (with % input), TDS/TCS radio toggle, Tax selector, Adjustment with help tooltip, Total
-    - Notes textarea section
-    - Terms & Conditions and File Upload sections side by side
-    - "Additional Fields" info text with blue link
-    - Footer with "Save as Draft", "Save and Send", "Cancel" buttons and "PDF Template" link
-    - Both create and edit pages now have consistent, user-friendly responsive design with all form fields fully functional
+    - Order# with auto-increment system, Reference# field, Expected Delivery Date picker
+    - Item table with horizontal scroll showing: ITEM DETAILS, ACCOUNT, QUANTITY, RATE, DISCOUNT (%), AMOUNT
+    - Blue "Add New Row" button for adding items (+ icon)
+    - Sub Total, Discount, Adjustment (+/-), Grand Total calculations
+    - Customer Notes section with blue link "+ Add more details"
+    - Terms & Conditions section with blue link "+ Add more details"
+    - Attachments section with "(Max size 10MB each, up to 10 files)" limit
+    - Save as Draft and Save as Open buttons at bottom
+    - All styling matched to reference image colors and spacing
+[x] 86. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
