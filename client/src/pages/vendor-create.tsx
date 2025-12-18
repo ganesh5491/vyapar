@@ -1,6 +1,16 @@
 import { useState, useRef } from "react";
 import { useLocation } from "wouter";
-import { Plus, Trash2, HelpCircle, Upload, Link as LinkIcon, Search, Check, X } from "lucide-react";
+import { Plus, Trash2, HelpCircle, Upload, Link as LinkIcon, Search, Check, X, Paperclip } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -139,7 +149,10 @@ export default function VendorCreate() {
   const [saving, setSaving] = useState(false);
   const [tdsOpen, setTdsOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [showAttachmentsDialog, setShowAttachmentsDialog] = useState(false);
+  const [newAttachments, setNewAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     salutation: "",
@@ -270,6 +283,30 @@ export default function VendorCreate() {
 
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      if (newAttachments.length + newFiles.length > 10) {
+        toast({ title: "Maximum 10 files allowed", variant: "destructive" });
+        return;
+      }
+      const validFiles = newFiles.filter(file => {
+        if (file.size > 10 * 1024 * 1024) {
+          toast({ title: `${file.name} exceeds 10MB limit`, variant: "destructive" });
+          return false;
+        }
+        return true;
+      });
+      setNewAttachments(prev => [...prev, ...validFiles]);
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setNewAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async () => {
@@ -675,16 +712,30 @@ export default function VendorCreate() {
 
                 <Label className="text-sm font-medium text-slate-700 pt-2">Documents</Label>
                 <div>
-                  <Button 
-                    variant="outline" 
-                    className="gap-2"
-                    onClick={() => fileInputRef.current?.click()}
-                    data-testid="button-upload-file"
-                    type="button"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Upload File
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="gap-2"
+                      onClick={() => fileInputRef.current?.click()}
+                      data-testid="button-upload-file"
+                      type="button"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Upload File
+                    </Button>
+                    {uploadedFiles.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowAttachmentsDialog(true)}
+                        data-testid="button-view-attachments"
+                        type="button"
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <Paperclip className="h-5 w-5" />
+                      </Button>
+                    )}
+                  </div>
                   <input 
                     ref={fileInputRef}
                     type="file"
@@ -1139,6 +1190,88 @@ export default function VendorCreate() {
           Cancel
         </Button>
       </div>
+
+      <Dialog open={showAttachmentsDialog} onOpenChange={setShowAttachmentsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Documents</DialogTitle>
+            <DialogDescription>Upload, view, and manage vendor documents</DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Button 
+                variant="outline" 
+                className="gap-2 w-full"
+                onClick={() => attachmentInputRef.current?.click()}
+                type="button"
+              >
+                <Upload className="h-4 w-4" />
+                Upload your Files
+              </Button>
+              <input 
+                ref={attachmentInputRef}
+                type="file"
+                multiple
+                hidden
+                onChange={handleAttachmentUpload}
+                accept="*/*"
+              />
+              <p className="text-xs text-slate-500 mt-2">Maximum 10 files, 10MB each</p>
+            </div>
+
+            {(uploadedFiles.length > 0 || newAttachments.length > 0) && (
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium text-slate-700 mb-3">
+                  Uploaded Files ({(uploadedFiles.length + newAttachments.length)}/10)
+                </p>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {uploadedFiles.map((file, index) => (
+                    <div key={`uploaded-${index}`} className="flex items-center justify-between bg-slate-50 p-3 rounded-md border border-slate-200">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-slate-900 truncate">{file.name}</p>
+                        <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(2)} KB</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:text-red-600 flex-shrink-0"
+                        onClick={() => removeFile(index)}
+                        type="button"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {newAttachments.map((file, index) => (
+                    <div key={`new-${index}`} className="flex items-center justify-between bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-slate-900 truncate">{file.name}</p>
+                        <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(2)} KB</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:text-red-600 flex-shrink-0"
+                        onClick={() => removeAttachment(index)}
+                        type="button"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAttachmentsDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
