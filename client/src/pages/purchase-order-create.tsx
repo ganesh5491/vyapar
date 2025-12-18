@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, X, Search, Trash2, Upload, ChevronDown } from "lucide-react";
+import { Plus, X, Search, Upload, ChevronDown, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,15 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Vendor {
   id: string;
@@ -142,6 +139,8 @@ export default function PurchaseOrderCreate() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [purchaseOrderNumber, setPurchaseOrderNumber] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState({
     vendorId: "",
@@ -157,10 +156,10 @@ export default function PurchaseOrderCreate() {
       countryRegion: "India"
     },
     organizationDetails: {
-      name: "CYBAEM TECH PRIVATE LIMITED",
-      address: "Hinjewadi\nPune\nMaharashtra 411057\nIndia"
+      name: "Rohan Bhosale",
+      address: "Hinjewadi - Wakad road\nHinjewadi\nPune, Maharashtra\nIndia, 411057"
     },
-    selectedCustomer: null,
+    selectedCustomer: null as Customer | null,
     customerSearchQuery: "",
     referenceNumber: "",
     date: new Date().toISOString().split('T')[0],
@@ -194,9 +193,10 @@ export default function PurchaseOrderCreate() {
   ]);
 
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
-  const [filteredCustomers, setFilteredCustomers] = useState<any[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -246,6 +246,7 @@ export default function PurchaseOrderCreate() {
         vendorId: vendor.id,
         vendorName: vendor.displayName
       });
+      setVendorDropdownOpen(false);
     }
   };
 
@@ -255,8 +256,8 @@ export default function PurchaseOrderCreate() {
       setFilteredCustomers(customers);
     } else {
       const filtered = customers.filter(customer =>
-        customer.name.toLowerCase().includes(query.toLowerCase()) ||
-        customer.displayName.toLowerCase().includes(query.toLowerCase())
+        customer.name?.toLowerCase().includes(query.toLowerCase()) ||
+        customer.displayName?.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredCustomers(filtered);
     }
@@ -269,18 +270,6 @@ export default function PurchaseOrderCreate() {
       customerSearchQuery: customer.displayName
     });
     setCustomerDropdownOpen(false);
-  };
-
-  const calculateLineItemAmount = (item: LineItem): number => {
-    const baseAmount = item.quantity * item.rate;
-    let taxAmount = 0;
-
-    if (item.tax && item.tax !== 'none') {
-      const taxRate = parseInt(item.tax.replace(/\D/g, '')) || 0;
-      taxAmount = (baseAmount * taxRate) / 100;
-    }
-
-    return baseAmount + taxAmount;
   };
 
   const updateLineItem = (id: string, field: keyof LineItem, value: any) => {
@@ -378,6 +367,16 @@ export default function PurchaseOrderCreate() {
     return subTotal - discount + taxTotal + formData.adjustment;
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (uploadedFiles.length + files.length > 10) {
+      toast({ title: "Maximum 10 files allowed", variant: "destructive" });
+      return;
+    }
+    const validFiles = files.filter(f => f.size <= 10 * 1024 * 1024);
+    setUploadedFiles([...uploadedFiles, ...validFiles]);
+  };
+
   const handleSubmit = async (saveAsDraft: boolean = false) => {
     if (!formData.vendorId) {
       toast({ title: "Please select a vendor", variant: "destructive" });
@@ -422,20 +421,606 @@ export default function PurchaseOrderCreate() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4">
-        <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLocation('/purchase-orders')}
-              data-testid="button-back"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-semibold">New Purchase Order</h1>
+    <div className="fixed inset-0 z-50 bg-black/20">
+      <div className="fixed inset-y-0 right-0 w-full max-w-4xl bg-slate-50 shadow-xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-300">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
+          <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+            <span className="text-slate-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </span>
+            New Purchase Order
+          </h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation('/purchase-orders')}
+            className="h-8 w-8"
+            data-testid="button-close"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Vendor Section */}
+            <div className="grid grid-cols-[140px_1fr] gap-4 items-start">
+              <Label className="text-blue-600 pt-2.5">Vendor Name<span className="text-red-500">*</span></Label>
+              <div className="flex gap-2">
+                <Popover open={vendorDropdownOpen} onOpenChange={setVendorDropdownOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="flex-1 justify-between bg-white"
+                      data-testid="select-vendor"
+                    >
+                      {selectedVendor ? selectedVendor.displayName : "Select a Vendor"}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search vendors..." />
+                      <CommandEmpty>No vendor found.</CommandEmpty>
+                      <CommandGroup className="max-h-[200px] overflow-y-auto">
+                        {vendors.map(vendor => (
+                          <CommandItem
+                            key={vendor.id}
+                            onSelect={() => handleVendorChange(vendor.id)}
+                          >
+                            {vendor.displayName}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={() => setLocation('/vendors/new')}
+                  data-testid="button-add-vendor"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Delivery Address Section */}
+            <div className="grid grid-cols-[140px_1fr] gap-4 items-start">
+              <Label className="text-blue-600 pt-2.5">Delivery Address<span className="text-red-500">*</span></Label>
+              <div className="space-y-3">
+                <RadioGroup
+                  value={formData.deliveryAddressType}
+                  onValueChange={(value) => setFormData({ ...formData, deliveryAddressType: value, selectedCustomer: null, customerSearchQuery: "" })}
+                  className="flex gap-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="organization" id="org" className="border-blue-600 text-blue-600" />
+                    <Label htmlFor="org" className="cursor-pointer">Organization</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="customer" id="customer" className="border-blue-600 text-blue-600" />
+                    <Label htmlFor="customer" className="cursor-pointer">Customer</Label>
+                  </div>
+                </RadioGroup>
+
+                {formData.deliveryAddressType === "organization" && (
+                  <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="orgName" className="text-sm font-medium">Organization Name</Label>
+                      <Input
+                        id="orgName"
+                        value={formData.organizationDetails.name}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          organizationDetails: {
+                            ...formData.organizationDetails,
+                            name: e.target.value
+                          }
+                        })}
+                        placeholder="Enter organization name"
+                        className="bg-white"
+                        data-testid="input-org-name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="orgAddress" className="text-sm font-medium">Organization Address</Label>
+                      <Textarea
+                        id="orgAddress"
+                        value={formData.organizationDetails.address}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          organizationDetails: {
+                            ...formData.organizationDetails,
+                            address: e.target.value
+                          }
+                        })}
+                        placeholder="Enter complete address"
+                        className="bg-white min-h-[80px]"
+                        rows={4}
+                        data-testid="input-org-address"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.deliveryAddressType === "customer" && (
+                  <div className="space-y-3">
+                    <Popover open={customerDropdownOpen} onOpenChange={setCustomerDropdownOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between bg-white"
+                        >
+                          {formData.selectedCustomer ? formData.selectedCustomer.displayName : "Select a Customer"}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search customers..."
+                            value={formData.customerSearchQuery}
+                            onValueChange={handleCustomerSearch}
+                          />
+                          <div className="p-2 border-b">
+                            <Button
+                              size="sm"
+                              className="w-full bg-blue-600 hover:bg-blue-700"
+                              onClick={() => {
+                                setCustomerDropdownOpen(false);
+                                setLocation('/customers/new');
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Create Customer
+                            </Button>
+                          </div>
+                          <CommandEmpty>No customers found.</CommandEmpty>
+                          <CommandGroup className="max-h-[200px] overflow-y-auto">
+                            {filteredCustomers.map((customer) => (
+                              <CommandItem
+                                key={customer.id}
+                                onSelect={() => handleCustomerSelect(customer)}
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{customer.displayName || customer.name}</span>
+                                  {customer.email && <span className="text-sm text-slate-500">{customer.email}</span>}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+
+                    {formData.selectedCustomer && (
+                      <div className="bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-600">
+                        <div className="font-medium text-slate-900 mb-1">{formData.selectedCustomer.displayName}</div>
+                        {formData.selectedCustomer.billingAddress && (
+                          <div className="whitespace-pre-line">
+                            {[
+                              formData.selectedCustomer.billingAddress.street,
+                              formData.selectedCustomer.billingAddress.city,
+                              formData.selectedCustomer.billingAddress.state,
+                              formData.selectedCustomer.billingAddress.country,
+                              formData.selectedCustomer.billingAddress.pincode
+                            ].filter(Boolean).join('\n')}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Form Fields Row */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
+                <Label className="text-blue-600">Purchase Order#<span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Input
+                    value={purchaseOrderNumber}
+                    readOnly
+                    className="bg-white pr-8"
+                    data-testid="input-po-number"
+                  />
+                  <button className="absolute right-2 top-1/2 -translate-y-1/2">
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" strokeWidth={2} />
+                      <path strokeLinecap="round" strokeWidth={2} d="M12 6v6l4 2" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] gap-4 items-center">
+                <Label>Reference#</Label>
+                <Input
+                  value={formData.referenceNumber}
+                  onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
+                  className="bg-white"
+                  data-testid="input-reference"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="bg-white"
+                  data-testid="input-date"
+                />
+              </div>
+              <div className="grid grid-cols-[100px_1fr] gap-4 items-center">
+                <Label>Payment Terms</Label>
+                <Select
+                  value={formData.paymentTerms}
+                  onValueChange={(value) => setFormData({ ...formData, paymentTerms: value })}
+                >
+                  <SelectTrigger className="bg-white" data-testid="select-payment-terms">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_TERMS.map(term => (
+                      <SelectItem key={term} value={term}>{term}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
+                <Label>Delivery Date</Label>
+                <Input
+                  type="date"
+                  value={formData.deliveryDate}
+                  onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
+                  className="bg-white"
+                  placeholder="dd/MM/yyyy"
+                  data-testid="input-delivery-date"
+                />
+              </div>
+              <div></div>
+            </div>
+
+            <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
+              <Label>Shipment Preference</Label>
+              <Select
+                value={formData.shipmentPreference}
+                onValueChange={(value) => setFormData({ ...formData, shipmentPreference: value })}
+              >
+                <SelectTrigger className="bg-white max-w-md" data-testid="select-shipment">
+                  <SelectValue placeholder="Choose the shipment preference or type to add" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SHIPMENT_PREFERENCES.map(pref => (
+                    <SelectItem key={pref} value={pref}>{pref}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Reverse Charge Checkbox */}
+            <div className="flex items-center gap-2 ml-[156px]">
+              <Checkbox
+                id="reverseCharge"
+                checked={formData.reverseCharge}
+                onCheckedChange={(checked) => setFormData({ ...formData, reverseCharge: checked as boolean })}
+              />
+              <Label htmlFor="reverseCharge" className="text-sm cursor-pointer">
+                This transaction is applicable for reverse charge
+              </Label>
+            </div>
+
+            {/* Item Table Section */}
+            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+              {/* Table Header Controls */}
+              <div className="flex items-center justify-between p-4 border-b border-slate-200">
+                <div className="flex items-center gap-4">
+                  <RadioGroup defaultValue="item" className="flex gap-4">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="item" id="item-level" className="border-blue-600 text-blue-600" />
+                      <Label htmlFor="item-level" className="cursor-pointer text-sm">At Transaction Level</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+
+              {/* Item Table */}
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-slate-800">Item Table</h3>
+                  <Button variant="link" className="text-blue-600 text-sm p-0 h-auto">
+                    Bulk Actions
+                  </Button>
+                </div>
+
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  {/* Table Header */}
+                  <div className="grid grid-cols-[40px_1fr_140px_80px_80px_120px_100px_40px] bg-blue-600 text-white text-sm font-medium">
+                    <div className="p-2 text-center">#</div>
+                    <div className="p-2">ITEM DETAILS</div>
+                    <div className="p-2">ACCOUNT</div>
+                    <div className="p-2 text-center">QUANTITY</div>
+                    <div className="p-2 text-right">RATE</div>
+                    <div className="p-2">TAX</div>
+                    <div className="p-2 text-right">AMOUNT</div>
+                    <div className="p-2"></div>
+                  </div>
+
+                  {/* Table Rows */}
+                  {lineItems.map((item, index) => (
+                    <div key={item.id} className="grid grid-cols-[40px_1fr_140px_80px_80px_120px_100px_40px] border-t border-slate-200 items-center">
+                      <div className="p-2 text-center text-slate-500">{index + 1}</div>
+                      <div className="p-2">
+                        <Select
+                          value={item.itemId}
+                          onValueChange={(value) => selectItem(item.id, value)}
+                        >
+                          <SelectTrigger className="border-0 shadow-none h-8 text-sm" data-testid={`select-item-${index}`}>
+                            <SelectValue placeholder="Type or click to select an item." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {items.map(i => (
+                              <SelectItem key={i.id} value={i.id}>
+                                {i.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="p-2">
+                        <Select
+                          value={item.account}
+                          onValueChange={(value) => updateLineItem(item.id, 'account', value)}
+                        >
+                          <SelectTrigger className="border-0 shadow-none h-8 text-sm" data-testid={`select-account-${index}`}>
+                            <SelectValue placeholder="Select an account" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ACCOUNTS.map(acc => (
+                              <SelectItem key={acc} value={acc}>{acc}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="p-2">
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                          className="text-center h-8 text-sm"
+                          data-testid={`input-quantity-${index}`}
+                        />
+                      </div>
+                      <div className="p-2">
+                        <Input
+                          type="number"
+                          value={item.rate}
+                          onChange={(e) => updateLineItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                          className="text-right h-8 text-sm"
+                          data-testid={`input-rate-${index}`}
+                        />
+                      </div>
+                      <div className="p-2">
+                        <Select
+                          value={item.tax}
+                          onValueChange={(value) => updateLineItem(item.id, 'tax', value)}
+                        >
+                          <SelectTrigger className="border-0 shadow-none h-8 text-sm" data-testid={`select-tax-${index}`}>
+                            <SelectValue placeholder="Select a Tax" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TAX_OPTIONS.map(tax => (
+                              <SelectItem key={tax.value} value={tax.value}>{tax.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="p-2 text-right font-medium text-sm">
+                        {item.amount.toFixed(2)}
+                      </div>
+                      <div className="p-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 h-6 w-6"
+                          onClick={() => removeLineItem(item.id)}
+                          data-testid={`button-remove-item-${index}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add Row Buttons */}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 border-blue-600"
+                    onClick={addLineItem}
+                    data-testid="button-add-row"
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add New Row
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-blue-600 border-blue-600">
+                    <Plus className="h-4 w-4 mr-1" /> Add Items in Bulk
+                  </Button>
+                </div>
+              </div>
+
+              {/* Summary Section */}
+              <div className="grid grid-cols-2 gap-8 p-4 border-t border-slate-200">
+                <div></div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Sub Total</span>
+                    <span className="font-medium">{calculateSubTotal().toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-600 w-24">Discount</span>
+                    <Input
+                      type="number"
+                      value={formData.discountValue}
+                      onChange={(e) => setFormData({ ...formData, discountValue: parseFloat(e.target.value) || 0 })}
+                      className="w-16 text-center h-8 text-sm"
+                      data-testid="input-discount"
+                    />
+                    <Select
+                      value={formData.discountType}
+                      onValueChange={(value) => setFormData({ ...formData, discountType: value })}
+                    >
+                      <SelectTrigger className="w-14 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="percent">%</SelectItem>
+                        <SelectItem value="flat">Rs.</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="ml-auto text-red-500">-{calculateDiscount().toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <RadioGroup
+                      value={formData.taxType}
+                      onValueChange={(value) => setFormData({ ...formData, taxType: value })}
+                      className="flex gap-3"
+                    >
+                      <div className="flex items-center space-x-1">
+                        <RadioGroupItem value="TDS" id="tds" className="h-3.5 w-3.5" />
+                        <Label htmlFor="tds" className="text-sm">TDS</Label>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <RadioGroupItem value="TCS" id="tcs" className="h-3.5 w-3.5" />
+                        <Label htmlFor="tcs" className="text-sm">TCS</Label>
+                      </div>
+                    </RadioGroup>
+                    <Select
+                      value={formData.taxCategory}
+                      onValueChange={(value) => setFormData({ ...formData, taxCategory: value })}
+                    >
+                      <SelectTrigger className="flex-1 h-8">
+                        <SelectValue placeholder="Select a Tax" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Tax</SelectItem>
+                        <SelectItem value="tds194c">194C - 1%</SelectItem>
+                        <SelectItem value="tds194j">194J - 10%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="text-red-500">-0.00</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-600 w-24">Adjustment</span>
+                    <Input
+                      type="number"
+                      value={formData.adjustment}
+                      onChange={(e) => setFormData({ ...formData, adjustment: parseFloat(e.target.value) || 0 })}
+                      className="w-20 text-right h-8 text-sm"
+                      data-testid="input-adjustment"
+                    />
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-slate-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Add any adjustments to the total</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <span className="ml-auto">{formData.adjustment.toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                    <span className="font-semibold text-lg">Total</span>
+                    <span className="font-semibold text-lg">{calculateTotal().toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes Section */}
+            <div className="grid grid-cols-[140px_1fr] gap-4 items-start">
+              <Label>Notes</Label>
+              <Textarea
+                placeholder="Will be displayed on purchase order"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                className="bg-white min-h-[80px]"
+                data-testid="input-notes"
+              />
+            </div>
+
+            {/* Terms & Conditions and File Upload */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="font-semibold">Terms & Conditions</Label>
+                <Textarea
+                  placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
+                  value={formData.termsAndConditions}
+                  onChange={(e) => setFormData({ ...formData, termsAndConditions: e.target.value })}
+                  className="bg-white min-h-[100px]"
+                  data-testid="input-terms"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">Attach File(s) to Purchase Order</Label>
+                <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    multiple
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4" /> Upload File
+                  </Button>
+                  <p className="text-xs text-slate-500 mt-2">
+                    You can upload a maximum of 10 files, 10MB each
+                  </p>
+                  {uploadedFiles.length > 0 && (
+                    <div className="mt-2 text-sm text-slate-600">
+                      {uploadedFiles.length} file(s) selected
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Fields Info */}
+            <div className="text-sm text-slate-500">
+              <span className="font-medium text-blue-600">Additional Fields:</span> Start adding custom fields for your purchase orders by going to Settings - Purchases - Purchase Orders.
+            </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200">
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -461,541 +1046,9 @@ export default function PurchaseOrderCreate() {
               Cancel
             </Button>
           </div>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-blue-600">Vendor Name*</Label>
-                  <div className="flex gap-2">
-                    <Select value={formData.vendorId} onValueChange={handleVendorChange}>
-                      <SelectTrigger data-testid="select-vendor">
-                        <SelectValue placeholder="Select a Vendor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {vendors.map(vendor => (
-                          <SelectItem key={vendor.id} value={vendor.id}>
-                            {vendor.displayName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="icon" onClick={() => setLocation('/vendors/new')}>
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <Label className="text-blue-600">Delivery Address*</Label>
-                  <RadioGroup
-                    value={formData.deliveryAddressType}
-                    onValueChange={(value) => setFormData({ ...formData, deliveryAddressType: value, selectedCustomer: null, customerSearchQuery: "" })}
-                    className="flex gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="organization" id="org" />
-                      <Label htmlFor="org">Organization</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="customer" id="customer" />
-                      <Label htmlFor="customer">Customer</Label>
-                    </div>
-                  </RadioGroup>
-
-                  {formData.deliveryAddressType === "organization" && (
-                    <div className="space-y-3 bg-slate-50 p-4 rounded-lg border">
-                      <div className="space-y-2">
-                        <Label htmlFor="orgName" className="text-sm font-medium">Organization Name</Label>
-                        <Input
-                          id="orgName"
-                          value={formData.organizationDetails.name}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            organizationDetails: {
-                              ...formData.organizationDetails,
-                              name: e.target.value
-                            }
-                          })}
-                          placeholder="Enter organization name"
-                          className="bg-white"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="orgAddress" className="text-sm font-medium">Organization Address</Label>
-                        <Textarea
-                          id="orgAddress"
-                          value={formData.organizationDetails.address}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            organizationDetails: {
-                              ...formData.organizationDetails,
-                              address: e.target.value
-                            }
-                          })}
-                          placeholder="Enter complete address"
-                          className="bg-white min-h-[80px]"
-                          rows={4}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {formData.deliveryAddressType === "customer" && (
-                    <div className="space-y-3">
-                      <Popover open={customerDropdownOpen} onOpenChange={setCustomerDropdownOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={customerDropdownOpen}
-                            className="w-full justify-between h-10 bg-white"
-                            onClick={() => setCustomerDropdownOpen(!customerDropdownOpen)}
-                          >
-                            <span className="text-left flex-1">
-                              {formData.selectedCustomer ? formData.selectedCustomer.displayName : "Select a Customer"}
-                            </span>
-                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[400px] p-0" align="start">
-                          <Command>
-                            <div className="flex items-center border-b px-3">
-                              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                              <CommandInput
-                                placeholder="Search customers..."
-                                value={formData.customerSearchQuery}
-                                onValueChange={handleCustomerSearch}
-                              />
-                            </div>
-                            <div className="p-2 border-b">
-                              <Button
-                                size="sm"
-                                className="w-full bg-blue-600 hover:bg-blue-700"
-                                onClick={() => {
-                                  setCustomerDropdownOpen(false);
-                                  setLocation('/customers/new');
-                                }}
-                              >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Create Customer
-                              </Button>
-                            </div>
-                            <div className="max-h-[200px] overflow-y-auto">
-                              <CommandEmpty>No customers found.</CommandEmpty>
-                              <CommandGroup>
-                                {filteredCustomers.map((customer) => (
-                                  <CommandItem
-                                    key={customer.id}
-                                    onSelect={() => handleCustomerSelect(customer)}
-                                    className="cursor-pointer"
-                                  >
-                                    <div className="flex flex-col w-full">
-                                      <span className="font-medium">{customer.displayName || customer.name}</span>
-                                      {customer.email && (
-                                        <span className="text-sm text-slate-500">{customer.email}</span>
-                                      )}
-                                    </div>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </div>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-
-                      {formData.selectedCustomer && (
-                        <div className="bg-slate-50 p-4 rounded-lg border space-y-2">
-                          <div className="font-medium text-slate-900">
-                            {formData.selectedCustomer.displayName || formData.selectedCustomer.name}
-                          </div>
-                          {formData.selectedCustomer.billingAddress && (
-                            <div className="text-sm text-slate-600">
-                              <div className="whitespace-pre-line">
-                                {[formData.selectedCustomer.billingAddress.street,
-                                formData.selectedCustomer.billingAddress.city,
-                                formData.selectedCustomer.billingAddress.state,
-                                formData.selectedCustomer.billingAddress.country,
-                                formData.selectedCustomer.billingAddress.pincode
-                                ].filter(Boolean).join('\n')}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-blue-600">Purchase Order#*</Label>
-                    <Input
-                      value={purchaseOrderNumber}
-                      readOnly
-                      className="bg-slate-50"
-                      data-testid="input-po-number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Reference#</Label>
-                    <Input
-                      value={formData.referenceNumber}
-                      onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
-                      data-testid="input-reference"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Date</Label>
-                    <Input
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      data-testid="input-date"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Delivery Date</Label>
-                    <Input
-                      type="date"
-                      value={formData.deliveryDate}
-                      onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
-                      data-testid="input-delivery-date"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Shipment Preference</Label>
-                    <Select
-                      value={formData.shipmentPreference}
-                      onValueChange={(value) => setFormData({ ...formData, shipmentPreference: value })}
-                    >
-                      <SelectTrigger data-testid="select-shipment">
-                        <SelectValue placeholder="Choose the shipment preference" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SHIPMENT_PREFERENCES.map(pref => (
-                          <SelectItem key={pref} value={pref}>{pref}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Payment Terms</Label>
-                    <Select
-                      value={formData.paymentTerms}
-                      onValueChange={(value) => setFormData({ ...formData, paymentTerms: value })}
-                    >
-                      <SelectTrigger data-testid="select-payment-terms">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PAYMENT_TERMS.map(term => (
-                          <SelectItem key={term} value={term}>{term}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="reverseCharge"
-                    checked={formData.reverseCharge}
-                    onCheckedChange={(checked) => setFormData({ ...formData, reverseCharge: checked as boolean })}
-                  />
-                  <Label htmlFor="reverseCharge" className="text-sm">
-                    This transaction is applicable for reverse charge
-                  </Label>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-4">
-                  <RadioGroup defaultValue="item" className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="item" id="item-level" />
-                      <Label htmlFor="item-level">At Item Level</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="transaction" id="transaction-level" />
-                      <Label htmlFor="transaction-level">At Transaction Level</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                <Button variant="link" className="text-blue-600">
-                  Bulk Actions
-                </Button>
-              </div>
-
-              <div className="border rounded-lg overflow-x-auto">
-                <Table className="min-w-[800px]">
-                  <TableHeader className="bg-blue-600">
-                    <TableRow>
-                      <TableHead className="text-white font-medium w-8">#</TableHead>
-                      <TableHead className="text-white font-medium min-w-[200px]">Item & Description</TableHead>
-                      <TableHead className="text-white font-medium min-w-[140px]">Account</TableHead>
-                      <TableHead className="text-white font-medium text-center w-24">Quantity</TableHead>
-                      <TableHead className="text-white font-medium text-right w-24">Rate</TableHead>
-                      <TableHead className="text-white font-medium min-w-[120px]">Tax</TableHead>
-                      <TableHead className="text-white font-medium text-right w-28">Amount</TableHead>
-                      <TableHead className="w-10"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {lineItems.map((item, index) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="text-center">{index + 1}</TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <Select
-                              value={item.itemId}
-                              onValueChange={(value) => selectItem(item.id, value)}
-                            >
-                              <SelectTrigger className="border-0 shadow-none p-0 h-auto" data-testid={`select-item-${index}`}>
-                                <SelectValue placeholder="Type or click to select an item." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {items.map(i => (
-                                  <SelectItem key={i.id} value={i.id}>
-                                    {i.name} - ₹{i.purchasePrice || i.sellingPrice || 0}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Input
-                              placeholder="Description"
-                              value={item.description}
-                              onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
-                              className="border-0 text-sm text-slate-500 p-0 h-auto focus-visible:ring-0"
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={item.account}
-                            onValueChange={(value) => updateLineItem(item.id, 'account', value)}
-                          >
-                            <SelectTrigger className="border-0 shadow-none" data-testid={`select-account-${index}`}>
-                              <SelectValue placeholder="Select an account" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ACCOUNTS.map(acc => (
-                                <SelectItem key={acc} value={acc}>{acc}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={item.quantity}
-                            onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="text-center"
-                            data-testid={`input-quantity-${index}`}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={item.rate}
-                            onChange={(e) => updateLineItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
-                            className="text-right"
-                            data-testid={`input-rate-${index}`}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={item.tax}
-                            onValueChange={(value) => updateLineItem(item.id, 'tax', value)}
-                          >
-                            <SelectTrigger className="border-0 shadow-none" data-testid={`select-tax-${index}`}>
-                              <SelectValue placeholder="Select a Tax" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {TAX_OPTIONS.map(tax => (
-                                <SelectItem key={tax.value} value={tax.value}>{tax.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-500 h-8 w-8"
-                            onClick={() => removeLineItem(item.id)}
-                            data-testid={`button-remove-item-${index}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={addLineItem}
-                  data-testid="button-add-row"
-                >
-                  <Plus className="h-4 w-4" /> Add New Row
-                </Button>
-                <Button variant="outline" className="gap-2">
-                  <Plus className="h-4 w-4" /> Add Items in Bulk
-                </Button>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>Notes</Label>
-                <Textarea
-                  placeholder="Will be displayed on purchase order"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  data-testid="input-notes"
-                />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-              <Label className="font-semibold">Terms & Conditions</Label>
-              <Textarea
-                placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
-                value={formData.termsAndConditions}
-                onChange={(e) => setFormData({ ...formData, termsAndConditions: e.target.value })}
-                className="min-h-24"
-                data-testid="input-terms"
-              />
-            </div>
+          <div className="text-sm text-slate-500">
+            PDF Template: <span className="text-blue-600 cursor-pointer">Standard Template</span>
           </div>
-
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-600">Sub Total</span>
-                <span className="font-medium">{calculateSubTotal().toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600 w-20">Discount</span>
-                <Input
-                  type="number"
-                  value={formData.discountValue}
-                  onChange={(e) => setFormData({ ...formData, discountValue: parseFloat(e.target.value) || 0 })}
-                  className="w-20 text-right"
-                  data-testid="input-discount"
-                />
-                <Select
-                  value={formData.discountType}
-                  onValueChange={(value) => setFormData({ ...formData, discountType: value })}
-                >
-                  <SelectTrigger className="w-16">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percent">%</SelectItem>
-                    <SelectItem value="flat">Rs.</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span className="ml-auto font-medium text-red-500">
-                  -{calculateDiscount().toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <RadioGroup
-                  value={formData.taxType}
-                  onValueChange={(value) => setFormData({ ...formData, taxType: value })}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="TDS" id="tds" />
-                    <Label htmlFor="tds">TDS</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="TCS" id="tcs" />
-                    <Label htmlFor="tcs">TCS</Label>
-                  </div>
-                </RadioGroup>
-                <Select
-                  value={formData.taxCategory}
-                  onValueChange={(value) => setFormData({ ...formData, taxCategory: value })}
-                >
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select a Tax" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Tax</SelectItem>
-                    <SelectItem value="tds194c">194C - 1%</SelectItem>
-                    <SelectItem value="tds194j">194J - 10%</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600 w-20">Adjustment</span>
-                <Input
-                  type="number"
-                  value={formData.adjustment}
-                  onChange={(e) => setFormData({ ...formData, adjustment: parseFloat(e.target.value) || 0 })}
-                  className="w-20 text-right"
-                  data-testid="input-adjustment"
-                />
-                <Input
-                  placeholder="Description"
-                  value={formData.adjustmentDescription}
-                  onChange={(e) => setFormData({ ...formData, adjustmentDescription: e.target.value })}
-                  className="flex-1"
-                />
-              </div>
-
-              <div className="border-t pt-4 flex items-center justify-between">
-                <span className="font-semibold text-lg">Total</span>
-                <span className="font-semibold text-lg">{calculateTotal().toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-              <Label className="font-semibold">Attach File(s) to Purchase Order</Label>
-              <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-slate-400" />
-                <Button variant="outline" className="gap-2">
-                  <Upload className="h-4 w-4" /> Upload File
-                </Button>
-                <p className="text-xs text-slate-500 mt-2">
-                  You can upload a maximum of 10 files, 10MB each
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-sm text-slate-500">
-          Additional Fields: Start adding custom fields for your purchase orders by going to Settings - Purchases - Purchase Orders.
-        </div>
-
-        <div className="text-right text-sm text-slate-500">
-          PDF Template: <span className="text-blue-600">Standard Template</span> <button className="text-blue-600 ml-2">Change</button>
         </div>
       </div>
     </div>
