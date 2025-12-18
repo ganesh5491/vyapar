@@ -264,3 +264,25 @@
     - Supports multiple file selection
     - Upload button now has onClick handler triggering file input click
     - Both vendor-create and vendor-edit files updated with full functionality
+[x] 80. Implemented Vendor Attachment Management System (Dec 18, 2025):
+    - Added Paperclip icon to vendor list table (last column before actions)
+    - Icon turns blue when vendor has attachments
+    - Clicking icon opens attachment management dialog
+    - Dialog displays:
+      * All uploaded attachments with names and sizes
+      * "Upload your Files" button to add new documents
+      * Delete button (X icon) for each attachment
+      * File size limit message (10 files max, 10MB each)
+      * Save/Cancel buttons
+    - Frontend state management:
+      * showAttachmentsDialog, selectedVendorForAttachments, newAttachments states
+      * fileInputRef for hidden file input
+      * handleAttachmentUpload validates files
+      * handleDeleteAttachment removes attachment
+      * handleSaveAttachments uploads files via FormData
+    - Added Attachment interface to Vendor model with: id, name, size, type, uploadedAt
+    - Backend API routes for attachment management:
+      * POST /api/vendors/:id/attachments - uploads files and stores metadata in vendor.attachments
+      * DELETE /api/vendors/:id/attachments/:attachmentId - removes attachment from vendor
+    - Attachments are stored as metadata (name, size, type, uploadedAt) in vendor JSON object
+    - All data persisted to server/data/vendors.json

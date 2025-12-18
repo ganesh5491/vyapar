@@ -1983,6 +1983,68 @@ export async function registerRoutes(
     }
   });
 
+  // Vendor Attachments API
+  app.post("/api/vendors/:id/attachments", (req: Request, res: Response) => {
+    try {
+      const data = readVendorsData();
+      const vendorIndex = data.vendors.findIndex((v: any) => v.id === req.params.id);
+      if (vendorIndex === -1) {
+        return res.status(404).json({ success: false, message: "Vendor not found" });
+      }
+      
+      if (!data.vendors[vendorIndex].attachments) {
+        data.vendors[vendorIndex].attachments = [];
+      }
+
+      const files = req.files as any[] || [];
+      const newAttachments = files.map((file: any) => ({
+        id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: file.originalname || file.name || 'file',
+        size: file.size || 0,
+        type: file.mimetype || file.type || 'application/octet-stream',
+        uploadedAt: new Date().toISOString()
+      }));
+
+      data.vendors[vendorIndex].attachments.push(...newAttachments);
+      data.vendors[vendorIndex].updatedAt = new Date().toISOString();
+      writeVendorsData(data);
+      
+      res.status(201).json({ success: true, data: newAttachments });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to upload attachments" });
+    }
+  });
+
+  app.delete("/api/vendors/:id/attachments/:attachmentId", (req: Request, res: Response) => {
+    try {
+      const data = readVendorsData();
+      const vendorIndex = data.vendors.findIndex((v: any) => v.id === req.params.id);
+      if (vendorIndex === -1) {
+        return res.status(404).json({ success: false, message: "Vendor not found" });
+      }
+
+      if (!data.vendors[vendorIndex].attachments) {
+        return res.status(404).json({ success: false, message: "Attachment not found" });
+      }
+
+      const attachmentIndex = data.vendors[vendorIndex].attachments.findIndex(
+        (a: any) => a.id === req.params.attachmentId
+      );
+      
+      if (attachmentIndex === -1) {
+        return res.status(404).json({ success: false, message: "Attachment not found" });
+      }
+
+      data.vendors[vendorIndex].attachments.splice(attachmentIndex, 1);
+      data.vendors[vendorIndex].updatedAt = new Date().toISOString();
+      writeVendorsData(data);
+      
+      res.json({ success: true, message: "Attachment deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete attachment" });
+    }
+  });
+
   // Delivery Challans API
   app.get("/api/delivery-challans/next-number", (req: Request, res: Response) => {
     try {

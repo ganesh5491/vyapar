@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { 
   Plus, Search, ChevronDown, ChevronRight, MoreHorizontal, Pencil, Trash2, 
   X, Copy, Ban, FileText, ArrowUpDown, Download, Upload, 
   Settings, RefreshCw, Building2, Bold, Italic, Underline,
   Printer, Calendar, Link2, Clock, User, Filter, Send, Mail,
-  Receipt, CreditCard, Wallet, BookOpen, Package
+  Receipt, CreditCard, Wallet, BookOpen, Package, Paperclip
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/hooks/use-pagination";
@@ -47,6 +47,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+interface Attachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
+}
+
 interface Vendor {
   id: string;
   salutation?: string;
@@ -68,6 +76,7 @@ interface Vendor {
   payables?: number;
   unusedCredits?: number;
   status?: string;
+  attachments?: Attachment[];
   billingAddress?: {
     attention?: string;
     countryRegion?: string;
@@ -998,6 +1007,10 @@ export default function VendorsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("name");
+  const [showAttachmentsDialog, setShowAttachmentsDialog] = useState(false);
+  const [selectedVendorForAttachments, setSelectedVendorForAttachments] = useState<Vendor | null>(null);
+  const [newAttachments, setNewAttachments] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchVendors();
@@ -1106,6 +1119,79 @@ export default function VendorsPage() {
     } finally {
       setDeleteDialogOpen(false);
       setVendorToDelete(null);
+    }
+  };
+
+  const handleAttachmentUpload = (e: React.ChangeEvent<HTMLInputElement>, vendorId: string) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      const selectedAttachments = selectedVendorForAttachments?.attachments || [];
+      const totalFiles = selectedAttachments.length + newAttachments.length + fileArray.length;
+      
+      if (totalFiles > 10) {
+        toast({ title: "Maximum 10 files allowed", variant: "destructive" });
+        return;
+      }
+
+      const validFiles = fileArray.filter(file => {
+        if (file.size > 10 * 1024 * 1024) {
+          toast({ title: `${file.name} exceeds 10MB limit`, variant: "destructive" });
+          return false;
+        }
+        return true;
+      });
+
+      setNewAttachments(prev => [...prev, ...validFiles]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDeleteAttachment = async (vendorId: string, attachmentId: string) => {
+    try {
+      const response = await fetch(`/api/vendors/${vendorId}/attachments/${attachmentId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        toast({ title: "Attachment deleted successfully" });
+        fetchVendors();
+        if (selectedVendor?.id === vendorId) {
+          fetchVendorDetail(vendorId);
+        }
+      }
+    } catch (error) {
+      toast({ title: "Failed to delete attachment", variant: "destructive" });
+    }
+  };
+
+  const handleSaveAttachments = async (vendorId: string) => {
+    if (newAttachments.length === 0) return;
+
+    try {
+      const formData = new FormData();
+      newAttachments.forEach(file => {
+        formData.append('files', file);
+      });
+
+      const response = await fetch(`/api/vendors/${vendorId}/attachments`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        toast({ title: "Attachments saved successfully" });
+        setNewAttachments([]);
+        setShowAttachmentsDialog(false);
+        setSelectedVendorForAttachments(null);
+        fetchVendors();
+        if (selectedVendor?.id === vendorId) {
+          fetchVendorDetail(vendorId);
+        }
+      }
+    } catch (error) {
+      toast({ title: "Failed to save attachments", variant: "destructive" });
     }
   };
 
@@ -1273,18 +1359,19 @@ export default function VendorsPage() {
                       {formatCurrencyLocal(vendor.unusedCredits || 0)}
                     </td>
                     <td className="px-3 py-3">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Search className="h-4 w-4 text-slate-400" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleVendorClick(vendor); }}>
-                            View Details
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVendorForAttachments(vendor);
+                          setShowAttachmentsDialog(true);
+                        }}
+                        data-testid={`button-attachments-${vendor.id}`}
+                      >
+                        <Paperclip className={`h-4 w-4 ${vendor.attachments && vendor.attachments.length > 0 ? 'text-blue-600' : 'text-slate-400'}`} />
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -1313,6 +1400,126 @@ export default function VendorsPage() {
             onToggleStatus={handleToggleStatus}
             onDelete={() => handleDelete(selectedVendor.id)}
           />
+        </div>
+      )}
+
+      {showAttachmentsDialog && selectedVendorForAttachments && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-900 rounded-lg w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Attachments - {selectedVendorForAttachments.displayName}</h3>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6"
+                onClick={() => {
+                  setShowAttachmentsDialog(false);
+                  setNewAttachments([]);
+                  setSelectedVendorForAttachments(null);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {selectedVendorForAttachments.attachments && selectedVendorForAttachments.attachments.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-2">Uploaded Files ({selectedVendorForAttachments.attachments.length}/10)</p>
+                  <div className="space-y-2">
+                    {selectedVendorForAttachments.attachments.map((attachment) => (
+                      <div key={attachment.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-3 rounded-md border border-slate-200 dark:border-slate-700">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-slate-900 dark:text-white truncate">{attachment.name}</p>
+                          <p className="text-xs text-slate-500">{(attachment.size / 1024).toFixed(2)} KB</p>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:text-red-600 flex-shrink-0"
+                          onClick={() => handleDeleteAttachment(selectedVendorForAttachments.id, attachment.id)}
+                          data-testid={`button-delete-attachment-${attachment.id}`}
+                          type="button"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                variant="outline" 
+                className="gap-2 w-full"
+                onClick={() => fileInputRef.current?.click()}
+                data-testid="button-upload-new-attachment"
+                type="button"
+              >
+                <Upload className="h-4 w-4" />
+                Upload your Files
+              </Button>
+              <input 
+                ref={fileInputRef}
+                type="file"
+                multiple
+                hidden
+                onChange={(e) => handleAttachmentUpload(e, selectedVendorForAttachments.id)}
+                accept="*/*"
+              />
+              
+              {newAttachments.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-2">New Files to Upload</p>
+                  <div className="space-y-2">
+                    {newAttachments.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-200 dark:border-blue-700">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-slate-900 dark:text-white truncate">{file.name}</p>
+                          <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(2)} KB</p>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:text-red-600 flex-shrink-0"
+                          onClick={() => setNewAttachments(prev => prev.filter((_, i) => i !== index))}
+                          type="button"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-slate-500">You can upload a maximum of 10 files, 10MB each</p>
+
+              <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <Button 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowAttachmentsDialog(false);
+                    setNewAttachments([]);
+                    setSelectedVendorForAttachments(null);
+                  }}
+                  type="button"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  onClick={() => handleSaveAttachments(selectedVendorForAttachments.id)}
+                  data-testid="button-save-attachments"
+                  type="button"
+                  disabled={newAttachments.length === 0}
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

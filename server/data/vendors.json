@@ -148,7 +148,7 @@
       "currency": "INR",
       "openingBalance": 2311,
       "paymentTerms": "Due on Receipt",
-      "tds": "tds-194c",
+      "tds": "interest-other-10",
       "billingAddress": {
         "attention": "Bhumkar chown pune",
         "countryRegion": "India",
@@ -204,7 +204,9 @@
       "payables": 0,
       "unusedCredits": 0,
       "createdAt": "2025-12-11T07:40:45.923Z",
-      "updatedAt": "2025-12-16T10:55:35.358Z"
+      "updatedAt": "2025-12-18T04:20:57.256Z",
+      "msmeRegistrationType": "",
+      "msmeRegistrationNumber": ""
     },
     {
       "id": "4",
