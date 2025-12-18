@@ -286,3 +286,4 @@
       * DELETE /api/vendors/:id/attachments/:attachmentId - removes attachment from vendor
     - Attachments are stored as metadata (name, size, type, uploadedAt) in vendor JSON object
     - All data persisted to server/data/vendors.json
+[x] 81. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
