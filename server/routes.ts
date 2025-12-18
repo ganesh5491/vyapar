@@ -21,6 +21,7 @@ const SALESPERSONS_FILE = path.join(DATA_DIR, "salespersons.json");
 const CREDIT_NOTES_FILE = path.join(DATA_DIR, "creditNotes.json");
 const PAYMENTS_RECEIVED_FILE = path.join(DATA_DIR, "paymentsReceived.json");
 const EWAY_BILLS_FILE = path.join(DATA_DIR, "ewayBills.json");
+const UNITS_FILE = path.join(DATA_DIR, "units.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -41,6 +42,57 @@ function readItems() {
 function writeItems(items: any[]) {
   ensureDataDir();
   fs.writeFileSync(ITEMS_FILE, JSON.stringify({ items }, null, 2));
+}
+
+const DEFAULT_UNITS = [
+  { id: "1", name: "box", uqc: "BOX" },
+  { id: "2", name: "cm", uqc: "CMS" },
+  { id: "3", name: "dz", uqc: "DOZ" },
+  { id: "4", name: "ft", uqc: "FTS" },
+  { id: "5", name: "g", uqc: "GMS" },
+  { id: "6", name: "in", uqc: "INC" },
+  { id: "7", name: "kg", uqc: "KGS" },
+  { id: "8", name: "km", uqc: "KME" },
+  { id: "9", name: "lb", uqc: "LBS" },
+  { id: "10", name: "mg", uqc: "MGS" },
+  { id: "11", name: "ml", uqc: "MLT" },
+  { id: "12", name: "m", uqc: "MTR" },
+  { id: "13", name: "pcs", uqc: "PCS" },
+  { id: "14", name: "ltr", uqc: "LTR" },
+  { id: "15", name: "ton", uqc: "TON" },
+  { id: "16", name: "pair", uqc: "PAR" },
+  { id: "17", name: "set", uqc: "SET" },
+  { id: "18", name: "sqm", uqc: "SQM" },
+  { id: "19", name: "sqft", uqc: "SQF" }
+];
+
+const DEFAULT_TAX_RATES = [
+  { id: "1", name: "GST0", rate: 0, label: "GST0 [0%]" },
+  { id: "2", name: "GST5", rate: 5, label: "GST5 [5%]" },
+  { id: "3", name: "GST12", rate: 12, label: "GST12 [12%]" },
+  { id: "4", name: "GST18", rate: 18, label: "GST18 [18%]" },
+  { id: "5", name: "GST28", rate: 28, label: "GST28 [28%]" },
+  { id: "6", name: "IGST0", rate: 0, label: "IGST0 [0%]" },
+  { id: "7", name: "IGST5", rate: 5, label: "IGST5 [5%]" },
+  { id: "8", name: "IGST12", rate: 12, label: "IGST12 [12%]" },
+  { id: "9", name: "IGST18", rate: 18, label: "IGST18 [18%]" },
+  { id: "10", name: "IGST28", rate: 28, label: "IGST28 [28%]" },
+  { id: "11", name: "Exempt", rate: 0, label: "Exempt" }
+];
+
+function readUnits() {
+  ensureDataDir();
+  if (!fs.existsSync(UNITS_FILE)) {
+    fs.writeFileSync(UNITS_FILE, JSON.stringify({ units: DEFAULT_UNITS }, null, 2));
+    return DEFAULT_UNITS;
+  }
+  const data = JSON.parse(fs.readFileSync(UNITS_FILE, "utf-8"));
+  return data.units || DEFAULT_UNITS;
+}
+
+function writeUnits(units: any[]) {
+  ensureDataDir();
+  fs.writeFileSync(UNITS_FILE, JSON.stringify({ units }, null, 2));
 }
 
 function readQuotesData() {
@@ -396,14 +448,130 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
+  // Units API
+  app.get("/api/units", (req: Request, res: Response) => {
+    try {
+      const units = readUnits();
+      res.json({ success: true, data: units });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to read units" });
+    }
+  });
+
+  app.post("/api/units", (req: Request, res: Response) => {
+    try {
+      const units = readUnits();
+      const { name, uqc } = req.body;
+      
+      // Validate required fields
+      if (!name || !uqc) {
+        return res.status(400).json({ success: false, error: "Unit name and UQC are required" });
+      }
+      
+      // Check for duplicate unit name
+      const existingUnit = units.find((u: any) => u.name.toLowerCase() === name.toLowerCase());
+      if (existingUnit) {
+        return res.status(400).json({ success: false, error: "Unit name already exists" });
+      }
+      
+      // Check for duplicate UQC
+      const existingUqc = units.find((u: any) => u.uqc.toUpperCase() === uqc.toUpperCase());
+      if (existingUqc) {
+        return res.status(400).json({ success: false, error: "UQC code already exists" });
+      }
+      
+      const newUnit = {
+        id: Date.now().toString(),
+        name: name.toLowerCase(),
+        uqc: uqc.toUpperCase()
+      };
+      units.push(newUnit);
+      writeUnits(units);
+      res.status(201).json({ success: true, data: newUnit });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to create unit" });
+    }
+  });
+
+  app.put("/api/units/:id", (req: Request, res: Response) => {
+    try {
+      const units = readUnits();
+      const index = units.findIndex((u: any) => u.id === req.params.id);
+      if (index === -1) {
+        return res.status(404).json({ success: false, error: "Unit not found" });
+      }
+      
+      const { name, uqc } = req.body;
+      
+      // Check for duplicate unit name (excluding current unit)
+      const existingUnit = units.find((u: any, i: number) => 
+        i !== index && u.name.toLowerCase() === name.toLowerCase()
+      );
+      if (existingUnit) {
+        return res.status(400).json({ success: false, error: "Unit name already exists" });
+      }
+      
+      // Check for duplicate UQC (excluding current unit)
+      const existingUqc = units.find((u: any, i: number) => 
+        i !== index && u.uqc.toUpperCase() === uqc.toUpperCase()
+      );
+      if (existingUqc) {
+        return res.status(400).json({ success: false, error: "UQC code already exists" });
+      }
+      
+      units[index] = {
+        ...units[index],
+        name: name.toLowerCase(),
+        uqc: uqc.toUpperCase()
+      };
+      writeUnits(units);
+      res.json({ success: true, data: units[index] });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to update unit" });
+    }
+  });
+
+  app.delete("/api/units/:id", (req: Request, res: Response) => {
+    try {
+      const units = readUnits();
+      const index = units.findIndex((u: any) => u.id === req.params.id);
+      if (index === -1) {
+        return res.status(404).json({ success: false, error: "Unit not found" });
+      }
+      units.splice(index, 1);
+      writeUnits(units);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to delete unit" });
+    }
+  });
+
+  // Tax Rates API
+  app.get("/api/taxRates", (req: Request, res: Response) => {
+    try {
+      res.json({ success: true, data: DEFAULT_TAX_RATES });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to read tax rates" });
+    }
+  });
+
   // Items API
   app.get("/api/items", (req: Request, res: Response) => {
     try {
-      const items = readItems();
+      let items = readItems();
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 1000;
+      const status = req.query.status as string;
+      
+      // Filter by status
+      if (status === 'active') {
+        items = items.filter((item: any) => item.isActive === true);
+      } else if (status === 'inactive') {
+        items = items.filter((item: any) => item.isActive === false);
+      }
+      // 'all' or no status returns all items
+      
       const offset = (page - 1) * limit;
-
       const paginatedItems = items.slice(offset, offset + limit);
 
       res.json({
