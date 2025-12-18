@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -46,6 +47,20 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
+
+interface Unit {
+  id: string;
+  name: string;
+  uqc: string;
+}
+
+interface TaxRate {
+  id: string;
+  name: string;
+  rate: number;
+  label: string;
+}
 
 const itemSchema = z.object({
   type: z.enum(["goods", "service"]),
@@ -54,35 +69,20 @@ const itemSchema = z.object({
   hsnSac: z.string().optional(),
   taxPreference: z.string().default("taxable"),
   exemptionReason: z.string().optional(),
-
   sellable: z.boolean().default(true),
   sellingPrice: z.string().optional(),
   salesAccount: z.string().default("sales"),
   salesDescription: z.string().optional(),
-
   purchasable: z.boolean().default(true),
   costPrice: z.string().optional(),
   purchaseAccount: z.string().default("cost_of_goods"),
   purchaseDescription: z.string().optional(),
   preferredVendor: z.string().optional(),
-
   intraStateTaxRate: z.string().default("gst18"),
   interStateTaxRate: z.string().default("igst18"),
 });
 
 type ItemFormValues = z.infer<typeof itemSchema>;
-
-const units = [
-  { label: "g (Grams)", value: "g" },
-  { label: "in (Inches)", value: "in" },
-  { label: "kg (Kilograms)", value: "kg" },
-  { label: "km (Kilometers)", value: "km" },
-  { label: "lb (Pounds)", value: "lb" },
-  { label: "mg (Milli Grams)", value: "mg" },
-  { label: "ml (Milli Litre)", value: "ml" },
-  { label: "m (Meter)", value: "m" },
-  { label: "pcs (Pieces)", value: "pcs" },
-];
 
 const taxPreferences = [
   { label: "Taxable", value: "taxable" },
@@ -98,20 +98,96 @@ const exemptionReasons = [
   { label: "Other exemption", value: "other" },
 ];
 
-const salesAccounts = [
-  { label: "Sales", value: "sales" },
-  { label: "General Income", value: "general_income" },
-  { label: "Other Charges", value: "other_charges" },
-  { label: "Interest Income", value: "interest_income" },
+// Hierarchical account structure - matches New Item exactly
+const ACCOUNT_HIERARCHY = [
+  {
+    category: "Other Current Asset",
+    accounts: [
+      { label: "Advance Tax", value: "advance_tax" },
+      { label: "Employee Advance", value: "employee_advance" },
+      { label: "Input Tax Credits", value: "input_tax_credits", children: [
+        { label: "Input CGST", value: "input_cgst" },
+        { label: "Input IGST", value: "input_igst" },
+        { label: "Input SGST", value: "input_sgst" },
+      ]},
+      { label: "Prepaid Expenses", value: "prepaid_expenses" },
+      { label: "Reverse Charge Tax Input but not due", value: "reverse_charge_input" },
+      { label: "TDS Receivable", value: "tds_receivable" },
+    ]
+  },
+  {
+    category: "Fixed Asset",
+    accounts: [
+      { label: "Furniture and Equipment", value: "furniture_equipment" },
+    ]
+  },
+  {
+    category: "Other Current Liability",
+    accounts: [
+      { label: "Employee Reimbursements", value: "employee_reimbursements" },
+      { label: "GST Payable", value: "gst_payable", children: [
+        { label: "Output CGST", value: "output_cgst" },
+        { label: "Output IGST", value: "output_igst" },
+        { label: "Output SGST", value: "output_sgst" },
+      ]},
+      { label: "Opening Balance Adjustments", value: "opening_balance_adjustments" },
+      { label: "Tax Payable", value: "tax_payable" },
+      { label: "TDS Payable", value: "tds_payable" },
+      { label: "Unearned Revenue", value: "unearned_revenue" },
+    ]
+  },
+  {
+    category: "Income",
+    accounts: [
+      { label: "Discount", value: "discount" },
+      { label: "General Income", value: "general_income" },
+      { label: "Interest Income", value: "interest_income" },
+      { label: "Late Fee Income", value: "late_fee_income" },
+      { label: "Other Charges", value: "other_charges" },
+      { label: "Sales", value: "sales" },
+      { label: "Shipping Charge", value: "shipping_charge" },
+    ]
+  },
+  {
+    category: "Cost of Goods Sold",
+    accounts: [
+      { label: "Cost of Goods Sold", value: "cost_of_goods" },
+      { label: "Job Costing", value: "job_costing" },
+      { label: "Materials", value: "materials" },
+      { label: "Subcontractor", value: "subcontractor" },
+    ]
+  },
+  {
+    category: "Expense",
+    accounts: [
+      { label: "Advertising And Marketing", value: "advertising_marketing" },
+      { label: "Automobile Expense", value: "automobile_expense" },
+      { label: "Bank Fees and Charges", value: "bank_fees" },
+      { label: "Consultant Expense", value: "consultant_expense" },
+      { label: "Office Supplies", value: "office_supplies" },
+      { label: "Rent Expense", value: "rent_expense" },
+      { label: "Travel Expense", value: "travel_expense" },
+    ]
+  }
 ];
 
-const purchaseAccounts = [
-  { label: "Cost of Goods Sold", value: "cost_of_goods" },
-  { label: "Job Costing", value: "job_costing" },
-  { label: "Materials", value: "materials" },
-];
+// Flatten accounts for search
+const flattenAccounts = () => {
+  const flat: { label: string; value: string; category: string; indent: number }[] = [];
+  ACCOUNT_HIERARCHY.forEach(cat => {
+    cat.accounts.forEach(acc => {
+      flat.push({ label: acc.label, value: acc.value, category: cat.category, indent: 0 });
+      if ('children' in acc && acc.children) {
+        acc.children.forEach((child: any) => {
+          flat.push({ label: child.label, value: child.value, category: cat.category, indent: 1 });
+        });
+      }
+    });
+  });
+  return flat;
+};
 
-// Vendors will be fetched from API
+const ALL_ACCOUNTS = flattenAccounts();
 
 export default function ProductEdit() {
   const [, setLocation] = useLocation();
@@ -119,8 +195,28 @@ export default function ProductEdit() {
   const { toast } = useToast();
   const [unitOpen, setUnitOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [salesAccountOpen, setSalesAccountOpen] = useState(false);
+  const [purchaseAccountOpen, setPurchaseAccountOpen] = useState(false);
+  const [intraStateTaxOpen, setIntraStateTaxOpen] = useState(false);
+  const [interStateTaxOpen, setInterStateTaxOpen] = useState(false);
   const [vendors, setVendors] = useState<{ label: string; value: string }[]>([]);
   const [vendorsLoading, setVendorsLoading] = useState(true);
+
+  // Fetch units from API
+  const { data: unitsData } = useQuery<{ success: boolean; data: Unit[] }>({
+    queryKey: ['/api/units'],
+  });
+  const units = unitsData?.data || [];
+
+  // Fetch tax rates from API
+  const { data: taxRatesData } = useQuery<{ success: boolean; data: TaxRate[] }>({
+    queryKey: ['/api/taxRates'],
+  });
+  const taxRates = taxRatesData?.data || [];
+
+  // Separate GST and IGST rates
+  const gstRates = taxRates.filter(t => t.name.startsWith('GST') || t.name === 'Exempt');
+  const igstRates = taxRates.filter(t => t.name.startsWith('IGST') || t.name === 'Exempt');
 
   // Fetch vendors from API
   useEffect(() => {
@@ -129,7 +225,6 @@ export default function ProductEdit() {
         const response = await fetch('/api/vendors');
         if (response.ok) {
           const result = await response.json();
-          // API returns { success: true, data: vendors[] }
           const vendorOptions = result.data.map((vendor: any) => ({
             label: vendor.displayName || vendor.companyName || `${vendor.firstName} ${vendor.lastName}`.trim(),
             value: vendor.id,
@@ -156,8 +251,8 @@ export default function ProductEdit() {
       purchasable: true,
       salesAccount: "sales",
       purchaseAccount: "cost_of_goods",
-      intraStateTaxRate: "gst18",
-      interStateTaxRate: "igst18",
+      intraStateTaxRate: "GST18",
+      interStateTaxRate: "IGST18",
     },
   });
 
@@ -178,6 +273,7 @@ export default function ProductEdit() {
           unit: item.usageUnit || "",
           hsnSac: item.hsnSac || "",
           taxPreference: item.taxPreference || "taxable",
+          exemptionReason: item.exemptionReason || "",
           sellable: true,
           sellingPrice: item.rate?.replace("₹", "") || "",
           salesAccount: item.salesAccount || "sales",
@@ -186,8 +282,9 @@ export default function ProductEdit() {
           costPrice: item.purchaseRate?.replace("₹", "") || "",
           purchaseAccount: item.purchaseAccount || "cost_of_goods",
           purchaseDescription: item.purchaseDescription || "",
-          intraStateTaxRate: item.intraStateTax || "gst18",
-          interStateTaxRate: item.interStateTax || "igst18",
+          preferredVendor: item.preferredVendor || "",
+          intraStateTaxRate: item.intraStateTax || "GST18",
+          interStateTaxRate: item.interStateTax || "IGST18",
         });
       } else {
         toast({
@@ -224,10 +321,12 @@ export default function ProductEdit() {
         description: data.salesDescription || "",
         purchaseDescription: data.purchaseDescription || "",
         taxPreference: data.taxPreference,
+        exemptionReason: data.exemptionReason || "",
         intraStateTax: data.intraStateTaxRate,
         interStateTax: data.interStateTaxRate,
         salesAccount: data.salesAccount,
         purchaseAccount: data.purchaseAccount,
+        preferredVendor: data.preferredVendor || "",
       };
 
       const response = await fetch(`/api/items/${params.id}`, {
@@ -237,6 +336,7 @@ export default function ProductEdit() {
       });
 
       if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/items'] });
         toast({
           title: "Item Updated",
           description: "The item has been successfully updated.",
@@ -252,6 +352,16 @@ export default function ProductEdit() {
         variant: "destructive",
       });
     }
+  };
+
+  const getAccountLabel = (value: string) => {
+    const acc = ALL_ACCOUNTS.find(a => a.value === value);
+    return acc?.label || value;
+  };
+
+  const getTaxRateLabel = (value: string) => {
+    const tax = taxRates.find(t => t.name === value);
+    return tax?.label || value;
   };
 
   if (loading) {
@@ -307,11 +417,11 @@ export default function ProductEdit() {
                         className="flex gap-6"
                       >
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="goods" id="goods-edit" className="border-blue-600 text-blue-600" />
+                          <RadioGroupItem value="goods" id="goods-edit" className="border-blue-600 text-blue-600" data-testid="radio-goods-edit" />
                           <Label htmlFor="goods-edit" className="font-normal cursor-pointer">Goods</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="service" id="service-edit" className="border-blue-600 text-blue-600" />
+                          <RadioGroupItem value="service" id="service-edit" className="border-blue-600 text-blue-600" data-testid="radio-service-edit" />
                           <Label htmlFor="service-edit" className="font-normal cursor-pointer">Service</Label>
                         </div>
                       </RadioGroup>
@@ -325,10 +435,12 @@ export default function ProductEdit() {
                 name="name"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-[120px_1fr] items-start gap-4">
-                    <FormLabel className="text-red-500 pt-2.5">Name*</FormLabel>
+                    <FormLabel className="text-slate-700 pt-2.5">
+                      Name<span className="text-red-600">*</span>
+                    </FormLabel>
                     <div>
                       <FormControl>
-                        <Input {...field} className="bg-white border-blue-500 focus:border-blue-600" data-testid="input-item-name" />
+                        <Input {...field} className="bg-white border-blue-500 focus:border-blue-600" data-testid="input-item-name-edit" />
                       </FormControl>
                       <FormMessage />
                     </div>
@@ -336,6 +448,7 @@ export default function ProductEdit() {
                 )}
               />
 
+              {/* Unit Dropdown with API data */}
               <FormField
                 control={form.control}
                 name="unit"
@@ -363,9 +476,12 @@ export default function ProductEdit() {
                                 "w-full justify-between font-normal bg-white",
                                 !field.value && "text-muted-foreground"
                               )}
+                              data-testid="select-unit-edit"
                             >
                               {field.value
-                                ? units.find((unit) => unit.value === field.value)?.label
+                                ? units.find((u) => u.name === field.value)
+                                  ? `${field.value} (${units.find((u) => u.name === field.value)?.uqc || ''})`
+                                  : field.value
                                 : "Select unit..."}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -374,31 +490,38 @@ export default function ProductEdit() {
                         <PopoverContent className="w-[300px] p-0" align="start">
                           <Command>
                             <CommandInput placeholder="Search" />
-                            <CommandList>
+                            <CommandList className="max-h-[200px] overflow-y-auto">
                               <CommandEmpty>No unit found.</CommandEmpty>
                               <CommandGroup>
                                 {units.map((unit) => (
                                   <CommandItem
-                                    value={unit.label}
-                                    key={unit.value}
+                                    value={`${unit.name} (${unit.uqc})`}
+                                    key={unit.id}
                                     onSelect={() => {
-                                      form.setValue("unit", unit.value);
+                                      form.setValue("unit", unit.name);
                                       setUnitOpen(false);
                                     }}
+                                    data-testid={`unit-option-edit-${unit.name}`}
                                   >
                                     <Check
                                       className={cn(
                                         "mr-2 h-4 w-4",
-                                        unit.value === field.value ? "opacity-100" : "opacity-0"
+                                        unit.name === field.value ? "opacity-100" : "opacity-0"
                                       )}
                                     />
-                                    {unit.label}
+                                    {unit.name} ({unit.uqc})
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
                               <CommandSeparator />
                               <CommandGroup>
-                                <CommandItem className="text-blue-600 cursor-pointer">
+                                <CommandItem
+                                  className="text-blue-600 cursor-pointer"
+                                  onSelect={() => {
+                                    setUnitOpen(false);
+                                  }}
+                                  data-testid="button-configure-units-edit"
+                                >
                                   <Settings className="mr-2 h-4 w-4" />
                                   Configure Units
                                 </CommandItem>
@@ -422,7 +545,7 @@ export default function ProductEdit() {
                     </FormLabel>
                     <div className="relative">
                       <FormControl>
-                        <Input {...field} className="bg-white pr-10" data-testid="input-hsn-sac" />
+                        <Input {...field} className="bg-white pr-10" data-testid="input-hsn-sac-edit" />
                       </FormControl>
                       <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500 cursor-pointer" />
                     </div>
@@ -435,11 +558,13 @@ export default function ProductEdit() {
                 name="taxPreference"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-[120px_1fr] items-start gap-4">
-                    <FormLabel className="text-red-500 pt-2.5">Tax Preference *</FormLabel>
+                    <FormLabel className="text-slate-700 pt-2.5">
+                      Tax Preference<span className="text-red-600">*</span>
+                    </FormLabel>
                     <div>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger className="bg-white">
+                          <SelectTrigger className="bg-white" data-testid="select-tax-preference-edit">
                             <SelectValue placeholder="Select tax preference" />
                           </SelectTrigger>
                         </FormControl>
@@ -462,17 +587,8 @@ export default function ProductEdit() {
                   name="exemptionReason"
                   render={({ field }) => (
                     <FormItem className="grid grid-cols-[120px_1fr] items-start gap-4">
-                      <div className="text-red-500 pt-2.5 flex items-center gap-1 text-sm font-medium">
-                        Exemption Reason
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Select the reason for exemption</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        *
+                      <div className="text-slate-700 pt-2.5 flex items-center gap-1 text-sm font-medium">
+                        Exemption Reason<span className="text-red-600">*</span>
                       </div>
                       <div>
                         <Select onValueChange={field.onChange} value={field.value}>
@@ -495,7 +611,122 @@ export default function ProductEdit() {
                 />
               )}
 
+              {/* Default Tax Rates Section */}
+              <div className="border-t pt-4 mt-4">
+                <h3 className="font-semibold text-slate-800 mb-4">Default Tax Rates</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Intra State Tax Dropdown */}
+                  <FormField
+                    control={form.control}
+                    name="intraStateTaxRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700">Intra State Tax</FormLabel>
+                        <Popover open={intraStateTaxOpen} onOpenChange={setIntraStateTaxOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-full justify-between font-normal bg-white"
+                                data-testid="select-intra-state-tax-edit"
+                              >
+                                {getTaxRateLabel(field.value)}
+                                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[250px] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search tax rates..." />
+                              <CommandList>
+                                <CommandEmpty>No tax rate found.</CommandEmpty>
+                                <CommandGroup>
+                                  {gstRates.map((tax) => (
+                                    <CommandItem
+                                      key={tax.id}
+                                      value={tax.label}
+                                      onSelect={() => {
+                                        form.setValue("intraStateTaxRate", tax.name);
+                                        setIntraStateTaxOpen(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          tax.name === field.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {tax.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Inter State Tax Dropdown */}
+                  <FormField
+                    control={form.control}
+                    name="interStateTaxRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700">Inter State Tax</FormLabel>
+                        <Popover open={interStateTaxOpen} onOpenChange={setInterStateTaxOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-full justify-between font-normal bg-white"
+                                data-testid="select-inter-state-tax-edit"
+                              >
+                                {getTaxRateLabel(field.value)}
+                                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[250px] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search tax rates..." />
+                              <CommandList>
+                                <CommandEmpty>No tax rate found.</CommandEmpty>
+                                <CommandGroup>
+                                  {igstRates.map((tax) => (
+                                    <CommandItem
+                                      key={tax.id}
+                                      value={tax.label}
+                                      onSelect={() => {
+                                        form.setValue("interStateTaxRate", tax.name);
+                                        setInterStateTaxOpen(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          tax.name === field.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {tax.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-8 pt-4">
+                {/* Sales Information */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-slate-800">Sales Information</h3>
@@ -508,6 +739,7 @@ export default function ProductEdit() {
                             <Checkbox
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              data-testid="checkbox-sellable-edit"
                             />
                           </FormControl>
                           <Label className="font-normal text-sm">Sellable</Label>
@@ -523,37 +755,93 @@ export default function ProductEdit() {
                         name="sellingPrice"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-red-500">Selling Price*</FormLabel>
+                            <FormLabel className="text-slate-700">
+                              Selling Price<span className="text-red-600">*</span>
+                            </FormLabel>
                             <div className="flex">
                               <span className="bg-slate-100 border border-r-0 border-slate-300 rounded-l-md px-3 py-2 text-sm text-slate-600">INR</span>
                               <FormControl>
-                                <Input {...field} className="rounded-l-none bg-white" placeholder="0.00" data-testid="input-selling-price" />
+                                <Input {...field} className="rounded-l-none bg-white" placeholder="0.00" data-testid="input-selling-price-edit" />
                               </FormControl>
                             </div>
                           </FormItem>
                         )}
                       />
 
+                      {/* Sales Account - Searchable Hierarchical */}
                       <FormField
                         control={form.control}
                         name="salesAccount"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-red-500">Account*</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="bg-white">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {salesAccounts.map((acc) => (
-                                  <SelectItem key={acc.value} value={acc.value}>
-                                    {acc.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormLabel className="text-slate-700">
+                              Account<span className="text-red-600">*</span>
+                            </FormLabel>
+                            <Popover open={salesAccountOpen} onOpenChange={setSalesAccountOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className="w-full justify-between font-normal bg-white"
+                                    data-testid="select-sales-account-edit"
+                                  >
+                                    {getAccountLabel(field.value)}
+                                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[350px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder="Search accounts..." />
+                                  <CommandList className="max-h-[300px] overflow-y-auto">
+                                    <CommandEmpty>No account found.</CommandEmpty>
+                                    {ACCOUNT_HIERARCHY.map((category) => (
+                                      <CommandGroup key={category.category} heading={category.category}>
+                                        {category.accounts.map((acc) => (
+                                          <div key={acc.value}>
+                                            <CommandItem
+                                              value={acc.label}
+                                              onSelect={() => {
+                                                form.setValue("salesAccount", acc.value);
+                                                setSalesAccountOpen(false);
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  acc.value === field.value ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {acc.label}
+                                            </CommandItem>
+                                            {'children' in acc && acc.children && acc.children.map((child: any) => (
+                                              <CommandItem
+                                                key={child.value}
+                                                value={child.label}
+                                                onSelect={() => {
+                                                  form.setValue("salesAccount", child.value);
+                                                  setSalesAccountOpen(false);
+                                                }}
+                                                className="pl-8"
+                                              >
+                                                <Check
+                                                  className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    child.value === field.value ? "opacity-100" : "opacity-0"
+                                                  )}
+                                                />
+                                                • {child.label}
+                                              </CommandItem>
+                                            ))}
+                                          </div>
+                                        ))}
+                                      </CommandGroup>
+                                    ))}
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                           </FormItem>
                         )}
                       />
@@ -565,7 +853,7 @@ export default function ProductEdit() {
                           <FormItem>
                             <FormLabel className="text-slate-600">Description</FormLabel>
                             <FormControl>
-                              <Textarea {...field} className="bg-white min-h-[80px] resize-none" />
+                              <Textarea {...field} className="bg-white min-h-[80px] resize-none" data-testid="textarea-sales-description-edit" />
                             </FormControl>
                           </FormItem>
                         )}
@@ -574,6 +862,7 @@ export default function ProductEdit() {
                   )}
                 </div>
 
+                {/* Purchase Information */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-slate-800">Purchase Information</h3>
@@ -586,6 +875,7 @@ export default function ProductEdit() {
                             <Checkbox
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              data-testid="checkbox-purchasable-edit"
                             />
                           </FormControl>
                           <Label className="font-normal text-sm">Purchasable</Label>
@@ -601,37 +891,93 @@ export default function ProductEdit() {
                         name="costPrice"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-red-500">Cost Price*</FormLabel>
+                            <FormLabel className="text-slate-700">
+                              Cost Price<span className="text-red-600">*</span>
+                            </FormLabel>
                             <div className="flex">
                               <span className="bg-slate-100 border border-r-0 border-slate-300 rounded-l-md px-3 py-2 text-sm text-slate-600">INR</span>
                               <FormControl>
-                                <Input {...field} className="rounded-l-none bg-white" placeholder="0.00" data-testid="input-cost-price" />
+                                <Input {...field} className="rounded-l-none bg-white" placeholder="0.00" data-testid="input-cost-price-edit" />
                               </FormControl>
                             </div>
                           </FormItem>
                         )}
                       />
 
+                      {/* Purchase Account - Searchable Hierarchical */}
                       <FormField
                         control={form.control}
                         name="purchaseAccount"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-red-500">Account*</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="bg-white">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {purchaseAccounts.map((acc) => (
-                                  <SelectItem key={acc.value} value={acc.value}>
-                                    {acc.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormLabel className="text-slate-700">
+                              Account<span className="text-red-600">*</span>
+                            </FormLabel>
+                            <Popover open={purchaseAccountOpen} onOpenChange={setPurchaseAccountOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className="w-full justify-between font-normal bg-white"
+                                    data-testid="select-purchase-account-edit"
+                                  >
+                                    {getAccountLabel(field.value)}
+                                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[350px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder="Search accounts..." />
+                                  <CommandList className="max-h-[300px] overflow-y-auto">
+                                    <CommandEmpty>No account found.</CommandEmpty>
+                                    {ACCOUNT_HIERARCHY.map((category) => (
+                                      <CommandGroup key={category.category} heading={category.category}>
+                                        {category.accounts.map((acc) => (
+                                          <div key={acc.value}>
+                                            <CommandItem
+                                              value={acc.label}
+                                              onSelect={() => {
+                                                form.setValue("purchaseAccount", acc.value);
+                                                setPurchaseAccountOpen(false);
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  acc.value === field.value ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {acc.label}
+                                            </CommandItem>
+                                            {'children' in acc && acc.children && acc.children.map((child: any) => (
+                                              <CommandItem
+                                                key={child.value}
+                                                value={child.label}
+                                                onSelect={() => {
+                                                  form.setValue("purchaseAccount", child.value);
+                                                  setPurchaseAccountOpen(false);
+                                                }}
+                                                className="pl-8"
+                                              >
+                                                <Check
+                                                  className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    child.value === field.value ? "opacity-100" : "opacity-0"
+                                                  )}
+                                                />
+                                                • {child.label}
+                                              </CommandItem>
+                                            ))}
+                                          </div>
+                                        ))}
+                                      </CommandGroup>
+                                    ))}
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                           </FormItem>
                         )}
                       />
@@ -643,7 +989,7 @@ export default function ProductEdit() {
                           <FormItem>
                             <FormLabel className="text-slate-600">Description</FormLabel>
                             <FormControl>
-                              <Textarea {...field} className="bg-white min-h-[80px] resize-none" />
+                              <Textarea {...field} className="bg-white min-h-[80px] resize-none" data-testid="textarea-purchase-description-edit" />
                             </FormControl>
                           </FormItem>
                         )}
@@ -655,22 +1001,18 @@ export default function ProductEdit() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-slate-600">Preferred Vendor</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={vendorsLoading}>
+                            <Select onValueChange={field.onChange} value={field.value || ""}>
                               <FormControl>
-                                <SelectTrigger className="bg-white">
-                                  <SelectValue placeholder={vendorsLoading ? "Loading vendors..." : "Select vendor..."} />
+                                <SelectTrigger className="bg-white" data-testid="select-preferred-vendor-edit">
+                                  <SelectValue placeholder={vendorsLoading ? "Loading vendors..." : "Select a vendor"} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {vendors.length === 0 && !vendorsLoading ? (
-                                  <SelectItem value="no-vendors" disabled>No vendors available</SelectItem>
-                                ) : (
-                                  vendors.map((vendor) => (
-                                    <SelectItem key={vendor.value} value={vendor.value}>
-                                      {vendor.label}
-                                    </SelectItem>
-                                  ))
-                                )}
+                                {vendors.map((vendor) => (
+                                  <SelectItem key={vendor.value} value={vendor.value}>
+                                    {vendor.label}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -681,44 +1023,21 @@ export default function ProductEdit() {
                 </div>
               </div>
 
-              {taxPreference === "taxable" && (
-                <div className="pt-4 border-t border-slate-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-semibold text-slate-800">Default Tax Rates</h3>
-                    <Settings className="h-4 w-4 text-slate-400 cursor-pointer hover:text-slate-600" />
-                  </div>
-                  <div className="space-y-3 text-sm">
-                    <div className="grid grid-cols-[150px_1fr] gap-4">
-                      <span className="text-slate-600">Intra State Tax Rate</span>
-                      <span className="text-slate-800">GST18 (18 %)</span>
-                    </div>
-                    <div className="grid grid-cols-[150px_1fr] gap-4">
-                      <span className="text-slate-600">Inter State Tax Rate</span>
-                      <span className="text-slate-800">IGST18 (18 %)</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setLocation("/items")}
+                  data-testid="button-cancel-edit"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700" data-testid="button-save-item-edit">
+                  Save
+                </Button>
+              </div>
             </form>
           </Form>
-        </div>
-
-        <div className="border-t border-slate-200 p-4 bg-white flex items-center gap-3">
-          <Button
-            onClick={form.handleSubmit(onSubmit)}
-            className="bg-blue-600 hover:bg-blue-700"
-            data-testid="button-save-item"
-          >
-            Save
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setLocation("/items")}
-            data-testid="button-cancel-edit"
-          >
-            Cancel
-          </Button>
         </div>
       </div>
     </div>

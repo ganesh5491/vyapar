@@ -298,3 +298,19 @@
     - All account data is saved with the vendor record
     - Users can search, select, and create new accounts on the fly
 [x] 83. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
+[x] 84. Aligned Edit Item modal with New Item modal - Complete Structural & Visual Alignment (Dec 18, 2025):
+    - Fixed all label styling: Changed from inline red text to slate-700 text with separate red asterisk span
+    - Replaced static account arrays with full ACCOUNT_HIERARCHY and searchable hierarchical account dropdowns
+    - Added full searchable tax rate dropdowns (Intra State and Inter State) with Popover + Command components
+    - Added Unit and TaxRate interfaces matching New Item
+    - Integrated API-based unit fetching from /api/units endpoint
+    - Integrated API-based tax rate fetching from /api/taxRates endpoint
+    - Implemented getTaxRateLabel() and getAccountLabel() helper functions
+    - Fixed RadioGroup to use `value` prop instead of `defaultValue` for edit mode
+    - Added all necessary state variables for tax/account/unit popovers (intraStateTaxOpen, interStateTaxOpen, etc.)
+    - Moved button placement to inside form section (matching New Item exactly)
+    - Updated button styling and ordering: Cancel (outline) on left, Save (blue) on right
+    - Aligned Default Tax Rates section layout and styling with New Item (grid layout, borders, spacing)
+    - Added queryClient import and cache invalidation on successful update
+    - All field styling, spacing, font sizes now match New Item perfectly
+    - Visual hierarchy and component behavior now synchronized between New and Edit modes
