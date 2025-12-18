@@ -335,3 +335,11 @@
     - Updated both purchase-order-create.tsx and purchase-order-edit.tsx
     - Applied changes to both "New Purchase Order" and "Edit Purchase Order" pages
     - Workflow restarted and verified running
+[x] 88. Enhanced Purchase Order Form UI to match refined screenshot (Dec 18, 2025):
+    - Changed form layout from 2-column to 3-column grid for better spacing
+    - Updated all form fields with proper spacing using space-y-2
+    - Added font-medium text-sm to labels for consistent styling
+    - Updated inputs with text-sm for visual consistency
+    - Grouped TDS/TCS and Reverse Charge sections in container with bg-slate-50 border
+    - Applied UI improvements to both purchase-order-create.tsx and purchase-order-edit.tsx
+    - Workflow restarted and verified running

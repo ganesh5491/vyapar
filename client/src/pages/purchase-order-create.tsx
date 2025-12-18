@@ -624,14 +624,14 @@ export default function PurchaseOrderCreate() {
             </div>
 
             {/* Form Fields Row */}
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                <Label className="text-blue-600">Purchase Order#<span className="text-red-500">*</span></Label>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-blue-600 font-medium text-sm">Purchase Order#<span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <Input
                     value={purchaseOrderNumber}
                     readOnly
-                    className="bg-white pr-8"
+                    className="bg-white pr-8 text-sm"
                     data-testid="input-po-number"
                   />
                   <button className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -642,49 +642,51 @@ export default function PurchaseOrderCreate() {
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-[100px_1fr] gap-4 items-center">
-                <Label>Reference#</Label>
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Reference#</Label>
                 <Input
                   value={formData.referenceNumber}
                   onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
-                  className="bg-white"
+                  className="bg-white text-sm"
                   data-testid="input-reference"
                 />
               </div>
+              <div></div>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                <Label>Date</Label>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Date</Label>
                 <Input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="bg-white"
+                  className="bg-white text-sm"
                   data-testid="input-date"
                 />
               </div>
-              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                <Label>Delivery Date</Label>
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Delivery Date</Label>
                 <Input
                   type="date"
                   value={formData.deliveryDate}
                   onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
-                  className="bg-white"
+                  className="bg-white text-sm"
                   placeholder="dd/MM/yyyy"
                   data-testid="input-delivery-date"
                 />
               </div>
+              <div></div>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                <Label>Payment Terms</Label>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Payment Terms</Label>
                 <Select
                   value={formData.paymentTerms}
                   onValueChange={(value) => setFormData({ ...formData, paymentTerms: value })}
                 >
-                  <SelectTrigger className="bg-white" data-testid="select-payment-terms">
+                  <SelectTrigger className="bg-white text-sm" data-testid="select-payment-terms">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -694,52 +696,49 @@ export default function PurchaseOrderCreate() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Shipment Preference</Label>
+                <Select
+                  value={formData.shipmentPreference}
+                  onValueChange={(value) => setFormData({ ...formData, shipmentPreference: value })}
+                >
+                  <SelectTrigger className="bg-white text-sm" data-testid="select-shipment">
+                    <SelectValue placeholder="Choose the shipment preference..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SHIPMENT_PREFERENCES.map(pref => (
+                      <SelectItem key={pref} value={pref}>{pref}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div></div>
             </div>
 
-            <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-              <Label>Shipment Preference</Label>
-              <Select
-                value={formData.shipmentPreference}
-                onValueChange={(value) => setFormData({ ...formData, shipmentPreference: value })}
-              >
-                <SelectTrigger className="bg-white max-w-md" data-testid="select-shipment">
-                  <SelectValue placeholder="Choose the shipment preference or type to add" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SHIPMENT_PREFERENCES.map(pref => (
-                    <SelectItem key={pref} value={pref}>{pref}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* TDS/TCS Section */}
-            <div className="flex items-center gap-6 ml-[156px]">
-              <div className="flex items-center gap-3">
-                <RadioGroup value={formData.taxType} onValueChange={(value) => setFormData({ ...formData, taxType: value })} className="flex gap-4">
+            {/* TDS/TCS and Reverse Charge Section */}
+            <div className="space-y-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+              <div className="flex items-center gap-6">
+                <RadioGroup value={formData.taxType} onValueChange={(value) => setFormData({ ...formData, taxType: value })} className="flex gap-6">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="TDS" id="tds" className="border-blue-600 text-blue-600" />
-                    <Label htmlFor="tds" className="cursor-pointer text-sm font-medium">TDS</Label>
+                    <Label htmlFor="tds" className="cursor-pointer font-medium text-sm">TDS</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="TCS" id="tcs" className="border-blue-600 text-blue-600" />
-                    <Label htmlFor="tcs" className="cursor-pointer text-sm font-medium">TCS</Label>
+                    <Label htmlFor="tcs" className="cursor-pointer font-medium text-sm">TCS</Label>
                   </div>
                 </RadioGroup>
               </div>
-            </div>
-
-            {/* Reverse Charge Checkbox */}
-            <div className="flex items-center gap-2 ml-[156px]">
-              <Checkbox
-                id="reverseCharge"
-                checked={formData.reverseCharge}
-                onCheckedChange={(checked) => setFormData({ ...formData, reverseCharge: checked as boolean })}
-              />
-              <Label htmlFor="reverseCharge" className="text-sm cursor-pointer">
-                This transaction is applicable for reverse charge
-              </Label>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="reverseCharge"
+                  checked={formData.reverseCharge}
+                  onCheckedChange={(checked) => setFormData({ ...formData, reverseCharge: checked as boolean })}
+                />
+                <Label htmlFor="reverseCharge" className="text-sm cursor-pointer">
+                  This transaction is applicable for reverse charge
+                </Label>
+              </div>
             </div>
 
             {/* Item Table Section */}
