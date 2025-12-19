@@ -345,3 +345,14 @@
     - Vendor name now displays in list view instead of just vendor_id
 [x] 89. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
 [x] 90. Session restart - reinstalled cross-env and verified application running (Dec 19, 2025)
+[x] 91. Fixed Invoice Item Details dropdown - now fetches and displays all item data properly (Dec 19, 2025):
+    - Updated onValueChange handler in invoice-create.tsx to also populate the description field
+    - Improved dropdown to show item name with rate/price (e.g., "Item Name - ₹500.00")
+    - When selecting an item, all details are now fetched:
+      * Item name
+      * Item description
+      * Item rate (converted from string to number)
+      * GST rate (extracted from intraStateTax field)
+    - Dropdown options now clearly show item prices for easy identification
+    - Removed debug console logs for cleaner execution
+    - All item data is properly populated when selecting from dropdown

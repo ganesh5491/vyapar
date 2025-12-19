@@ -1028,14 +1028,12 @@ export default function InvoiceCreate() {
                                           selectedProduct.intraStateTax?.includes('5') ? 5 :
                                             selectedProduct.intraStateTax?.includes('28') ? 28 : 0;
 
-                                      console.log('Updating item with:', { name: selectedProduct.name, rate: rateNum, gstRate, productId: selectedProduct.id });
-
+                                      // Update all item details including description
                                       updateItem(item.id, "productId", selectedProduct.id);
                                       updateItem(item.id, "name", selectedProduct.name);
+                                      updateItem(item.id, "description", selectedProduct.description || '');
                                       updateItem(item.id, "rate", rateNum);
                                       updateItem(item.id, "gstRate", gstRate);
-                                    } else {
-                                      console.log('Product not found for value:', val);
                                     }
                                   }}
                                 >
@@ -1049,11 +1047,15 @@ export default function InvoiceCreate() {
                                       <div className="p-2 text-sm text-muted-foreground">No items found</div>
                                     ) : (
                                       [
-                                        ...products.map((product) => (
-                                          <SelectItem key={product.id} value={product.id} data-testid={`item-option-${product.id}`}>
-                                            {product.name}
-                                          </SelectItem>
-                                        )),
+                                        ...products.map((product) => {
+                                          const rateStr = product.rate?.toString() || '0';
+                                          const rateNum = parseFloat(rateStr.replace(/[^\d.]/g, '')) || 0;
+                                          return (
+                                            <SelectItem key={product.id} value={product.id} data-testid={`item-option-${product.id}`}>
+                                              {product.name} {rateNum > 0 ? `- ₹${rateNum.toFixed(2)}` : ''}
+                                            </SelectItem>
+                                          );
+                                        }),
                                         <Separator key="separator" className="my-1" />,
                                         <SelectItem key="create-new" value="create_new_item" className="text-primary font-medium cursor-pointer">
                                           + Create New Item
