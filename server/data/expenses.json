@@ -1,5 +1,37 @@
 {
-  "expenses": [],
+  "expenses": [
+    {
+      "id": "7",
+      "expenseNumber": "EXP-00007",
+      "date": "2025-12-19",
+      "expenseAccount": "Cost of Goods Sold",
+      "amount": 212121,
+      "currency": "INR",
+      "paidThrough": "Petty Cash",
+      "expenseType": "services",
+      "sac": "12121",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "Gujarat",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "reverseCharge": false,
+      "tax": "gst_12",
+      "taxAmount": 0,
+      "amountIs": "tax_exclusive",
+      "invoiceNumber": "12121",
+      "notes": "",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "reportingTags": [],
+      "isBillable": false,
+      "status": "recorded",
+      "attachments": [],
+      "createdAt": "2025-12-19T09:35:11.132Z",
+      "updatedAt": "2025-12-19T09:35:11.132Z",
+      "createdTime": "2025-12-19T09:35:11.132Z"
+    }
+  ],
   "mileageRecords": [
     {
       "id": "2",
@@ -54,6 +86,6 @@
     "defaultUnit": "km",
     "mileageRates": []
   },
-  "nextExpenseId": 7,
+  "nextExpenseId": 8,
   "nextMileageId": 3
 }

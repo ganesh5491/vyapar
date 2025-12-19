@@ -1,6 +1,91 @@
 {
   "purchaseOrders": [
     {
+      "id": "1766137154379",
+      "purchaseOrderNumber": "PO-2025-0004",
+      "referenceNumber": "",
+      "date": "2025-12-19",
+      "deliveryDate": "2025-12-18",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "vendorAddress": {},
+      "deliveryAddress": {
+        "attention": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "countryRegion": "India"
+      },
+      "deliveryAddressType": "organization",
+      "paymentTerms": "Due on Receipt",
+      "shipmentPreference": "",
+      "reverseCharge": false,
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766056260714",
+          "itemName": "Rice (Copy)",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "gst_18",
+          "taxAmount": 9,
+          "amount": 59
+        },
+        {
+          "id": "1766137136225",
+          "itemId": "1765535400204",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "gst_18",
+          "taxAmount": 9,
+          "amount": 59
+        }
+      ],
+      "subTotal": 100,
+      "discountType": "percent",
+      "discountValue": 10,
+      "discountAmount": 10,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 18,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 108,
+      "notes": "",
+      "termsAndConditions": "",
+      "attachments": [],
+      "status": "ISSUED",
+      "receiveStatus": "YET TO BE RECEIVED",
+      "billedStatus": "BILLED",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-19T09:39:14.379Z",
+      "updatedAt": "2025-12-19T09:40:14.553Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-19T09:39:14.379Z",
+          "action": "created",
+          "description": "Purchase Order created for ₹108",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-19T09:40:14.553Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766051860049",
       "purchaseOrderNumber": "PO-2025-0003",
       "referenceNumber": "",
@@ -51,10 +136,10 @@
       "attachments": [],
       "status": "ISSUED",
       "receiveStatus": "YET TO BE RECEIVED",
-      "billedStatus": "YET TO BE BILLED",
+      "billedStatus": "BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-18T09:57:40.049Z",
-      "updatedAt": "2025-12-18T10:38:42.925Z",
+      "updatedAt": "2025-12-19T09:35:28.467Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -70,6 +155,13 @@
           "action": "updated",
           "description": "Purchase Order has been updated",
           "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-19T09:35:28.467Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
         }
       ],
       "gstTreatment": "Unregistered Business",
@@ -84,5 +176,5 @@
       "emailCommunications": []
     }
   ],
-  "nextPurchaseOrderNumber": 4
+  "nextPurchaseOrderNumber": 5
 }

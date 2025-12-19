@@ -376,22 +376,22 @@ function CustomerDetailPanel({ customer, onClose, onEdit, onClone, onToggleStatu
               <DropdownMenuItem onClick={() => handleNewTransaction("delivery-challan")} data-testid="menu-item-delivery-challan">
                 <Truck className="mr-2 h-4 w-4" /> Delivery Challan
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleNewTransaction("recurring-invoice")} data-testid="menu-item-recurring-invoice">
+              {/* <DropdownMenuItem onClick={() => handleNewTransaction("recurring-invoice")} data-testid="menu-item-recurring-invoice">
                 <RefreshCw className="mr-2 h-4 w-4" /> Recurring Invoice
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleNewTransaction("expense")} data-testid="menu-item-expense">
                 <Wallet className="mr-2 h-4 w-4" /> Expense
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleNewTransaction("journal")} data-testid="menu-item-journal">
+              {/* <DropdownMenuItem onClick={() => handleNewTransaction("journal")} data-testid="menu-item-journal">
                 <BookOpen className="mr-2 h-4 w-4" /> Journal
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem onClick={() => handleNewTransaction("credit-note")} data-testid="menu-item-credit-note">
                 <BadgeIndianRupee className="mr-2 h-4 w-4" /> Credit Note
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleNewTransaction("project")} data-testid="menu-item-project">
+              {/* <DropdownMenuItem onClick={() => handleNewTransaction("project")} data-testid="menu-item-project">
                 <FolderKanban className="mr-2 h-4 w-4" /> Project
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>

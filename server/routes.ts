@@ -215,6 +215,15 @@ function generateEWayBillNumber(num: number): string {
   return `EWB-${String(num).padStart(6, '0')}`;
 }
 
+// Helper function for currency formatting on server
+function formatCurrencyServer(amount: number): string {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2
+  }).format(amount);
+}
+
 function numberToWords(num: number): string {
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
     'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
@@ -947,8 +956,115 @@ export async function registerRoutes(
       if (!customer) {
         return res.status(404).json({ success: false, message: "Customer not found" });
       }
-      res.json({ success: true, data: customer.activities || [] });
+
+      // Generate activities from transactions
+      const activities: any[] = [];
+      const customerId = req.params.id;
+
+      // Get invoices for this customer
+      try {
+        const invoicesData = readInvoicesData();
+        const customerInvoices = invoicesData.invoices.filter((inv: any) => inv.customerId === customerId);
+        customerInvoices.forEach((inv: any) => {
+          activities.push({
+            id: `activity-inv-${inv.id}`,
+            type: 'invoice',
+            title: `Invoice ${inv.invoiceNumber} Created`,
+            description: `Invoice created for ${formatCurrencyServer(inv.total || 0)}`,
+            user: 'System',
+            date: inv.createdAt || inv.date,
+            time: new Date(inv.createdAt || inv.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Get payments for this customer
+      try {
+        const paymentsData = readPaymentsReceivedData();
+        const customerPayments = paymentsData.paymentsReceived.filter((p: any) => p.customerId === customerId);
+        customerPayments.forEach((payment: any) => {
+          activities.push({
+            id: `activity-pay-${payment.id}`,
+            type: 'payment',
+            title: `Payment ${payment.paymentNumber} Received`,
+            description: `Payment of ${formatCurrencyServer(payment.amount || 0)} received`,
+            user: 'System',
+            date: payment.createdAt || payment.date,
+            time: new Date(payment.createdAt || payment.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Get quotes for this customer
+      try {
+        const quotesData = readQuotesData();
+        const customerQuotes = quotesData.quotes.filter((q: any) => q.customerId === customerId);
+        customerQuotes.forEach((quote: any) => {
+          activities.push({
+            id: `activity-quote-${quote.id}`,
+            type: 'quote',
+            title: `Quote ${quote.quoteNumber} Created`,
+            description: `Quote created for ${formatCurrencyServer(quote.total || 0)}`,
+            user: 'System',
+            date: quote.createdAt || quote.date,
+            time: new Date(quote.createdAt || quote.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Get sales orders for this customer
+      try {
+        const salesOrdersData = readSalesOrdersData();
+        const customerSalesOrders = salesOrdersData.salesOrders.filter((so: any) => so.customerId === customerId);
+        customerSalesOrders.forEach((so: any) => {
+          activities.push({
+            id: `activity-so-${so.id}`,
+            type: 'sales_order',
+            title: `Sales Order ${so.salesOrderNumber} Created`,
+            description: `Sales order created for ${formatCurrencyServer(so.total || 0)}`,
+            user: 'System',
+            date: so.createdAt || so.date,
+            time: new Date(so.createdAt || so.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Get credit notes for this customer
+      try {
+        const creditNotesData = readCreditNotesData();
+        const customerCreditNotes = creditNotesData.creditNotes.filter((cn: any) => cn.customerId === customerId);
+        customerCreditNotes.forEach((cn: any) => {
+          activities.push({
+            id: `activity-cn-${cn.id}`,
+            type: 'credit_note',
+            title: `Credit Note ${cn.creditNoteNumber} Created`,
+            description: `Credit note for ${formatCurrencyServer(cn.total || 0)}`,
+            user: 'System',
+            date: cn.createdAt || cn.date,
+            time: new Date(cn.createdAt || cn.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Add customer creation activity
+      if (customer.createdAt) {
+        activities.push({
+          id: `activity-customer-created-${customer.id}`,
+          type: 'customer',
+          title: 'Customer Created',
+          description: `Customer ${customer.displayName || customer.name} was created`,
+          user: 'System',
+          date: customer.createdAt,
+          time: new Date(customer.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        });
+      }
+
+      // Sort by date (most recent first)
+      activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      res.json({ success: true, data: activities });
     } catch (error) {
+      console.error('Error fetching activities:', error);
       res.status(500).json({ success: false, message: "Failed to fetch activities" });
     }
   });

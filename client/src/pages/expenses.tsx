@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
@@ -342,6 +342,27 @@ export default function Expenses() {
     queryKey: ['/api/mileage-settings'],
   });
 
+  // Read vendorId from URL params (when navigating from vendor page)
+  const urlParams = new URLSearchParams(window.location.search);
+  const vendorIdFromUrl = urlParams.get('vendorId');
+
+  // Pre-fill vendor data when coming from vendor page
+  useEffect(() => {
+    if (vendorIdFromUrl && vendorsData?.data && vendorsData.data.length > 0 && !expenseForm.vendorId) {
+      const vendor = vendorsData.data.find(v => v.id === vendorIdFromUrl);
+      if (vendor) {
+        setExpenseForm(prev => ({
+          ...prev,
+          vendorId: vendor.id,
+          vendorName: vendor.displayName || vendor.name || ''
+        }));
+        // Also open the Record Expense dialog
+        setShowRecordExpense(true);
+        setExpenseTab("record-expense");
+      }
+    }
+  }, [vendorIdFromUrl, vendorsData?.data]);
+
   const createExpenseMutation = useMutation({
     mutationFn: async (expense: any) => {
       return apiRequest('POST', '/api/expenses', expense);
@@ -513,7 +534,7 @@ export default function Expenses() {
       ...expenseForm,
       amount: parseFloat(expenseForm.amount) || 0,
     };
-    
+
     if (isEditMode && editingExpenseId) {
       updateExpenseMutation.mutate({ id: editingExpenseId, expense: expenseData });
     } else {
@@ -942,21 +963,22 @@ export default function Expenses() {
               <div className="lg:col-span-2 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-700">
+                    <Label className="text-slate-700 font-medium">
                       Date
-                      <span className="text-red-600">*</span>
+                      <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <Input
                       type="date"
                       value={expenseForm.date}
                       onChange={(e) => setExpenseForm(prev => ({ ...prev, date: e.target.value }))}
+                      className="h-10 border-slate-300 hover:border-blue-400 focus:border-blue-500 transition-colors"
                       data-testid="input-expense-date"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-700">
+                    <Label className="text-slate-700 font-medium">
                       Expense Account
-                      <span className="text-red-600">*</span>
+                      <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <Popover open={expenseAccountOpen} onOpenChange={setExpenseAccountOpen}>
                       <PopoverTrigger asChild>
@@ -964,18 +986,21 @@ export default function Expenses() {
                           variant="outline"
                           role="combobox"
                           aria-expanded={expenseAccountOpen}
-                          className="w-full justify-between font-normal"
+                          className={`w-full justify-between font-normal h-10 px-3 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors ${expenseForm.expenseAccount ? 'text-slate-900' : 'text-slate-500'}`}
                           data-testid="select-expense-account"
                         >
-                          {expenseForm.expenseAccount || "Search and select account..."}
-                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <span className="truncate">{expenseForm.expenseAccount || "Select expense account"}</span>
+                          <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${expenseAccountOpen ? 'rotate-180' : ''}`} />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search accounts..." />
-                          <CommandList>
-                            <CommandEmpty>No account found.</CommandEmpty>
+                      <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
+                        <Command className="rounded-lg">
+                          <div className="flex items-center border-b px-3 py-2 bg-slate-50">
+                            <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+                            <CommandInput placeholder="Search accounts..." className="h-9 border-0 focus:ring-0 bg-transparent" />
+                          </div>
+                          <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain" style={{ scrollBehavior: 'auto' }}>
+                            <CommandEmpty className="py-6 text-center text-sm text-slate-500">No account found.</CommandEmpty>
                             <CommandGroup>
                               {EXPENSE_ACCOUNTS.map((account) => (
                                 <CommandItem
@@ -985,21 +1010,20 @@ export default function Expenses() {
                                     setExpenseForm(prev => ({ ...prev, expenseAccount: account }));
                                     setExpenseAccountOpen(false);
                                   }}
+                                  className="cursor-pointer hover:bg-blue-50 px-3 py-2.5"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
-                                      expenseForm.expenseAccount === account ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className={`mr-2 h-4 w-4 text-blue-600 ${expenseForm.expenseAccount === account ? "opacity-100" : "opacity-0"}`}
                                   />
-                                  {account}
+                                  <span className="text-slate-700">{account}</span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
-                            <div className="border-t px-2 py-2">
+                            <div className="border-t px-3 py-2 bg-slate-50">
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="w-full justify-start gap-2"
+                                className="w-full justify-start gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                 onClick={() => {
                                   setShowCreateExpenseAccountDialog(true);
                                   setExpenseAccountOpen(false);
@@ -1014,7 +1038,7 @@ export default function Expenses() {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <button className="text-indigo-600 text-sm" data-testid="button-itemize">Itemize</button>
+                    <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors" data-testid="button-itemize">Itemize</button>
                   </div>
                 </div>
 
@@ -1058,18 +1082,21 @@ export default function Expenses() {
                           variant="outline"
                           role="combobox"
                           aria-expanded={paidThroughOpen}
-                          className="w-full justify-between font-normal"
+                          className={`w-full justify-between font-normal h-10 px-3 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors ${expenseForm.paidThrough ? 'text-slate-900' : 'text-slate-500'}`}
                           data-testid="select-paid-through"
                         >
-                          {expenseForm.paidThrough || "Search and select account..."}
-                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <span className="truncate">{expenseForm.paidThrough || "Select paid through account"}</span>
+                          <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${paidThroughOpen ? 'rotate-180' : ''}`} />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search accounts..." />
-                          <CommandList>
-                            <CommandEmpty>No account found.</CommandEmpty>
+                      <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
+                        <Command className="rounded-lg">
+                          <div className="flex items-center border-b px-3 py-2 bg-slate-50">
+                            <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+                            <CommandInput placeholder="Search accounts..." className="h-9 border-0 focus:ring-0 bg-transparent" />
+                          </div>
+                          <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain" style={{ scrollBehavior: 'auto' }}>
+                            <CommandEmpty className="py-6 text-center text-sm text-slate-500">No account found.</CommandEmpty>
                             <CommandGroup>
                               {PAID_THROUGH_ACCOUNTS.map((account) => (
                                 <CommandItem
@@ -1079,21 +1106,20 @@ export default function Expenses() {
                                     setExpenseForm(prev => ({ ...prev, paidThrough: account }));
                                     setPaidThroughOpen(false);
                                   }}
+                                  className="cursor-pointer hover:bg-blue-50 px-3 py-2.5"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
-                                      expenseForm.paidThrough === account ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className={`mr-2 h-4 w-4 text-blue-600 ${expenseForm.paidThrough === account ? "opacity-100" : "opacity-0"}`}
                                   />
-                                  {account}
+                                  <span className="text-slate-700">{account}</span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
-                            <div className="border-t px-2 py-2">
+                            <div className="border-t px-3 py-2 bg-slate-50">
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="w-full justify-start gap-2"
+                                className="w-full justify-start gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                 onClick={() => {
                                   setShowCreatePaidThroughDialog(true);
                                   setPaidThroughOpen(false);
@@ -1112,9 +1138,9 @@ export default function Expenses() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-700">
+                  <Label className="text-slate-700 font-medium">
                     Expense Type
-                    <span className="text-red-600">*</span>
+                    <span className="text-red-500 ml-0.5">*</span>
                   </Label>
                   <RadioGroup
                     value={expenseForm.expenseType}
@@ -1154,42 +1180,37 @@ export default function Expenses() {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <Label>Vendor</Label>
-                    <div className="flex gap-2">
-                      <Select
-                        value={expenseForm.vendorId}
-                        onValueChange={(value) => {
-                          const vendor = vendors.find(v => v.id === value);
-                          setExpenseForm(prev => ({
-                            ...prev,
-                            vendorId: value,
-                            vendorName: vendor?.displayName || vendor?.name || ''
-                          }));
-                        }}
-                      >
-                        <SelectTrigger className="flex-1" data-testid="select-vendor">
-                          <SelectValue placeholder="Select a vendor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {vendors.map(vendor => (
-                            <SelectItem key={vendor.id} value={vendor.id}>
-                              {vendor.displayName || vendor.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button variant="outline" size="icon" data-testid="button-add-vendor">
-                        <Search className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Label className="text-slate-700 font-medium">Vendor</Label>
+                    <Select
+                      value={expenseForm.vendorId}
+                      onValueChange={(value) => {
+                        const vendor = vendors.find(v => v.id === value);
+                        setExpenseForm(prev => ({
+                          ...prev,
+                          vendorId: value,
+                          vendorName: vendor?.displayName || vendor?.name || ''
+                        }));
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-10 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors" data-testid="select-vendor">
+                        <SelectValue placeholder="Select a vendor" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[280px]">
+                        {vendors.map(vendor => (
+                          <SelectItem key={vendor.id} value={vendor.id} className="cursor-pointer">
+                            {vendor.displayName || vendor.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-700">
+                    <Label className="text-slate-700 font-medium">
                       GST Treatment
-                      <span className="text-red-600">*</span>
+                      <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <Popover open={gstTreatmentOpen} onOpenChange={setGstTreatmentOpen}>
                       <PopoverTrigger asChild>
@@ -1197,18 +1218,21 @@ export default function Expenses() {
                           variant="outline"
                           role="combobox"
                           aria-expanded={gstTreatmentOpen}
-                          className="w-full justify-between font-normal"
+                          className={`w-full justify-between font-normal h-10 px-3 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors ${expenseForm.gstTreatment ? 'text-slate-900' : 'text-slate-500'}`}
                           data-testid="select-gst-treatment"
                         >
-                          {expenseForm.gstTreatment || "Search and select..."}
-                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <span className="truncate">{expenseForm.gstTreatment || "Select GST treatment"}</span>
+                          <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${gstTreatmentOpen ? 'rotate-180' : ''}`} />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search treatments..." />
-                          <CommandList>
-                            <CommandEmpty>No treatment found.</CommandEmpty>
+                      <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
+                        <Command className="rounded-lg">
+                          <div className="flex items-center border-b px-3 py-2 bg-slate-50">
+                            <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+                            <CommandInput placeholder="Search treatments..." className="h-9 border-0 focus:ring-0 bg-transparent" />
+                          </div>
+                          <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain" style={{ scrollBehavior: 'auto' }}>
+                            <CommandEmpty className="py-6 text-center text-sm text-slate-500">No treatment found.</CommandEmpty>
                             <CommandGroup>
                               {GST_TREATMENTS.map((treatment) => (
                                 <CommandItem
@@ -1218,13 +1242,12 @@ export default function Expenses() {
                                     setExpenseForm(prev => ({ ...prev, gstTreatment: treatment }));
                                     setGstTreatmentOpen(false);
                                   }}
+                                  className="cursor-pointer hover:bg-blue-50 px-3 py-2.5"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
-                                      expenseForm.gstTreatment === treatment ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className={`mr-2 h-4 w-4 text-blue-600 ${expenseForm.gstTreatment === treatment ? "opacity-100" : "opacity-0"}`}
                                   />
-                                  {treatment}
+                                  <span className="text-slate-700">{treatment}</span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -1234,9 +1257,9 @@ export default function Expenses() {
                     </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-slate-700">
+                    <Label className="text-slate-700 font-medium">
                       Source of Supply
-                      <span className="text-red-600">*</span>
+                      <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <Popover open={sourceOfSupplyOpen} onOpenChange={setSourceOfSupplyOpen}>
                       <PopoverTrigger asChild>
@@ -1244,18 +1267,21 @@ export default function Expenses() {
                           variant="outline"
                           role="combobox"
                           aria-expanded={sourceOfSupplyOpen}
-                          className="w-full justify-between font-normal"
+                          className={`w-full justify-between font-normal h-10 px-3 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors ${expenseForm.sourceOfSupply ? 'text-slate-900' : 'text-slate-500'}`}
                           data-testid="select-source-supply"
                         >
-                          {expenseForm.sourceOfSupply || "Search and select state..."}
-                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <span className="truncate">{expenseForm.sourceOfSupply || "Select source state"}</span>
+                          <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${sourceOfSupplyOpen ? 'rotate-180' : ''}`} />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search states..." />
-                          <CommandList>
-                            <CommandEmpty>No state found.</CommandEmpty>
+                      <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
+                        <Command className="rounded-lg">
+                          <div className="flex items-center border-b px-3 py-2 bg-slate-50">
+                            <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+                            <CommandInput placeholder="Search states..." className="h-9 border-0 focus:ring-0 bg-transparent" />
+                          </div>
+                          <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain" style={{ scrollBehavior: 'auto' }}>
+                            <CommandEmpty className="py-6 text-center text-sm text-slate-500">No state found.</CommandEmpty>
                             <CommandGroup>
                               {INDIAN_STATES.map((state) => (
                                 <CommandItem
@@ -1265,13 +1291,12 @@ export default function Expenses() {
                                     setExpenseForm(prev => ({ ...prev, sourceOfSupply: state }));
                                     setSourceOfSupplyOpen(false);
                                   }}
+                                  className="cursor-pointer hover:bg-blue-50 px-3 py-2.5"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
-                                      expenseForm.sourceOfSupply === state ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className={`mr-2 h-4 w-4 text-blue-600 ${expenseForm.sourceOfSupply === state ? "opacity-100" : "opacity-0"}`}
                                   />
-                                  {state}
+                                  <span className="text-slate-700">{state}</span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -1284,9 +1309,9 @@ export default function Expenses() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-700">
+                    <Label className="text-slate-700 font-medium">
                       Destination of Supply
-                      <span className="text-red-600">*</span>
+                      <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <Popover open={destinationOfSupplyOpen} onOpenChange={setDestinationOfSupplyOpen}>
                       <PopoverTrigger asChild>
@@ -1294,18 +1319,21 @@ export default function Expenses() {
                           variant="outline"
                           role="combobox"
                           aria-expanded={destinationOfSupplyOpen}
-                          className="w-full justify-between font-normal"
+                          className={`w-full justify-between font-normal h-10 px-3 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors ${expenseForm.destinationOfSupply ? 'text-slate-900' : 'text-slate-500'}`}
                           data-testid="select-destination-supply"
                         >
-                          {expenseForm.destinationOfSupply || "Search and select state..."}
-                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <span className="truncate">{expenseForm.destinationOfSupply || "Select destination state"}</span>
+                          <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${destinationOfSupplyOpen ? 'rotate-180' : ''}`} />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search states..." />
-                          <CommandList>
-                            <CommandEmpty>No state found.</CommandEmpty>
+                      <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
+                        <Command className="rounded-lg">
+                          <div className="flex items-center border-b px-3 py-2 bg-slate-50">
+                            <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
+                            <CommandInput placeholder="Search states..." className="h-9 border-0 focus:ring-0 bg-transparent" />
+                          </div>
+                          <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain" style={{ scrollBehavior: 'auto' }}>
+                            <CommandEmpty className="py-6 text-center text-sm text-slate-500">No state found.</CommandEmpty>
                             <CommandGroup>
                               {INDIAN_STATES.map((state) => (
                                 <CommandItem
@@ -1315,13 +1343,12 @@ export default function Expenses() {
                                     setExpenseForm(prev => ({ ...prev, destinationOfSupply: `[${state.substring(0, 2).toUpperCase()}] - ${state}` }));
                                     setDestinationOfSupplyOpen(false);
                                   }}
+                                  className="cursor-pointer hover:bg-blue-50 px-3 py-2.5"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
-                                      expenseForm.destinationOfSupply === `[${state.substring(0, 2).toUpperCase()}] - ${state}` ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className={`mr-2 h-4 w-4 text-blue-600 ${expenseForm.destinationOfSupply === `[${state.substring(0, 2).toUpperCase()}] - ${state}` ? "opacity-100" : "opacity-0"}`}
                                   />
-                                  [{state.substring(0, 2).toUpperCase()}] - {state}
+                                  <span className="text-slate-700">[{state.substring(0, 2).toUpperCase()}] - {state}</span>
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -1409,34 +1436,29 @@ export default function Expenses() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Customer Name</Label>
-                  <div className="flex gap-2">
-                    <Select
-                      value={expenseForm.customerId}
-                      onValueChange={(value) => {
-                        const customer = customers.find(c => c.id === value);
-                        setExpenseForm(prev => ({
-                          ...prev,
-                          customerId: value,
-                          customerName: customer?.displayName || customer?.name || ''
-                        }));
-                      }}
-                    >
-                      <SelectTrigger className="flex-1" data-testid="select-customer">
-                        <SelectValue placeholder="Select or add a customer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {customers.map(customer => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.displayName || customer.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="icon" data-testid="button-add-customer">
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Label className="text-slate-700 font-medium">Customer Name</Label>
+                  <Select
+                    value={expenseForm.customerId}
+                    onValueChange={(value) => {
+                      const customer = customers.find(c => c.id === value);
+                      setExpenseForm(prev => ({
+                        ...prev,
+                        customerId: value,
+                        customerName: customer?.displayName || customer?.name || ''
+                      }));
+                    }}
+                  >
+                    <SelectTrigger className="w-full h-10 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors" data-testid="select-customer">
+                      <SelectValue placeholder="Select or add a customer" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[280px]">
+                      {customers.map(customer => (
+                        <SelectItem key={customer.id} value={customer.id} className="cursor-pointer">
+                          {customer.displayName || customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -1622,9 +1644,8 @@ export default function Expenses() {
                                   }}
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${
-                                      mileageForm.paidThrough === account ? "opacity-100" : "opacity-0"
-                                    }`}
+                                    className={`mr-2 h-4 w-4 ${mileageForm.paidThrough === account ? "opacity-100" : "opacity-0"
+                                      }`}
                                   />
                                   {account}
                                 </CommandItem>

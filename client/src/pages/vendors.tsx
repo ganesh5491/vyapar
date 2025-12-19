@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { 
-  Plus, Search, ChevronDown, ChevronRight, MoreHorizontal, Pencil, Trash2, 
-  X, Copy, Ban, FileText, ArrowUpDown, Download, Upload, 
+import {
+  Plus, Search, ChevronDown, ChevronRight, MoreHorizontal, Pencil, Trash2,
+  X, Copy, Ban, FileText, ArrowUpDown, Download, Upload,
   Settings, RefreshCw, Building2, Bold, Italic, Underline,
   Printer, Calendar, Link2, Clock, User, Filter, Send, Mail,
   Receipt, CreditCard, Wallet, BookOpen, Package, Paperclip
@@ -197,16 +197,16 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-function VendorDetailPanel({ 
-  vendor, 
-  onClose, 
-  onEdit, 
-  onClone, 
-  onToggleStatus, 
-  onDelete 
-}: { 
-  vendor: Vendor; 
-  onClose: () => void; 
+function VendorDetailPanel({
+  vendor,
+  onClose,
+  onEdit,
+  onClone,
+  onToggleStatus,
+  onDelete
+}: {
+  vendor: Vendor;
+  onClose: () => void;
   onEdit: () => void;
   onClone: () => void;
   onToggleStatus: () => void;
@@ -215,7 +215,7 @@ function VendorDetailPanel({
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
-  
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [transactions, setTransactions] = useState<Record<string, Transaction[]>>({
@@ -228,7 +228,7 @@ function VendorDetailPanel({
   });
   const [mails, setMails] = useState<SystemMail[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     bills: true,
     billPayments: true,
@@ -237,7 +237,7 @@ function VendorDetailPanel({
     vendorCredits: false,
     journals: false
   });
-  
+
   const [statementPeriod, setStatementPeriod] = useState("this-month");
   const [statementFilter, setStatementFilter] = useState("all");
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -255,7 +255,7 @@ function VendorDetailPanel({
         fetch(`/api/vendors/${vendor.id}/mails`),
         fetch(`/api/vendors/${vendor.id}/activities`)
       ]);
-      
+
       if (commentsRes.ok) {
         const data = await commentsRes.json();
         setComments(data.data || []);
@@ -326,14 +326,14 @@ function VendorDetailPanel({
       doc.setFontSize(11);
       doc.setFont(undefined, 'bold');
       doc.text('SkilltonIT', 20, yPos);
-      
+
       // Vendor info on right side
       const vendorInfoX = 120;
       doc.setFontSize(10);
       doc.setFont(undefined, 'normal');
       doc.text('SkilltonIT', vendorInfoX, yPos);
       yPos += 6;
-      
+
       doc.setFontSize(9);
       doc.text('Hinjewadi - Wakad road', vendorInfoX, yPos);
       yPos += 5;
@@ -355,19 +355,19 @@ function VendorDetailPanel({
       doc.setFont(undefined, 'normal');
       doc.text('To', 20, yPos);
       yPos += 6;
-      
+
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
       doc.text(vendor.displayName || '', 20, yPos);
       yPos += 5;
-      
+
       doc.setFontSize(9);
       doc.setFont(undefined, 'normal');
       if (vendor.companyName) {
         doc.text(vendor.companyName, 20, yPos);
         yPos += 5;
       }
-      
+
       // Address details
       if (vendor.billingAddress?.street1) {
         doc.text(vendor.billingAddress.street1, 20, yPos);
@@ -396,7 +396,7 @@ function VendorDetailPanel({
       // Summary Table
       doc.setFontSize(9);
       doc.setFont(undefined, 'normal');
-      
+
       const summaryRows = [
         ['Opening Balance', formatCurrency(vendor.openingBalance || 0)],
         ['Billed Amount', formatCurrency(0)],
@@ -406,7 +406,7 @@ function VendorDetailPanel({
 
       const leftCol = 30;
       const rightCol = pageWidth - 30;
-      
+
       summaryRows.forEach(([label, value]) => {
         doc.text(label || '', leftCol, yPos);
         doc.text(value || '', rightCol, yPos, { align: 'right' });
@@ -425,7 +425,7 @@ function VendorDetailPanel({
       doc.text('Payments', 150, yPos, { align: 'right' });
       doc.text('Balance', pageWidth - 20, yPos, { align: 'right' });
       yPos += 5;
-      
+
       // Draw line under header
       doc.setDrawColor(200);
       doc.line(20, yPos - 1, pageWidth - 20, yPos - 1);
@@ -512,12 +512,16 @@ Generated on ${new Date().toLocaleDateString('en-IN')}`;
       expenses: `/expenses?vendorId=${vendor.id}`,
       purchaseOrder: `/purchase-orders/new?vendorId=${vendor.id}`,
       purchaseOrders: `/purchase-orders/new?vendorId=${vendor.id}`,
+      billPayment: `/payments-made/new?vendorId=${vendor.id}`,
+      billPayments: `/payments-made/new?vendorId=${vendor.id}`,
+      vendorCredit: `/vendor-credits/new?vendorId=${vendor.id}`,
+      vendorCredits: `/vendor-credits/new?vendorId=${vendor.id}`,
     };
-    const unavailableTypes = ["billPayment", "vendorCredit", "journal", "billPayments", "vendorCredits", "journals"];
-    
+    const unavailableTypes = ["journal", "journals"];
+
     if (unavailableTypes.includes(type)) {
-      toast({ 
-        title: "Feature coming soon", 
+      toast({
+        title: "Feature coming soon",
         description: "This feature is not yet available. Please check back later.",
       });
       return;
@@ -612,36 +616,36 @@ Generated on ${new Date().toLocaleDateString('en-IN')}`;
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center px-6 border-b border-slate-200 dark:border-slate-700">
           <TabsList className="h-auto p-0 bg-transparent">
-            <TabsTrigger 
-              value="overview" 
+            <TabsTrigger
+              value="overview"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
               data-testid="tab-overview"
             >
               Overview
             </TabsTrigger>
-            <TabsTrigger 
-              value="comments" 
+            <TabsTrigger
+              value="comments"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
               data-testid="tab-comments"
             >
               Comments
             </TabsTrigger>
-            <TabsTrigger 
-              value="transactions" 
+            <TabsTrigger
+              value="transactions"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
               data-testid="tab-transactions"
             >
               Transactions
             </TabsTrigger>
-            <TabsTrigger 
-              value="mails" 
+            <TabsTrigger
+              value="mails"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
               data-testid="tab-mails"
             >
               Mails
             </TabsTrigger>
-            <TabsTrigger 
-              value="statement" 
+            <TabsTrigger
+              value="statement"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
               data-testid="tab-statement"
             >
@@ -881,9 +885,9 @@ Generated on ${new Date().toLocaleDateString('en-IN')}`;
                 data-testid="input-comment"
               />
               <div className="p-2 border-t border-slate-200 dark:border-slate-700">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleAddComment}
                   disabled={!newComment.trim()}
                   data-testid="button-add-comment"
@@ -954,9 +958,9 @@ Generated on ${new Date().toLocaleDateString('en-IN')}`;
                           Status: All
                           <ChevronDown className="h-3 w-3" />
                         </div>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           className="text-blue-600 gap-1"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1095,39 +1099,39 @@ Generated on ${new Date().toLocaleDateString('en-IN')}`;
                 </Select>
               </div>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-9 w-9" 
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
                   onClick={handlePrint}
                   data-testid="button-print"
                   title="Print Statement"
                 >
                   <Printer className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-9 w-9" 
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
                   onClick={handleDownloadPDF}
                   data-testid="button-download-pdf"
                   title="Download as PDF"
                 >
                   <Download className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-9 w-9" 
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
                   onClick={handleDownloadWord}
                   data-testid="button-download-word"
                   title="Download as Word"
                 >
                   <FileText className="h-4 w-4" />
                 </Button>
-                <Button 
-                  className="bg-blue-600 hover:bg-blue-700 gap-1.5" 
-                  size="sm" 
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 gap-1.5"
+                  size="sm"
                   onClick={() => setShowEmailDialog(true)}
                   data-testid="button-send-email"
                 >
@@ -1245,7 +1249,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')}`;
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-slate-700">Email Address</label>
-              <Input 
+              <Input
                 type="email"
                 value={emailTo}
                 onChange={(e) => setEmailTo(e.target.value)}
@@ -1258,7 +1262,7 @@ Generated on ${new Date().toLocaleDateString('en-IN')}`;
             <Button variant="outline" onClick={() => setShowEmailDialog(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               className="bg-blue-600 hover:bg-blue-700"
               onClick={handleSendEmail}
               data-testid="button-send-email-confirm"
@@ -1404,7 +1408,7 @@ export default function VendorsPage() {
       const fileArray = Array.from(files);
       const selectedAttachments = selectedVendorForAttachments?.attachments || [];
       const totalFiles = selectedAttachments.length + newAttachments.length + fileArray.length;
-      
+
       if (totalFiles > 10) {
         toast({ title: "Maximum 10 files allowed", variant: "destructive" });
         return;
@@ -1511,8 +1515,8 @@ export default function VendorsPage() {
             <ChevronDown className="h-4 w-4 text-slate-500" />
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => setLocation("/vendors/new")} 
+            <Button
+              onClick={() => setLocation("/vendors/new")}
               className="bg-blue-600 hover:bg-blue-700 gap-1.5 h-9"
               data-testid="button-new-vendor"
             >
@@ -1566,8 +1570,8 @@ export default function VendorsPage() {
               <p className="text-slate-500 mb-4 max-w-sm">
                 Add your first vendor to start tracking purchases and managing supplier relationships.
               </p>
-              <Button 
-                onClick={() => setLocation("/vendors/new")} 
+              <Button
+                onClick={() => setLocation("/vendors/new")}
                 className="bg-blue-600 hover:bg-blue-700"
                 data-testid="button-add-first-vendor"
               >
@@ -1579,7 +1583,7 @@ export default function VendorsPage() {
               <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
                 <tr className="border-b border-slate-200 dark:border-slate-700">
                   <th className="w-10 px-3 py-3 text-left">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedVendors.length === sortedVendors.length && sortedVendors.length > 0}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1602,16 +1606,15 @@ export default function VendorsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {paginatedItems.map((vendor) => (
-                  <tr 
-                    key={vendor.id} 
-                    className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
-                      selectedVendor?.id === vendor.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                    }`}
+                  <tr
+                    key={vendor.id}
+                    className={`hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${selectedVendor?.id === vendor.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
                     onClick={() => handleVendorClick(vendor)}
                     data-testid={`row-vendor-${vendor.id}`}
                   >
                     <td className="px-3 py-3">
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedVendors.includes(vendor.id)}
                         onClick={(e) => toggleSelectVendor(vendor.id, e)}
                       />
@@ -1635,9 +1638,9 @@ export default function VendorsPage() {
                       {formatCurrencyLocal(vendor.unusedCredits || 0)}
                     </td>
                     <td className="px-3 py-3">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1684,9 +1687,9 @@ export default function VendorsPage() {
           <div className="bg-white dark:bg-slate-900 rounded-lg w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Attachments - {selectedVendorForAttachments.displayName}</h3>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="h-6 w-6"
                 onClick={() => {
                   setShowAttachmentsDialog(false);
@@ -1709,8 +1712,8 @@ export default function VendorsPage() {
                           <p className="text-sm text-slate-900 dark:text-white truncate">{attachment.name}</p>
                           <p className="text-xs text-slate-500">{(attachment.size / 1024).toFixed(2)} KB</p>
                         </div>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-slate-400 hover:text-red-600 flex-shrink-0"
                           onClick={() => handleDeleteAttachment(selectedVendorForAttachments.id, attachment.id)}
@@ -1725,8 +1728,8 @@ export default function VendorsPage() {
                 </div>
               )}
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="gap-2 w-full"
                 onClick={() => fileInputRef.current?.click()}
                 data-testid="button-upload-new-attachment"
@@ -1735,7 +1738,7 @@ export default function VendorsPage() {
                 <Upload className="h-4 w-4" />
                 Upload your Files
               </Button>
-              <input 
+              <input
                 ref={fileInputRef}
                 type="file"
                 multiple
@@ -1743,7 +1746,7 @@ export default function VendorsPage() {
                 onChange={(e) => handleAttachmentUpload(e, selectedVendorForAttachments.id)}
                 accept="*/*"
               />
-              
+
               {newAttachments.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-slate-700 mb-2">New Files to Upload</p>
@@ -1754,8 +1757,8 @@ export default function VendorsPage() {
                           <p className="text-sm text-slate-900 dark:text-white truncate">{file.name}</p>
                           <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(2)} KB</p>
                         </div>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-slate-400 hover:text-red-600 flex-shrink-0"
                           onClick={() => setNewAttachments(prev => prev.filter((_, i) => i !== index))}
@@ -1772,7 +1775,7 @@ export default function VendorsPage() {
               <p className="text-xs text-slate-500">You can upload a maximum of 10 files, 10MB each</p>
 
               <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <Button 
+                <Button
                   variant="outline"
                   className="flex-1"
                   onClick={() => {
@@ -1784,7 +1787,7 @@ export default function VendorsPage() {
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                   onClick={() => handleSaveAttachments(selectedVendorForAttachments.id)}
                   data-testid="button-save-attachments"

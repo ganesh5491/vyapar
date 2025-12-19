@@ -167,6 +167,26 @@ export default function PaymentsMadeCreate() {
     queryKey: ["/api/payments-made/next-number"],
   });
 
+  // Read vendorId from URL params (when navigating from vendor page)
+  const urlParams = new URLSearchParams(window.location.search);
+  const vendorIdFromUrl = urlParams.get('vendorId');
+
+  // Pre-fill vendor data when coming from vendor page
+  useEffect(() => {
+    if (vendorIdFromUrl && vendorsData?.data && vendorsData.data.length > 0 && !formData.vendorId) {
+      const vendor = vendorsData.data.find(v => v.id === vendorIdFromUrl);
+      if (vendor) {
+        setFormData(prev => ({
+          ...prev,
+          vendorId: vendor.id,
+          vendorName: vendor.displayName || vendor.companyName || '',
+          gstTreatment: vendor.gstTreatment || '',
+          sourceOfSupply: vendor.sourceOfSupply || ''
+        }));
+      }
+    }
+  }, [vendorIdFromUrl, vendorsData?.data]);
+
   useEffect(() => {
     if (nextNumberData?.data?.nextNumber) {
       setFormData((prev) => ({

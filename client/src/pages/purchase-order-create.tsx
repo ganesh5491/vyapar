@@ -74,11 +74,18 @@ interface Item {
   id: string;
   name: string;
   description?: string;
+  purchaseDescription?: string;
+  rate?: string | number;
+  purchaseRate?: string | number;
   sellingPrice?: number;
   purchasePrice?: number;
+  hsnSac?: string;
   hsn?: string;
   sku?: string;
+  usageUnit?: string;
   unit?: string;
+  intraStateTax?: string;
+  interStateTax?: string;
   tax?: number;
 }
 
@@ -198,9 +205,28 @@ export default function PurchaseOrderCreate() {
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
 
+  // Get vendorId from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const vendorIdFromUrl = urlParams.get('vendorId');
+
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  // Pre-fill vendor data if vendorId is in URL
+  useEffect(() => {
+    if (vendorIdFromUrl && vendors.length > 0 && !formData.vendorId) {
+      const vendor = vendors.find(v => v.id === vendorIdFromUrl);
+      if (vendor) {
+        setSelectedVendor(vendor);
+        setFormData(prev => ({
+          ...prev,
+          vendorId: vendor.id,
+          vendorName: vendor.displayName || `${vendor.firstName} ${vendor.lastName}`.trim() || vendor.companyName || ""
+        }));
+      }
+    }
+  }, [vendorIdFromUrl, vendors]);
 
   const fetchInitialData = async () => {
     try {
@@ -320,21 +346,39 @@ export default function PurchaseOrderCreate() {
   const selectItem = (lineItemId: string, itemId: string) => {
     const item = items.find(i => i.id === itemId);
     if (item) {
-      const rate = item.purchasePrice || item.sellingPrice || 0;
+      // Parse rate - prioritize purchaseRate, then rate, then purchasePrice, then sellingPrice
+      const purchaseRate = item.purchaseRate !== undefined ? parseFloat(String(item.purchaseRate)) : 0;
+      const rate = item.rate !== undefined ? parseFloat(String(item.rate)) : 0;
+      const finalRate = purchaseRate || item.purchasePrice || rate || item.sellingPrice || 0;
+
+      // Get description - prioritize purchaseDescription for purchase orders
+      const description = item.purchaseDescription || item.description || '';
+
+      // Get tax rate from item
+      let taxValue = 'none';
+      if (item.intraStateTax) {
+        // Convert tax string like 'gst18' to proper format
+        const taxMatch = item.intraStateTax.match(/(gst|igst)(\d+)/i);
+        if (taxMatch) {
+          taxValue = `gst_${taxMatch[2]}`;
+        }
+      }
+
       setLineItems(prev => prev.map(lineItem => {
         if (lineItem.id === lineItemId) {
-          const baseAmount = lineItem.quantity * rate;
+          const baseAmount = lineItem.quantity * finalRate;
           let taxRate = 0;
-          if (lineItem.tax && lineItem.tax !== 'none') {
-            taxRate = parseInt(lineItem.tax.replace(/\D/g, '')) || 0;
+          if (taxValue && taxValue !== 'none') {
+            taxRate = parseInt(taxValue.replace(/\D/g, '')) || 0;
           }
           const taxAmount = (baseAmount * taxRate) / 100;
           return {
             ...lineItem,
             itemId: item.id,
             itemName: item.name,
-            description: item.description || '',
-            rate: rate,
+            description: description,
+            rate: finalRate,
+            tax: taxValue,
             taxAmount: taxAmount,
             amount: baseAmount + taxAmount
           };

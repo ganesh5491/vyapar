@@ -117,6 +117,7 @@ export default function BillCreate() {
   // Get query params from URL
   const urlParams = new URLSearchParams(window.location.search);
   const purchaseOrderId = urlParams.get('purchaseOrderId');
+  const vendorIdFromUrl = urlParams.get('vendorId');
 
   const [formData, setFormData] = useState({
     vendorId: "",
@@ -162,6 +163,29 @@ export default function BillCreate() {
       fetchPurchaseOrderData(purchaseOrderId);
     }
   }, [purchaseOrderId]);
+
+  // Pre-fill vendor data if vendorId is in URL
+  useEffect(() => {
+    if (vendorIdFromUrl && vendors.length > 0 && !formData.vendorId) {
+      const vendor = vendors.find(v => v.id === vendorIdFromUrl);
+      if (vendor) {
+        setFormData(prev => ({
+          ...prev,
+          vendorId: vendor.id,
+          vendorName: vendor.displayName || `${vendor.firstName} ${vendor.lastName}`.trim() || vendor.companyName || "",
+          vendorAddress: {
+            street1: vendor.billingAddress?.street1 || "",
+            street2: vendor.billingAddress?.street2 || "",
+            city: vendor.billingAddress?.city || "",
+            state: vendor.billingAddress?.state || "",
+            pinCode: vendor.billingAddress?.pinCode || "",
+            country: vendor.billingAddress?.country || "India",
+            gstin: vendor.gstin || ""
+          }
+        }));
+      }
+    }
+  }, [vendorIdFromUrl, vendors]);
 
   const fetchCustomers = async () => {
     try {

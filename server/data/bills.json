@@ -1,6 +1,74 @@
 {
   "bills": [
     {
+      "id": "1766137256492",
+      "billNumber": "5",
+      "orderNumber": "PO-2025-0004",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "vendorAddress": {},
+      "billDate": "2025-12-19",
+      "dueDate": "2025-12-19",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0004",
+      "items": [
+        {
+          "id": "item-1766137214734-0",
+          "itemName": "Rice (Copy)",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Cost of Goods Sold",
+          "quantity": 11,
+          "rate": 49.99,
+          "tax": "none",
+          "taxAmount": 0,
+          "customerDetails": "2",
+          "amount": 549.89
+        },
+        {
+          "id": "item-1766137214734-1",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Cost of Goods Sold",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "none",
+          "taxAmount": 0,
+          "customerDetails": "7",
+          "amount": 50
+        }
+      ],
+      "subTotal": 599.89,
+      "discountType": "percent",
+      "discountValue": 10,
+      "discountAmount": 59.989,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 0,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 539.901,
+      "amountPaid": 0,
+      "balanceDue": 539.901,
+      "notes": "",
+      "attachments": [],
+      "status": "OPEN",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-19T09:40:56.492Z",
+      "updatedAt": "2025-12-19T09:40:56.492Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-19T09:40:56.492Z",
+          "action": "created",
+          "description": "Bill created for ₹539.901",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766053744518",
       "billNumber": "4",
       "orderNumber": "",
@@ -65,7 +133,7 @@
       ]
     }
   ],
-  "nextBillNumber": 5,
+  "nextBillNumber": 6,
   "accounts": [
     {
       "id": "1",
