@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
-import { 
-  FileText, Plus, Trash2, ChevronDown, 
+import {
+  FileText, Plus, Trash2, ChevronDown, Search,
   Upload, Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -93,19 +93,28 @@ interface Product {
   taxPreference?: string;
 }
 
+interface Customer {
+  id: string;
+  name: string;
+  displayName?: string;
+  companyName?: string;
+}
+
 export default function BillEdit() {
   const params = useParams();
   const billId = params.id;
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendorSearchTerm, setVendorSearchTerm] = useState("");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [taxes, setTaxes] = useState<Tax[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingBill, setLoadingBill] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  
+
   const [formData, setFormData] = useState({
     vendorId: "",
     vendorName: "",
@@ -145,6 +154,7 @@ export default function BillEdit() {
     fetchAccounts();
     fetchTaxes();
     fetchProducts();
+    fetchCustomers();
     if (billId) {
       fetchBill();
     }
@@ -249,13 +259,41 @@ export default function BillEdit() {
     }
   };
 
+  const fetchCustomers = async () => {
+    try {
+      const response = await fetch('/api/customers');
+      if (response.ok) {
+        const data = await response.json();
+        setCustomers(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customers:', error);
+    }
+  };
+
+  const getCustomerDisplayName = (customerId: string) => {
+    if (!customerId || customerId === 'none') return 'None';
+    const customer = customers.find(c => c.id === customerId);
+    return customer ? (customer.displayName || customer.name) : 'None';
+  };
+
+  const filteredVendors = vendors.filter(vendor => {
+    const vendorName = vendor.displayName || `${vendor.firstName} ${vendor.lastName}`.trim() || vendor.companyName || "";
+    return vendorName.toLowerCase().includes(vendorSearchTerm.toLowerCase());
+  });
+
   const handleVendorChange = (vendorId: string) => {
+    if (vendorId === "__add_new_vendor__") {
+      setLocation("/vendors/new");
+      return;
+    }
+
     const vendor = vendors.find(v => v.id === vendorId);
     if (vendor) {
       setFormData(prev => ({
         ...prev,
         vendorId: vendor.id,
-        vendorName: vendor.name || vendor.companyName || "",
+        vendorName: vendor.displayName || `${vendor.firstName} ${vendor.lastName}`.trim() || vendor.companyName || "",
         vendorAddress: {
           street1: vendor.billingAddress?.street1 || "",
           street2: vendor.billingAddress?.street2 || "",
@@ -279,7 +317,7 @@ export default function BillEdit() {
       rate: 0,
       tax: "",
       taxAmount: 0,
-      customerDetails: "",
+      customerDetails: "none",
       amount: 0
     };
     setFormData(prev => ({
@@ -311,8 +349,8 @@ export default function BillEdit() {
 
       const subTotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
       const taxAmount = updatedItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
-      const discountAmount = prev.discountType === 'percent' 
-        ? (subTotal * prev.discountValue) / 100 
+      const discountAmount = prev.discountType === 'percent'
+        ? (subTotal * prev.discountValue) / 100
         : prev.discountValue;
       const total = subTotal - discountAmount + taxAmount + prev.adjustment;
 
@@ -332,8 +370,8 @@ export default function BillEdit() {
       const updatedItems = prev.items.filter(item => item.id !== id);
       const subTotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
       const taxAmount = updatedItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
-      const discountAmount = prev.discountType === 'percent' 
-        ? (subTotal * prev.discountValue) / 100 
+      const discountAmount = prev.discountType === 'percent'
+        ? (subTotal * prev.discountValue) / 100
         : prev.discountValue;
       const total = subTotal - discountAmount + taxAmount + prev.adjustment;
 
@@ -370,8 +408,8 @@ export default function BillEdit() {
 
         const subTotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
         const taxAmount = updatedItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0);
-        const discountAmount = prev.discountType === 'percent' 
-          ? (subTotal * prev.discountValue) / 100 
+        const discountAmount = prev.discountType === 'percent'
+          ? (subTotal * prev.discountValue) / 100
           : prev.discountValue;
         const total = subTotal - discountAmount + taxAmount + prev.adjustment;
 
@@ -389,8 +427,8 @@ export default function BillEdit() {
 
   const handleDiscountChange = (type: string, value: number) => {
     setFormData(prev => {
-      const discountAmount = type === 'percent' 
-        ? (prev.subTotal * value) / 100 
+      const discountAmount = type === 'percent'
+        ? (prev.subTotal * value) / 100
         : value;
       const total = prev.subTotal - discountAmount + prev.taxAmount + prev.adjustment;
       return {
@@ -475,11 +513,35 @@ export default function BillEdit() {
                       <SelectValue placeholder="Select a Vendor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {vendors.map(vendor => (
+                      <div className="p-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Search className="h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Search vendors..."
+                            className="h-8"
+                            value={vendorSearchTerm}
+                            onChange={(e) => setVendorSearchTerm(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      {filteredVendors.map(vendor => (
                         <SelectItem key={vendor.id} value={vendor.id}>
-                          {vendor.name || vendor.companyName}
+                          {vendor.displayName || `${vendor.firstName} ${vendor.lastName}`.trim() || vendor.companyName}
                         </SelectItem>
                       ))}
+                      <div className="border-t mt-1 pt-1">
+                        <SelectItem
+                          value="__add_new_vendor__"
+                          onSelect={() => {
+                            setLocation("/vendors/new");
+                          }}
+                        >
+                          <div className="flex items-center gap-2 text-blue-600">
+                            <Plus className="h-4 w-4" />
+                            Add New Vendor
+                          </div>
+                        </SelectItem>
+                      </div>
                     </SelectContent>
                   </Select>
                   <Button variant="outline" size="icon" onClick={() => setLocation("/vendors/new")} data-testid="button-add-vendor">
@@ -493,7 +555,7 @@ export default function BillEdit() {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <Label className="text-red-600">Bill#*</Label>
-                <Input 
+                <Input
                   value={formData.billNumber}
                   onChange={(e) => setFormData(prev => ({ ...prev, billNumber: e.target.value }))}
                   className="mt-1"
@@ -503,7 +565,7 @@ export default function BillEdit() {
               </div>
               <div>
                 <Label>Order Number</Label>
-                <Input 
+                <Input
                   value={formData.orderNumber}
                   onChange={(e) => setFormData(prev => ({ ...prev, orderNumber: e.target.value }))}
                   className="mt-1"
@@ -515,7 +577,7 @@ export default function BillEdit() {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <Label className="text-red-600">Bill Date*</Label>
-                <Input 
+                <Input
                   type="date"
                   value={formData.billDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, billDate: e.target.value }))}
@@ -526,7 +588,7 @@ export default function BillEdit() {
               <div className="flex gap-4">
                 <div className="flex-1">
                   <Label>Due Date</Label>
-                  <Input 
+                  <Input
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
@@ -536,7 +598,7 @@ export default function BillEdit() {
                 </div>
                 <div className="flex-1">
                   <Label>Payment Terms</Label>
-                  <Select 
+                  <Select
                     value={formData.paymentTerms}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, paymentTerms: value }))}
                   >
@@ -556,7 +618,7 @@ export default function BillEdit() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Checkbox 
+              <Checkbox
                 id="reverse-charge"
                 checked={formData.reverseCharge}
                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, reverseCharge: checked as boolean }))}
@@ -570,7 +632,7 @@ export default function BillEdit() {
               <Label className="flex items-center gap-1">
                 Subject <Info className="h-3 w-3 text-slate-400" />
               </Label>
-              <Textarea 
+              <Textarea
                 value={formData.subject}
                 onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
                 placeholder="Enter a subject within 250 characters"
@@ -616,7 +678,7 @@ export default function BillEdit() {
                     formData.items.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <Select 
+                          <Select
                             value={item.itemName || ""}
                             onValueChange={(value) => {
                               const product = products.find(p => p.name === value);
@@ -647,7 +709,7 @@ export default function BillEdit() {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          <Select 
+                          <Select
                             value={item.account}
                             onValueChange={(value) => updateItem(item.id, 'account', value)}
                           >
@@ -664,7 +726,7 @@ export default function BillEdit() {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          <Input 
+                          <Input
                             type="number"
                             value={item.quantity}
                             onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
@@ -675,7 +737,7 @@ export default function BillEdit() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Input 
+                          <Input
                             type="number"
                             value={item.rate}
                             onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
@@ -686,7 +748,7 @@ export default function BillEdit() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Select 
+                          <Select
                             value={item.tax || ""}
                             onValueChange={(value) => updateItem(item.id, 'tax', value)}
                           >
@@ -704,15 +766,22 @@ export default function BillEdit() {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          <Select 
-                            value={item.customerDetails || ""}
+                          <Select
+                            value={item.customerDetails || "none"}
                             onValueChange={(value) => updateItem(item.id, 'customerDetails', value)}
                           >
                             <SelectTrigger className="text-sm">
-                              <SelectValue placeholder="Select Customer" />
+                              <SelectValue placeholder="Select Customer">
+                                {getCustomerDisplayName(item.customerDetails || "none")}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">None</SelectItem>
+                              {customers.map(customer => (
+                                <SelectItem key={customer.id} value={customer.id}>
+                                  {customer.displayName || customer.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -720,9 +789,9 @@ export default function BillEdit() {
                           {item.amount.toFixed(2)}
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-red-500"
                             onClick={() => removeItem(item.id)}
                             data-testid={`button-remove-item-${item.id}`}
@@ -757,11 +826,11 @@ export default function BillEdit() {
                   <span className="text-slate-600">Sub Total</span>
                   <span className="font-medium">{formData.subTotal.toFixed(2)}</span>
                 </div>
-                
+
                 <div className="flex justify-between items-center gap-2">
                   <span className="text-slate-600">Discount</span>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <Input
                       type="number"
                       value={formData.discountValue}
                       onChange={(e) => handleDiscountChange(formData.discountType, parseFloat(e.target.value) || 0)}
@@ -769,7 +838,7 @@ export default function BillEdit() {
                       min={0}
                       data-testid="input-discount"
                     />
-                    <Select 
+                    <Select
                       value={formData.discountType}
                       onValueChange={(value) => handleDiscountChange(value, formData.discountValue)}
                     >
@@ -787,10 +856,10 @@ export default function BillEdit() {
 
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="radio" 
-                      id="tds" 
-                      name="taxType" 
+                    <input
+                      type="radio"
+                      id="tds"
+                      name="taxType"
                       value="TDS"
                       checked={formData.taxType === 'TDS'}
                       onChange={() => setFormData(prev => ({ ...prev, taxType: 'TDS' }))}
@@ -798,17 +867,17 @@ export default function BillEdit() {
                     <Label htmlFor="tds">TDS</Label>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="radio" 
-                      id="tcs" 
-                      name="taxType" 
+                    <input
+                      type="radio"
+                      id="tcs"
+                      name="taxType"
                       value="TCS"
                       checked={formData.taxType === 'TCS'}
                       onChange={() => setFormData(prev => ({ ...prev, taxType: 'TCS' }))}
                     />
                     <Label htmlFor="tcs">TCS</Label>
                   </div>
-                  <Select 
+                  <Select
                     value={formData.taxCategory}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, taxCategory: value }))}
                   >
@@ -829,13 +898,13 @@ export default function BillEdit() {
                 <div className="flex justify-between items-center gap-2">
                   <span className="text-slate-600">Adjustment</span>
                   <div className="flex items-center gap-2">
-                    <Input 
+                    <Input
                       value={formData.adjustmentDescription}
                       onChange={(e) => setFormData(prev => ({ ...prev, adjustmentDescription: e.target.value }))}
                       placeholder="Description"
                       className="w-32 text-sm"
                     />
-                    <Input 
+                    <Input
                       type="number"
                       value={formData.adjustment}
                       onChange={(e) => handleAdjustmentChange(parseFloat(e.target.value) || 0)}
@@ -856,7 +925,7 @@ export default function BillEdit() {
             <div className="grid grid-cols-2 gap-6 mt-6 p-4 bg-slate-50 rounded-lg">
               <div>
                 <Label>Notes</Label>
-                <Textarea 
+                <Textarea
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                   placeholder="Enter notes"
@@ -880,7 +949,7 @@ export default function BillEdit() {
         </div>
 
         <div className="flex items-center gap-3 mt-6 p-4 bg-white rounded-lg shadow-sm border border-slate-200">
-          <Button 
+          <Button
             className="bg-blue-600 hover:bg-blue-700"
             onClick={handleSubmit}
             disabled={loading}
@@ -888,7 +957,7 @@ export default function BillEdit() {
           >
             Save Changes
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => setLocation("/bills")}
             data-testid="button-cancel"

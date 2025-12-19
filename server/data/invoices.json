@@ -1,6 +1,206 @@
 {
   "invoices": [
     {
+      "id": "1766057884823",
+      "invoiceNumber": "INV-00024",
+      "referenceNumber": "",
+      "date": "2025-12-18",
+      "dueDate": "2025-12-18",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Due on Receipt",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "",
+          "name": "dal bat",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 700,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 126,
+          "taxName": "none",
+          "amount": 826
+        },
+        {
+          "id": "1766056286154",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 11,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 660
+        }
+      ],
+      "subTotal": 1360,
+      "shippingCharges": 0,
+      "cgst": 63,
+      "sgst": 63,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1486,
+      "amountPaid": 486,
+      "balanceDue": 1000,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-18T11:38:04.823Z",
+      "updatedAt": "2025-12-18T12:05:30.223Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1766059530223",
+          "date": "2025-12-18T12:04:00.000Z",
+          "amount": 486,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T11:38:04.823Z",
+          "action": "created",
+          "description": "Invoice created for ₹0.00",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-18T12:02:51.868Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-18T12:05:30.223Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹486 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1766057841223",
+      "invoiceNumber": "INV-00023",
+      "referenceNumber": "",
+      "date": "2025-12-18",
+      "dueDate": "2025-12-18",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "1",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 15",
+      "items": [
+        {
+          "id": "1766056286154",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 11,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 118.8,
+          "taxName": "none",
+          "amount": 778.8
+        },
+        {
+          "id": "1766061262932",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 10.799999999999999,
+          "taxName": "GST18",
+          "amount": 70.8
+        }
+      ],
+      "subTotal": 720,
+      "shippingCharges": 0,
+      "cgst": 64.8,
+      "sgst": 64.8,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 849.5999999999999,
+      "amountPaid": 0,
+      "balanceDue": 849.5999999999999,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-18T11:37:21.223Z",
+      "updatedAt": "2025-12-18T12:34:42.909Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T11:37:21.223Z",
+          "action": "created",
+          "description": "Invoice created for ₹0.00",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-18T12:34:42.909Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765801976316",
       "invoiceNumber": "INV-00022",
       "referenceNumber": "",
@@ -2318,5 +2518,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 23
+  "nextInvoiceNumber": 25
 }

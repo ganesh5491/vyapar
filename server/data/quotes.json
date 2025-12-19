@@ -1,6 +1,75 @@
 {
   "quotes": [
     {
+      "id": "1766053982422",
+      "quoteNumber": "QT-000017",
+      "referenceNumber": "",
+      "date": "2025-12-18",
+      "expiryDate": "2025-12-24",
+      "customerId": "3",
+      "customerName": "Uraja Foods",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "nilraj",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1766053944924",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 1,
+          "unit": "",
+          "rate": 60,
+          "discount": 10,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 54
+        }
+      ],
+      "subTotal": 54,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 1.35,
+      "sgst": 1.35,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 56.7,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "SENT",
+      "emailRecipients": [],
+      "createdAt": "2025-12-18T10:33:02.422Z",
+      "updatedAt": "2025-12-18T10:33:02.422Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T10:33:02.422Z",
+          "action": "created",
+          "description": "Quote created for ₹56.7",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765795311503",
       "quoteNumber": "QT-000016",
       "referenceNumber": "43242",
@@ -1175,5 +1244,5 @@
       "convertedTo": "invoice"
     }
   ],
-  "nextQuoteNumber": 17
+  "nextQuoteNumber": 18
 }

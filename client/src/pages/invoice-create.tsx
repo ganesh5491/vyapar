@@ -59,6 +59,7 @@ interface InvoiceItem {
   discountType: 'percentage' | 'flat';
   discountValue: number;
   gstRate: number; // 0, 5, 12, 18, 28, -1 (Non-taxable)
+  productId?: string; // Track the selected product ID
 }
 
 interface TaxOption {
@@ -105,6 +106,12 @@ interface Product {
   type: string;
   taxPreference: string;
   intraStateTax: string;
+  interStateTax: string;
+  usageUnit: string;
+  purchaseRate: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function InvoiceCreate() {
@@ -128,6 +135,9 @@ export default function InvoiceCreate() {
   const [customersLoading, setCustomersLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
   const [customerIdFromUrl, setCustomerIdFromUrl] = useState<string | null>(null);
+  const [salesOrderId, setSalesOrderId] = useState<string | null>(null);
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
+  const [convertAll, setConvertAll] = useState(false);
 
   const [date, setDate] = useState<Date>(new Date());
   const [dueDate, setDueDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() + 30)));
@@ -156,7 +166,7 @@ export default function InvoiceCreate() {
     if (customerSnapshot) {
       setBillingAddress(formatAddressDisplay(customerSnapshot.billingAddress));
       setShippingAddress(formatAddressDisplay(customerSnapshot.shippingAddress));
-      
+
       // Update payment terms if customer has default
       if (customerSnapshot.paymentTerms) {
         const termsMap: Record<string, string> = {
@@ -221,17 +231,28 @@ export default function InvoiceCreate() {
     fetchSalespersons();
     fetchCustomers();
     fetchProducts();
-    // Handle clone parameter and customerId from URL
+    // Handle clone parameter, customerId, and sales order conversion from URL
     const params = new URLSearchParams(location.split('?')[1]);
     const cloneFromId = params.get('cloneFrom');
     const urlCustomerId = params.get('customerId');
+    const salesOrderIdParam = params.get('salesOrderId');
+    const convertAllParam = params.get('convertAll');
+    const selectedItemsParam = params.get('selectedItems');
+
     if (cloneFromId) {
       fetchInvoiceToClone(cloneFromId);
     } else if (urlCustomerId) {
       setCustomerIdFromUrl(urlCustomerId);
+    } else if (salesOrderIdParam) {
+      setSalesOrderId(salesOrderIdParam);
+      setConvertAll(convertAllParam === 'true');
+      if (selectedItemsParam) {
+        setSelectedItemIds(selectedItemsParam.split(','));
+      }
+      fetchSalesOrderForConversion(salesOrderIdParam);
     }
   }, [location]);
-  
+
   // Set customer from URL after customers are loaded
   useEffect(() => {
     if (customerIdFromUrl && customers.length > 0) {
@@ -264,7 +285,15 @@ export default function InvoiceCreate() {
       const response = await fetch('/api/items');
       if (response.ok) {
         const data = await response.json();
-        setProducts(data.data || []);
+        console.log('Fetched products data:', data);
+        const items = data.data || data.items || [];
+        console.log('Items array:', items);
+        // Filter only active items
+        const activeItems = items.filter((item: Product) => item.isActive !== false);
+        console.log('Active items:', activeItems);
+        setProducts(activeItems);
+      } else {
+        console.error('Failed to fetch products:', response.statusText, response.status);
       }
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -316,6 +345,62 @@ export default function InvoiceCreate() {
       toast({
         title: "Clone Failed",
         description: "Could not load invoice data for duplication.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchSalesOrderForConversion = async (salesOrderId: string) => {
+    try {
+      const response = await fetch(`/api/sales-orders/${salesOrderId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const salesOrder = data.data;
+
+        // Pre-populate form with sales order data
+        setSelectedCustomerId(salesOrder.customerId);
+        setDate(new Date());
+        setDueDate(new Date(new Date().setDate(new Date().getDate() + 30)));
+        setSelectedTerms(salesOrder.paymentTerms || 'net30');
+        setBillingAddress(salesOrder.billingAddress?.street || '');
+        setShippingAddress(salesOrder.shippingAddress?.street || '');
+        setSelectedSalesperson(salesOrder.salesperson || '');
+
+        // Handle items - either all items or selected items
+        let itemsToConvert = salesOrder.items || [];
+
+        if (!convertAll && selectedItemIds.length > 0) {
+          // Filter to only selected items
+          itemsToConvert = salesOrder.items.filter((item: any) =>
+            selectedItemIds.includes(item.id)
+          );
+        }
+
+        if (itemsToConvert.length > 0) {
+          const convertedItems = itemsToConvert.map((item: any) => ({
+            id: Math.random(),
+            name: item.name,
+            description: item.description || '',
+            qty: item.quantity - (item.invoicedQty || 0), // Only uninvoiced quantity
+            rate: item.rate,
+            discountType: item.discountType || 'percentage',
+            discountValue: item.discount || 0,
+            gstRate: item.tax && item.tax > 0 ? (item.tax / (item.rate * item.quantity - (item.discount || 0))) * 100 : 18
+          })).filter(item => item.qty > 0); // Only include items with remaining quantity
+
+          setItems(convertedItems);
+        }
+
+        toast({
+          title: "Sales Order Loaded",
+          description: `Converting ${convertAll ? 'all' : 'selected'} items from sales order ${salesOrder.salesOrderNumber}`,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch sales order for conversion:', error);
+      toast({
+        title: "Conversion Failed",
+        description: "Could not load sales order data for conversion.",
         variant: "destructive"
       });
     }
@@ -426,7 +511,7 @@ export default function InvoiceCreate() {
     let cgstAmount = 0;
     let sgstAmount = 0;
     let igstAmount = 0;
-    
+
     if (taxRegime.regime === 'exempt' || customerSnapshot?.taxPreference === 'tax_exempt') {
       // Tax exempt - no taxes
       cgstAmount = 0;
@@ -574,6 +659,7 @@ export default function InvoiceCreate() {
       id: Math.random(),
       name: "",
       description: "",
+      productId: undefined,
       qty: 1,
       rate: 0,
       discountType: 'percentage',
@@ -632,6 +718,15 @@ export default function InvoiceCreate() {
       <div>
         <h1 className="text-3xl font-display font-bold text-foreground tracking-tight">Create Invoice</h1>
         <p className="text-muted-foreground mt-1">Draft a new invoice for your customer.</p>
+        {salesOrderId && (
+          <div className="mt-3">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+              <Receipt className="w-3 h-3 mr-1" />
+              Converting from Sales Order
+              {convertAll ? ' (All Items)' : ` (${selectedItemIds.length} Selected Items)`}
+            </Badge>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -651,7 +746,7 @@ export default function InvoiceCreate() {
                       <SelectTrigger className="w-full h-11 bg-white border-border/60 focus:ring-primary/20" data-testid="select-customer">
                         <SelectValue placeholder={customersLoading ? "Loading customers..." : "Select or search customer"} />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border border-slate-200 shadow-lg z-[100] max-h-60 overflow-y-auto">
+                      <SelectContent className="bg-white border border-slate-200 shadow-lg z-100 max-h-60 overflow-y-auto">
                         {customersLoading ? (
                           <div className="p-2 text-sm text-muted-foreground">Loading customers...</div>
                         ) : customers.length === 0 ? (
@@ -674,7 +769,7 @@ export default function InvoiceCreate() {
                     </Select>
                   </div>
 
-                  <div className="p-4 rounded-lg bg-secondary/30 border border-border/50 text-sm space-y-2 break-words">
+                  <div className="p-4 rounded-lg bg-secondary/30 border border-border/50 text-sm space-y-2 wrap-break-word">
                     <div className="flex items-center justify-between">
                       <p className="font-medium text-foreground">{selectedCustomer?.displayName || "Select a customer"}</p>
                       {selectedCustomer && (
@@ -693,7 +788,7 @@ export default function InvoiceCreate() {
                       <Textarea
                         value={billingAddress}
                         onChange={(e) => setBillingAddress(e.target.value)}
-                        className="min-h-[80px] text-sm bg-white border-border/60"
+                        className="min-h-20 text-sm bg-white border-border/60"
                         placeholder="Enter billing address..."
                       />
                     ) : (
@@ -754,7 +849,7 @@ export default function InvoiceCreate() {
                             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[240px] p-0 bg-white border border-slate-200 shadow-lg z-[100]" align="start">
+                        <PopoverContent className="w-60 p-0 bg-white border border-slate-200 shadow-lg z-100" align="start">
                           <div className="p-2 border-b border-slate-100">
                             <div className="relative">
                               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -836,7 +931,7 @@ export default function InvoiceCreate() {
                           {selectedSalesperson || "Select salesperson"}
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="z-[100]">
+                      <SelectContent className="z-100">
                         <div className="p-2">
                           <div className="relative">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -877,7 +972,7 @@ export default function InvoiceCreate() {
                     <TableHeader className="bg-secondary/30">
                       <TableRow className="hover:bg-transparent border-border/60">
                         <TableHead className="w-[30%] min-w-[200px] pl-4">Item Details</TableHead>
-                        <TableHead className="w-[10%] min-w-[80px]">Quantity</TableHead>
+                        <TableHead className="w-[10%] min-w-20">Quantity</TableHead>
                         <TableHead className="w-[12%] min-w-[100px]">Rate</TableHead>
                         <TableHead className="w-[15%] min-w-[140px]">Discount</TableHead>
                         <TableHead className="w-[13%] min-w-[120px]">GST</TableHead>
@@ -911,19 +1006,36 @@ export default function InvoiceCreate() {
 
                               <div className="space-y-2">
                                 <Select
-                                  value={item.name || ""}
+                                  value={item.productId || ""}
                                   onValueChange={(val) => {
-                                    const selectedProduct = products.find(p => p.name === val);
+                                    if (val === "create_new_item") {
+                                      setLocation('/items/create');
+                                      return;
+                                    }
+
+                                    console.log('Selected value:', val);
+                                    console.log('Available products:', products);
+
+                                    const selectedProduct = products.find(p => p.id === val);
+                                    console.log('Found product:', selectedProduct);
+
                                     if (selectedProduct) {
-                                      const rateNum = parseFloat(selectedProduct.rate.replace(/[^\d.]/g, '')) || 0;
-                                      const gstRate = selectedProduct.intraStateTax?.includes('18') ? 18 : 
-                                                     selectedProduct.intraStateTax?.includes('12') ? 12 :
-                                                     selectedProduct.intraStateTax?.includes('5') ? 5 :
-                                                     selectedProduct.intraStateTax?.includes('28') ? 28 : 0;
+                                      const rateStr = selectedProduct.rate?.toString() || '0';
+                                      const rateNum = parseFloat(rateStr.replace(/[^\d.]/g, '')) || 0;
+
+                                      const gstRate = selectedProduct.intraStateTax?.includes('18') ? 18 :
+                                        selectedProduct.intraStateTax?.includes('12') ? 12 :
+                                          selectedProduct.intraStateTax?.includes('5') ? 5 :
+                                            selectedProduct.intraStateTax?.includes('28') ? 28 : 0;
+
+                                      console.log('Updating item with:', { name: selectedProduct.name, rate: rateNum, gstRate, productId: selectedProduct.id });
+
+                                      updateItem(item.id, "productId", selectedProduct.id);
                                       updateItem(item.id, "name", selectedProduct.name);
-                                      updateItem(item.id, "description", selectedProduct.description || "");
                                       updateItem(item.id, "rate", rateNum);
                                       updateItem(item.id, "gstRate", gstRate);
+                                    } else {
+                                      console.log('Product not found for value:', val);
                                     }
                                   }}
                                 >
@@ -936,21 +1048,20 @@ export default function InvoiceCreate() {
                                     ) : products.length === 0 ? (
                                       <div className="p-2 text-sm text-muted-foreground">No items found</div>
                                     ) : (
-                                      products.map((product) => (
-                                        <SelectItem key={product.id} value={product.name} data-testid={`item-option-${product.id}`}>
-                                          {product.name}
+                                      [
+                                        ...products.map((product) => (
+                                          <SelectItem key={product.id} value={product.id} data-testid={`item-option-${product.id}`}>
+                                            {product.name}
+                                          </SelectItem>
+                                        )),
+                                        <Separator key="separator" className="my-1" />,
+                                        <SelectItem key="create-new" value="create_new_item" className="text-primary font-medium cursor-pointer">
+                                          + Create New Item
                                         </SelectItem>
-                                      ))
+                                      ]
                                     )}
                                   </SelectContent>
                                 </Select>
-                                <Textarea
-                                  placeholder="Description (optional)"
-                                  value={item.description}
-                                  onChange={(e) => updateItem(item.id, "description", e.target.value)}
-                                  className="min-h-[40px] resize-none border-transparent bg-transparent p-2 -ml-2 text-muted-foreground text-xs focus-visible:ring-0 focus:bg-secondary/20 rounded-md"
-                                  data-testid={`input-item-description-${item.id}`}
-                                />
                               </div>
                             </TableCell>
                             <TableCell className="py-3 align-top relative overflow-visible">
@@ -984,7 +1095,7 @@ export default function InvoiceCreate() {
                                     max={item.discountType === 'percentage' ? 100 : undefined}
                                     value={item.discountValue}
                                     onChange={(e) => updateItem(item.id, "discountValue", parseFloat(e.target.value) || 0)}
-                                    className="h-9 w-full min-w-[80px] rounded-r-none bg-transparent border-border/60 focus:bg-background border-r-0"
+                                    className="h-9 w-full min-w-20 rounded-r-none bg-transparent border-border/60 focus:bg-background border-r-0"
                                   />
                                 </div>
                                 <Select
@@ -1332,7 +1443,7 @@ export default function InvoiceCreate() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
-                <SelectContent className="z-[200]">
+                <SelectContent className="z-200">
                   {customers.map((customer) => (
                     <SelectItem key={customer.id} value={customer.id}>
                       {customer.displayName}

@@ -115,6 +115,7 @@ export default function SalesOrderEditPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -272,7 +273,17 @@ export default function SalesOrderEditPage() {
     }
   };
 
+  const filteredCustomers = customers.filter(customer => {
+    const customerName = customer.name || "";
+    return customerName.toLowerCase().includes(customerSearchTerm.toLowerCase());
+  });
+
   const handleCustomerChange = (customerId: string) => {
+    if (customerId === "__add_new_customer__") {
+      setLocation("/customers/new");
+      return;
+    }
+
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
       setFormData(prev => ({
@@ -497,11 +508,30 @@ export default function SalesOrderEditPage() {
                 <SelectValue placeholder="Select or add a customer" />
               </SelectTrigger>
               <SelectContent>
-                {customers.map(customer => (
+                <div className="p-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search customers..."
+                      className="h-8"
+                      value={customerSearchTerm}
+                      onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                {filteredCustomers.map(customer => (
                   <SelectItem key={customer.id} value={customer.id} data-testid={`option-customer-${customer.id}`}>
                     {customer.name}
                   </SelectItem>
                 ))}
+                <div className="border-t mt-1 pt-1">
+                  <SelectItem value="__add_new_customer__">
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <Plus className="h-4 w-4" />
+                      Add New Customer
+                    </div>
+                  </SelectItem>
+                </div>
               </SelectContent>
             </Select>
           </div>

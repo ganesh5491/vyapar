@@ -1,6 +1,71 @@
 {
-  "bills": [],
-  "nextBillNumber": 4,
+  "bills": [
+    {
+      "id": "1766053744518",
+      "billNumber": "4",
+      "orderNumber": "",
+      "vendorId": "2",
+      "vendorName": "Amazon",
+      "vendorAddress": {
+        "street1": "Bhumkar chown ",
+        "street2": "pune",
+        "city": "pune",
+        "state": "[UK] - Uttarakhand",
+        "pinCode": "",
+        "country": "India",
+        "gstin": ""
+      },
+      "billDate": "2025-12-18",
+      "dueDate": "2025-12-18",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": true,
+      "subject": "dc",
+      "items": [
+        {
+          "id": "1766053725870",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Office Supplies",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "CGST9",
+          "taxAmount": 4.5,
+          "customerDetails": "CYBAEM TECH PRIVATE LIMITED ",
+          "amount": 50
+        }
+      ],
+      "subTotal": 50,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 4.5,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 54.5,
+      "amountPaid": 0,
+      "balanceDue": 54.5,
+      "notes": "",
+      "attachments": [],
+      "status": "OPEN",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-18T10:29:04.518Z",
+      "updatedAt": "2025-12-18T10:29:04.518Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T10:29:04.518Z",
+          "action": "created",
+          "description": "Bill created for ₹54.5",
+          "user": "Admin User"
+        }
+      ]
+    }
+  ],
+  "nextBillNumber": 5,
   "accounts": [
     {
       "id": "1",

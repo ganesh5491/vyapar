@@ -89,7 +89,7 @@ const deliveryMethodOptions = [
 export default function SalesOrderCreatePage() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  
+
   // Transaction bootstrap for auto-population
   const {
     customerId: bootstrapCustomerId,
@@ -100,8 +100,9 @@ export default function SalesOrderCreatePage() {
     formData: bootstrapFormData,
     onCustomerChange
   } = useTransactionBootstrap({ transactionType: 'sales_order' });
-  
+
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextOrderNumber, setNextOrderNumber] = useState("SO-00001");
@@ -126,14 +127,14 @@ export default function SalesOrderCreatePage() {
     adjustment: 0,
     adjustmentDescription: "",
   });
-  
+
   // Sync with bootstrap customer
   useEffect(() => {
     if (bootstrapCustomerId && !formData.customerId) {
       setFormData(prev => ({ ...prev, customerId: bootstrapCustomerId }));
     }
   }, [bootstrapCustomerId]);
-  
+
   // Update form data when customer snapshot changes
   useEffect(() => {
     if (customerSnapshot) {
@@ -141,11 +142,11 @@ export default function SalesOrderCreatePage() {
         ...prev,
         customerName: customerSnapshot.displayName || customerSnapshot.customerName,
         placeOfSupply: customerSnapshot.placeOfSupply || prev.placeOfSupply,
-        paymentTerms: customerSnapshot.paymentTerms ? 
+        paymentTerms: customerSnapshot.paymentTerms ?
           (customerSnapshot.paymentTerms.toLowerCase().includes('15') ? 'net_15' :
-           customerSnapshot.paymentTerms.toLowerCase().includes('30') ? 'net_30' :
-           customerSnapshot.paymentTerms.toLowerCase().includes('45') ? 'net_45' :
-           customerSnapshot.paymentTerms.toLowerCase().includes('60') ? 'net_60' : 'due_on_receipt') 
+            customerSnapshot.paymentTerms.toLowerCase().includes('30') ? 'net_30' :
+              customerSnapshot.paymentTerms.toLowerCase().includes('45') ? 'net_45' :
+                customerSnapshot.paymentTerms.toLowerCase().includes('60') ? 'net_60' : 'due_on_receipt')
           : prev.paymentTerms
       }));
     }
@@ -173,7 +174,7 @@ export default function SalesOrderCreatePage() {
     fetchItems();
     fetchNextOrderNumber();
     fetchSalespersons();
-    
+
     // Parse customerId from URL
     const params = new URLSearchParams(location.split('?')[1]);
     const urlCustomerId = params.get('customerId');
@@ -181,7 +182,7 @@ export default function SalesOrderCreatePage() {
       setCustomerIdFromUrl(urlCustomerId);
     }
   }, [location]);
-  
+
   // Set customer from URL after customers are loaded
   useEffect(() => {
     if (customerIdFromUrl && customers.length > 0) {
@@ -247,7 +248,17 @@ export default function SalesOrderCreatePage() {
     }
   };
 
+  const filteredCustomers = customers.filter(customer => {
+    const customerName = customer.name || "";
+    return customerName.toLowerCase().includes(customerSearchTerm.toLowerCase());
+  });
+
   const handleCustomerChange = (customerId: string) => {
+    if (customerId === "__add_new_customer__") {
+      setLocation("/customers/new");
+      return;
+    }
+
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
       setFormData(prev => ({
@@ -458,11 +469,30 @@ export default function SalesOrderCreatePage() {
                 <SelectValue placeholder="Select or add a customer" />
               </SelectTrigger>
               <SelectContent>
-                {customers.map(customer => (
+                <div className="p-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Search className="h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search customers..."
+                      className="h-8"
+                      value={customerSearchTerm}
+                      onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                {filteredCustomers.map(customer => (
                   <SelectItem key={customer.id} value={customer.id} data-testid={`option-customer-${customer.id}`}>
                     {customer.name}
                   </SelectItem>
                 ))}
+                <div className="border-t mt-1 pt-1">
+                  <SelectItem value="__add_new_customer__">
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <Plus className="h-4 w-4" />
+                      Add New Customer
+                    </div>
+                  </SelectItem>
+                </div>
               </SelectContent>
             </Select>
           </div>
@@ -731,7 +761,7 @@ export default function SalesOrderCreatePage() {
                 value={formData.customerNotes}
                 onChange={(e) => setFormData(prev => ({ ...prev, customerNotes: e.target.value }))}
                 placeholder="Looking forward for your business."
-                className="min-h-[80px]"
+                className="min-h-20"
                 data-testid="textarea-customer-notes"
               />
             </div>

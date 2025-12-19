@@ -54,7 +54,7 @@
       "billedStatus": "YET TO BE BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-18T09:57:40.049Z",
-      "updatedAt": "2025-12-18T09:57:40.049Z",
+      "updatedAt": "2025-12-18T10:38:42.925Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -63,8 +63,25 @@
           "action": "created",
           "description": "Purchase Order created for ₹63",
           "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-18T10:38:42.925Z",
+          "action": "updated",
+          "description": "Purchase Order has been updated",
+          "user": "Admin User"
         }
-      ]
+      ],
+      "gstTreatment": "Unregistered Business",
+      "sourceOfSupply": "MH - Maharashtra",
+      "destinationOfSupply": "MH - Maharashtra",
+      "organizationDetails": {
+        "name": "Ganesh Kale",
+        "address": "Hinjewadi - Wakad road\nHinjewadi\nPune, Maharashtra\nIndia, 411057"
+      },
+      "selectedCustomer": null,
+      "customerSearchQuery": "",
+      "emailCommunications": []
     }
   ],
   "nextPurchaseOrderNumber": 4

@@ -56,7 +56,13 @@ interface ItemOption {
   name: string;
   description?: string;
   rate: string;
-  sku?: string;
+  hsnSac: string;
+  type: string;
+  taxPreference: string;
+  intraStateTax: string;
+  interStateTax: string;
+  usageUnit: string;
+  isActive: boolean;
 }
 
 const TAX_OPTIONS = [
@@ -85,7 +91,7 @@ export default function InvoiceEdit() {
   const [, setLocation] = useLocation();
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -128,7 +134,12 @@ export default function InvoiceEdit() {
       const response = await fetch('/api/items');
       if (response.ok) {
         const data = await response.json();
-        setItemOptions(data.data || []);
+        const items = data.data || data.items || [];
+        // Filter only active items
+        const activeItems = items.filter((item: ItemOption) => item.isActive !== false);
+        setItemOptions(activeItems);
+      } else {
+        console.error('Failed to fetch items:', response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch items:', error);
@@ -141,7 +152,7 @@ export default function InvoiceEdit() {
       if (response.ok) {
         const data = await response.json();
         const invoice = data.data;
-        
+
         setInvoiceNumber(invoice.invoiceNumber);
         setDate(new Date(invoice.date));
         setDueDate(new Date(invoice.dueDate));
@@ -197,7 +208,7 @@ export default function InvoiceEdit() {
     }
     discountAmount = Math.min(discountAmount, baseAmount);
     const taxableAmount = baseAmount - discountAmount;
-    
+
     if (!item.isModified && !forceRecalc) {
       return {
         baseAmount,
@@ -207,7 +218,7 @@ export default function InvoiceEdit() {
         total: item.amount
       };
     }
-    
+
     const taxRate = getTaxRate(item.tax);
     const taxAmount = taxableAmount * (taxRate / 100);
     return {
@@ -233,7 +244,13 @@ export default function InvoiceEdit() {
   const handleItemChange = (index: number, itemId: string) => {
     const selectedItem = itemOptions.find(i => i.id === itemId);
     if (selectedItem) {
-      const rate = parseFloat(selectedItem.rate.replace(/[₹,]/g, '')) || 0;
+      const rate = parseFloat(selectedItem.rate.toString().replace(/[₹,]/g, '')) || 0;
+      // Extract tax rate from intraStateTax field
+      const taxRate = selectedItem.intraStateTax?.includes('18') ? 18 :
+        selectedItem.intraStateTax?.includes('12') ? 12 :
+          selectedItem.intraStateTax?.includes('5') ? 5 :
+            selectedItem.intraStateTax?.includes('28') ? 28 : 0;
+
       const newItems = [...items];
       newItems[index] = {
         ...newItems[index],
@@ -241,6 +258,7 @@ export default function InvoiceEdit() {
         name: selectedItem.name,
         description: selectedItem.description || '',
         rate,
+        tax: `GST${taxRate}`,
         isModified: true,
         taxModified: newItems[index].taxModified
       };
@@ -297,7 +315,7 @@ export default function InvoiceEdit() {
     try {
       const invoiceItems = items.map(item => {
         const lineCalc = calculateLineItem(item);
-        const effectiveTaxName = item.taxModified 
+        const effectiveTaxName = item.taxModified
           ? (item.tax === 'custom' ? item.originalTaxName : item.tax)
           : item.originalTaxName;
         return {
@@ -534,11 +552,11 @@ export default function InvoiceEdit() {
                           <Select
                             value={item.itemId || "custom"}
                             onValueChange={(val) => {
-                              if (val === "custom") {
-                                handleUpdateItem(index, 'itemId', '');
-                              } else {
-                                handleItemChange(index, val);
+                              if (val === "create_new_item") {
+                                setLocation('/items/create');
+                                return;
                               }
+                              handleItemChange(index, val);
                             }}
                           >
                             <SelectTrigger className="h-9" data-testid={`select-item-${index}`}>
@@ -551,25 +569,12 @@ export default function InvoiceEdit() {
                                 <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
                               ))}
                               <Separator className="my-1" />
-                              <SelectItem value="custom">Custom Item</SelectItem>
+                              <SelectItem value="create_new_item" className="text-primary font-medium cursor-pointer">
+                                + Create New Item
+                              </SelectItem>
                             </SelectContent>
                           </Select>
-                          {(!item.itemId || item.itemId === '') && (
-                            <Input
-                              value={item.name}
-                              onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
-                              placeholder="Item name"
-                              className="h-8 text-sm"
-                              data-testid={`input-item-name-${index}`}
-                            />
-                          )}
-                          <Textarea
-                            placeholder="Description (optional)"
-                            value={item.description}
-                            onChange={(e) => handleUpdateItem(index, 'description', e.target.value)}
-                            className="min-h-[40px] resize-none text-xs"
-                            data-testid={`textarea-item-desc-${index}`}
-                          />
+
                         </div>
                       </TableCell>
                       <TableCell className="py-3">
@@ -641,10 +646,10 @@ export default function InvoiceEdit() {
                         {formatCurrency(lineCalc.total)}
                       </TableCell>
                       <TableCell className="py-3">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleRemoveItem(index)} 
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveItem(index)}
                           className="text-muted-foreground hover:text-destructive"
                           data-testid={`button-remove-item-${index}`}
                         >
@@ -667,8 +672,8 @@ export default function InvoiceEdit() {
               <CardTitle>Customer Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <Textarea 
-                value={customerNotes} 
+              <Textarea
+                value={customerNotes}
                 onChange={(e) => setCustomerNotes(e.target.value)}
                 placeholder="Notes visible to customer..."
                 rows={4}
@@ -681,8 +686,8 @@ export default function InvoiceEdit() {
               <CardTitle>Terms & Conditions</CardTitle>
             </CardHeader>
             <CardContent>
-              <Textarea 
-                value={termsAndConditions} 
+              <Textarea
+                value={termsAndConditions}
                 onChange={(e) => setTermsAndConditions(e.target.value)}
                 placeholder="Terms and conditions..."
                 rows={4}

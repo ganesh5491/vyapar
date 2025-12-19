@@ -1,6 +1,193 @@
 {
   "salesOrders": [
     {
+      "id": "1766056302179",
+      "salesOrderNumber": "SO-00015",
+      "referenceNumber": "1213",
+      "date": "2025-12-18",
+      "expectedShipmentDate": "2025-12-21",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "Express Delivery",
+      "salesperson": "",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 60,
+          "ordered": 1,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        },
+        {
+          "id": "1766056286154",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
+          "quantity": 11,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 660,
+          "ordered": 11,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        }
+      ],
+      "subTotal": 720,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 720,
+      "customerNotes": "Looking forward to your business.",
+      "termsAndConditions": "",
+      "orderStatus": "Confirmed",
+      "invoiceStatus": "Not Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [],
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-18T11:11:42.179Z",
+      "updatedAt": "2025-12-18T11:11:42.179Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T11:11:42.179Z",
+          "action": "created",
+          "description": "Sales Order created for ₹720",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1766055279358",
+      "salesOrderNumber": "SO-00014",
+      "referenceNumber": "",
+      "date": "2025-12-18",
+      "expectedShipmentDate": "2025-12-20",
+      "customerId": "2",
+      "customerName": "Ashtvinayak Education Society",
+      "billingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "Standard Delivery",
+      "salesperson": "",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 60,
+          "ordered": 1,
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
+        }
+      ],
+      "subTotal": 60,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 1.5,
+      "sgst": 1.5,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 63,
+      "customerNotes": "Looking forward to your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [
+        {
+          "id": "INV-00023",
+          "invoiceNumber": "INV-00023",
+          "date": "2025-12-18",
+          "dueDate": "2025-12-18",
+          "status": "DRAFT",
+          "amount": 63,
+          "balanceDue": 63
+        }
+      ],
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-18T10:54:39.358Z",
+      "updatedAt": "2025-12-18T10:59:54.271Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-18T10:54:39.358Z",
+          "action": "created",
+          "description": "Sales Order created for ₹63",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-18T10:59:54.271Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00023 created",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765780399854",
       "salesOrderNumber": "SO-00013",
       "referenceNumber": "",
@@ -150,6 +337,24 @@
           "status": "DRAFT",
           "amount": 5197.5,
           "balanceDue": 5197.5
+        },
+        {
+          "id": "INV-00024",
+          "invoiceNumber": "INV-00024",
+          "date": "2025-12-18",
+          "dueDate": "2025-12-18",
+          "status": "DRAFT",
+          "amount": 5197.5,
+          "balanceDue": 5197.5
+        },
+        {
+          "id": "INV-00025",
+          "invoiceNumber": "INV-00025",
+          "date": "2025-12-18",
+          "dueDate": "2025-12-18",
+          "status": "DRAFT",
+          "amount": 5197.5,
+          "balanceDue": 5197.5
         }
       ],
       "sourceType": "quote",
@@ -157,7 +362,7 @@
       "sourceNumber": "QT-000011",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-15T06:32:17.317Z",
-      "updatedAt": "2025-12-15T06:41:44.450Z",
+      "updatedAt": "2025-12-18T11:00:24.773Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -179,6 +384,20 @@
           "timestamp": "2025-12-15T06:41:44.450Z",
           "action": "invoiced",
           "description": "Invoice INV-00022 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-18T11:00:10.678Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00024 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-18T11:00:24.773Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00025 created",
           "user": "Admin User"
         }
       ]
@@ -488,7 +707,7 @@
       "salesOrderNumber": "SO-00008",
       "referenceNumber": "4381",
       "date": "2025-12-11",
-      "expectedShipmentDate": "",
+      "expectedShipmentDate": "2025-12-18",
       "customerId": "3",
       "customerName": "Uraja Foods",
       "billingAddress": {
@@ -507,29 +726,29 @@
       },
       "paymentTerms": "Due on Receipt",
       "deliveryMethod": "Standard Delivery",
-      "salesperson": "",
-      "placeOfSupply": "",
+      "salesperson": "2",
+      "placeOfSupply": "karnataka",
       "items": [
         {
           "id": "1",
-          "itemId": "5",
-          "name": "Software",
-          "description": "",
-          "hsnSac": "",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
           "quantity": 1,
           "unit": "pcs",
-          "rate": 33330,
+          "rate": 60,
           "discount": 0,
           "discountType": "percentage",
           "tax": 0,
           "taxName": "none",
-          "amount": 33330,
+          "amount": 60,
           "ordered": 1,
           "invoicedQty": 0,
           "invoiceStatus": "Not Invoiced"
         }
       ],
-      "subTotal": 33330,
+      "subTotal": 60,
       "shippingCharges": 0,
       "tdsType": "",
       "tdsAmount": 0,
@@ -537,7 +756,7 @@
       "sgst": 0,
       "igst": 0,
       "adjustment": 0,
-      "total": 33330,
+      "total": 60,
       "customerNotes": "Looking forward to your business.",
       "termsAndConditions": "",
       "orderStatus": "Confirmed",
@@ -547,7 +766,7 @@
       "invoices": [],
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-11T12:37:20.413Z",
-      "updatedAt": "2025-12-11T12:37:20.413Z",
+      "updatedAt": "2025-12-18T11:48:06.970Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -555,6 +774,13 @@
           "timestamp": "2025-12-11T12:37:20.413Z",
           "action": "created",
           "description": "Sales Order created for ₹33,330",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-18T11:48:06.970Z",
+          "action": "updated",
+          "description": "Sales Order has been updated",
           "user": "Admin User"
         }
       ]
@@ -1346,6 +1572,6 @@
       ]
     }
   ],
-  "nextSalesOrderNumber": 14,
-  "nextInvoiceNumber": 23
+  "nextSalesOrderNumber": 16,
+  "nextInvoiceNumber": 26
 }
