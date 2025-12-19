@@ -328,10 +328,10 @@ function CustomerDetailPanel({ customer, onClose, onEdit, onClone, onToggleStatu
     { key: 'quotes', label: 'Quotes', columns: ['DATE', 'QUOTE N...', 'REFERENCE', 'AMOUNT', 'STATUS'] },
     { key: 'salesOrders', label: 'Sales Orders', columns: ['DATE', 'SO N...', 'REFERENCE', 'AMOUNT', 'STATUS'] },
     { key: 'deliveryChallans', label: 'Delivery Challans', columns: ['DATE', 'CHALLAN N...', 'REFERENCE', 'STATUS'] },
-    { key: 'recurringInvoices', label: 'Recurring Invoices', columns: ['PROFILE NAME', 'FREQUENCY', 'LAST INVOICE', 'NEXT INVOICE', 'STATUS'] },
+    // { key: 'recurringInvoices', label: 'Recurring Invoices', columns: ['PROFILE NAME', 'FREQUENCY', 'LAST INVOICE', 'NEXT INVOICE', 'STATUS'] },
     { key: 'expenses', label: 'Expenses', columns: ['DATE', 'EXPENSE N...', 'CATEGORY', 'AMOUNT', 'STATUS'] },
-    { key: 'projects', label: 'Projects', columns: ['PROJECT NAME', 'BILLING METHOD', 'STATUS'] },
-    { key: 'journals', label: 'Journals', columns: ['DATE', 'JOURNAL N...', 'REFERENCE', 'NOTES'] },
+    // { key: 'projects', label: 'Projects', columns: ['PROJECT NAME', 'BILLING METHOD', 'STATUS'] },
+    // { key: 'journals', label: 'Journals', columns: ['DATE', 'JOURNAL N...', 'REFERENCE', 'NOTES'] },
     { key: 'bills', label: 'Bills', columns: ['DATE', 'BILL N...', 'VENDOR', 'AMOUNT', 'STATUS'] },
     { key: 'creditNotes', label: 'Credit Notes', columns: ['DATE', 'CREDIT NOTE N...', 'AMOUNT', 'BALANCE', 'STATUS'] }
   ];

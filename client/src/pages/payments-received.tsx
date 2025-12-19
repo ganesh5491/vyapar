@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { 
-  Plus, Search, ChevronDown, MoreHorizontal, Pencil, Trash2, 
+import {
+  Plus, Search, ChevronDown, MoreHorizontal, Pencil, Trash2,
   X, Send, FileText, Printer, Download, RefreshCw, Eye,
   Check, Filter
 } from "lucide-react";
@@ -146,7 +146,7 @@ function PaymentReceiptView({ payment }: { payment: PaymentReceived }) {
             Paid
           </Badge>
         </div>
-        
+
         <div className="p-8">
           <div className="flex justify-between items-start mb-8">
             <div>
@@ -220,15 +220,15 @@ function PaymentReceiptView({ payment }: { payment: PaymentReceived }) {
   );
 }
 
-function PaymentDetailPanel({ 
-  payment, 
-  onClose, 
-  onEdit, 
+function PaymentDetailPanel({
+  payment,
+  onClose,
+  onEdit,
   onDelete,
   onRefund
-}: { 
-  payment: PaymentReceived; 
-  onClose: () => void; 
+}: {
+  payment: PaymentReceived;
+  onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onRefund: () => void;
@@ -621,7 +621,7 @@ function PaymentCreateDialog({
             {paymentType === 'customer_advance' && (
               <div className="space-y-2">
                 <Label>Description of Supply</Label>
-                <Textarea 
+                <Textarea
                   placeholder="Will be displayed on the Payment Receipt"
                   value={formData.descriptionOfSupply}
                   onChange={(e) => setFormData(prev => ({ ...prev, descriptionOfSupply: e.target.value }))}
@@ -774,7 +774,7 @@ function PaymentCreateDialog({
                     <Button variant="link" size="sm" className="text-blue-600">Clear Applied Amount</Button>
                   </div>
                 </div>
-                
+
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-slate-50">
@@ -798,8 +798,8 @@ function PaymentCreateDialog({
                         <TableRow key={invoice.id}>
                           <TableCell>{formatDate(invoice.date)}</TableCell>
                           <TableCell className="text-blue-600">{invoice.invoiceNumber}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(invoice.amount)}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(invoice.balanceDue)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(invoice.amount || 0)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(invoice.balanceDue || 0)}</TableCell>
                           <TableCell>-</TableCell>
                           <TableCell className="text-right">
                             <Input type="number" className="w-24 text-right" defaultValue="0" />
@@ -858,8 +858,8 @@ function PaymentCreateDialog({
             </div>
 
             <div className="flex items-center gap-2 border-t pt-4">
-              <Checkbox 
-                id="sendThankYou" 
+              <Checkbox
+                id="sendThankYou"
                 checked={formData.sendThankYou}
                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, sendThankYou: checked as boolean }))}
               />
@@ -1006,11 +1006,11 @@ export default function PaymentsReceived() {
 
   const handleSavePayment = async (paymentData: any) => {
     try {
-      const url = editPayment 
-        ? `/api/payments-received/${editPayment.id}` 
+      const url = editPayment
+        ? `/api/payments-received/${editPayment.id}`
         : '/api/payments-received';
       const method = editPayment ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -1066,11 +1066,11 @@ export default function PaymentsReceived() {
             <ChevronDown className="h-4 w-4 text-slate-500" />
           </div>
           <div className="flex items-center gap-2">
-            <Button 
+            <Button
               onClick={() => {
                 setEditPayment(null);
                 setCreateDialogOpen(true);
-              }} 
+              }}
               className="bg-blue-600 hover:bg-blue-700 gap-1.5 h-9"
               data-testid="button-new-payment"
             >
@@ -1153,7 +1153,7 @@ export default function PaymentsReceived() {
                       data-testid={`row-payment-${payment.id}`}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Checkbox 
+                        <Checkbox
                           checked={selectedPayments.includes(payment.id)}
                           onClick={(e) => toggleSelectPayment(payment.id, e)}
                         />
@@ -1163,7 +1163,7 @@ export default function PaymentsReceived() {
                       <TableCell className="text-sm">{payment.referenceNumber || '-'}</TableCell>
                       <TableCell className="text-sm">{payment.customerName}</TableCell>
                       <TableCell className="text-sm">
-                        {payment.invoices?.length > 0 
+                        {payment.invoices?.length > 0
                           ? payment.invoices.map((inv: any) => inv.invoiceNumber).join(', ')
                           : '-'
                         }

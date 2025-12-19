@@ -349,7 +349,56 @@
       ],
       "createdAt": "2025-12-18T09:23:14.895Z",
       "updatedAt": "2025-12-18T09:23:14.895Z"
+    },
+    {
+      "id": "11",
+      "name": "Prajwal Traders",
+      "displayName": "Prajwal Traders",
+      "companyName": "Prajwal Traders",
+      "email": "prajwalkadam@gmail.com",
+      "phone": "9272940350",
+      "workPhone": "9272940350",
+      "mobile": "9272940351",
+      "gstTreatment": "Consumer",
+      "gstin": "27AAGCA4900Q1ZQ",
+      "receivables": "0.00",
+      "avatar": "PR",
+      "pan": "AAGCA4900M",
+      "customerType": "business",
+      "status": "active",
+      "billingAddress": {
+        "street": "bhumkar chowk, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "bhumkar chowk, pune",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "currency": "INR",
+      "paymentTerms": "net_15",
+      "placeOfSupply": "27 - Maharashtra",
+      "taxPreference": "taxable",
+      "exemptionReason": "",
+      "portalStatus": "disabled",
+      "contactPersons": [
+        {
+          "salutation": "Mr.",
+          "firstName": "Gajadar",
+          "lastName": "Kambale",
+          "email": "gajadarkambale@gmail.com",
+          "workPhone": "9354207766",
+          "mobile": ""
+        }
+      ],
+      "createdAt": "2025-12-19T05:46:30.666Z",
+      "updatedAt": "2025-12-19T05:48:54.118Z"
     }
   ],
-  "nextCustomerId": 11
+  "nextCustomerId": 12
 }

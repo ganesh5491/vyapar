@@ -48,6 +48,21 @@ interface Invoice {
   status: string;
 }
 
+interface PurchasedItem {
+  id: string;
+  itemId: string;
+  name: string;
+  description: string;
+  unit: string;
+  lastRate: number;
+  totalQuantity: number;
+  lastPurchaseDate: string;
+  totalAmount: number;
+  purchaseCount: number;
+  tax: number;
+  taxName: string;
+}
+
 const PAYMENT_MODES = [
   "Cash",
   "Bank Transfer",
@@ -84,7 +99,7 @@ function formatDate(dateString: string): string {
 export default function PaymentsReceivedCreate() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  
+
   // Use transaction bootstrap hook
   const {
     customerId,
@@ -100,6 +115,7 @@ export default function PaymentsReceivedCreate() {
   // Form state
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerInvoices, setCustomerInvoices] = useState<Invoice[]>([]);
+  const [customerPurchasedItems, setCustomerPurchasedItems] = useState<PurchasedItem[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [paymentDate, setPaymentDate] = useState<Date>(new Date());
   const [paymentMode, setPaymentMode] = useState<string>("Bank Transfer");
@@ -107,7 +123,8 @@ export default function PaymentsReceivedCreate() {
   const [referenceNumber, setReferenceNumber] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [sendThankYou, setSendThankYou] = useState<boolean>(false);
-  const [selectedInvoices, setSelectedInvoices] = useState<Record<string, { selected: boolean; payment: number }>>({});
+  const [selectedInvoices, setSelectedInvoices] = useState<Record<string, { selected: boolean; payment: number; receivedDate?: Date }>>({});
+  const [totalAmountReceived, setTotalAmountReceived] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customersLoading, setCustomersLoading] = useState(true);
 
@@ -123,15 +140,24 @@ export default function PaymentsReceivedCreate() {
     fetchCustomers();
   }, []);
 
-  // Fetch invoices when customer changes
+  // Fetch invoices and purchased items when customer changes
   useEffect(() => {
     if (selectedCustomerId) {
       fetchCustomerInvoices(selectedCustomerId);
+      fetchCustomerPurchasedItems(selectedCustomerId);
     } else {
       setCustomerInvoices([]);
+      setCustomerPurchasedItems([]);
       setSelectedInvoices({});
     }
   }, [selectedCustomerId]);
+
+  // Re-apply auto-allocation when customer invoices are loaded
+  useEffect(() => {
+    if (customerInvoices.length > 0 && totalAmountReceived > 0) {
+      autoAllocatePayment(totalAmountReceived);
+    }
+  }, [customerInvoices]);
 
   const fetchCustomers = async () => {
     try {
@@ -153,21 +179,33 @@ export default function PaymentsReceivedCreate() {
       const response = await fetch(`/api/invoices?customerId=${custId}`);
       if (response.ok) {
         const data = await response.json();
-        // Filter for unpaid invoices (PENDING, OVERDUE, or PARTIALLY_PAID)
-        const unpaidInvoices = (data.data || []).filter((inv: any) => 
-          inv.balanceDue > 0 && ['PENDING', 'OVERDUE', 'PARTIALLY_PAID'].includes(inv.status)
+        // Filter for unpaid invoices (PENDING, OVERDUE, PARTIALLY_PAID, or SENT with balance due)
+        const unpaidInvoices = (data.data || []).filter((inv: any) =>
+          inv.balanceDue > 0 && ['PENDING', 'OVERDUE', 'PARTIALLY_PAID', 'SENT'].includes(inv.status)
         );
         setCustomerInvoices(unpaidInvoices);
-        
+
         // Initialize selection state
-        const initialSelection: Record<string, { selected: boolean; payment: number }> = {};
+        const initialSelection: Record<string, { selected: boolean; payment: number; receivedDate?: Date }> = {};
         unpaidInvoices.forEach((inv: Invoice) => {
-          initialSelection[inv.id] = { selected: false, payment: 0 };
+          initialSelection[inv.id] = { selected: false, payment: 0, receivedDate: undefined };
         });
         setSelectedInvoices(initialSelection);
       }
     } catch (error) {
       console.error('Failed to fetch customer invoices:', error);
+    }
+  };
+
+  const fetchCustomerPurchasedItems = async (custId: string) => {
+    try {
+      const response = await fetch(`/api/customers/${custId}/purchased-items`);
+      if (response.ok) {
+        const data = await response.json();
+        setCustomerPurchasedItems(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customer purchased items:', error);
     }
   };
 
@@ -188,7 +226,8 @@ export default function PaymentsReceivedCreate() {
         ...prev,
         [invoiceId]: {
           selected: newSelected,
-          payment: newSelected ? (invoice?.balanceDue || 0) : 0
+          payment: newSelected ? (invoice?.balanceDue || 0) : 0,
+          receivedDate: newSelected ? new Date() : undefined
         }
       };
     });
@@ -208,12 +247,93 @@ export default function PaymentsReceivedCreate() {
     }
   };
 
+  const updateInvoiceReceivedDate = (invoiceId: string, date: Date) => {
+    setSelectedInvoices(prev => ({
+      ...prev,
+      [invoiceId]: {
+        ...prev[invoiceId],
+        receivedDate: date
+      }
+    }));
+  };
+
+  // Auto-allocation function
+  const autoAllocatePayment = (totalAmount: number) => {
+    if (customerInvoices.length === 0) {
+      return; // No invoices to allocate to
+    }
+
+    if (totalAmount <= 0) {
+      // Clear all selections if amount is 0 or negative
+      const cleared: Record<string, { selected: boolean; payment: number; receivedDate?: Date }> = {};
+      customerInvoices.forEach(invoice => {
+        cleared[invoice.id] = {
+          selected: false,
+          payment: 0,
+          receivedDate: undefined
+        };
+      });
+      setSelectedInvoices(cleared);
+      return;
+    }
+
+    // Sort invoices by date (oldest first) for allocation priority
+    const sortedInvoices = [...customerInvoices].sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    let remainingAmount = totalAmount;
+    const newSelectedInvoices: Record<string, { selected: boolean; payment: number; receivedDate?: Date }> = {};
+
+    // Initialize all invoices first
+    customerInvoices.forEach(invoice => {
+      newSelectedInvoices[invoice.id] = {
+        selected: false,
+        payment: 0,
+        receivedDate: undefined
+      };
+    });
+
+    // Allocate amount across invoices (oldest first)
+    for (const invoice of sortedInvoices) {
+      if (remainingAmount <= 0) break;
+
+      const invoiceBalance = invoice.balanceDue || 0;
+      if (invoiceBalance > 0) {
+        const paymentAmount = Math.min(remainingAmount, invoiceBalance);
+
+        newSelectedInvoices[invoice.id] = {
+          selected: true,
+          payment: paymentAmount,
+          receivedDate: new Date() // Default to today
+        };
+
+        remainingAmount -= paymentAmount;
+      }
+    }
+
+    setSelectedInvoices(newSelectedInvoices);
+  };
+
+  // Handle amount received change
+  const handleAmountReceivedChange = (amount: number) => {
+    setTotalAmountReceived(amount);
+    autoAllocatePayment(amount);
+  };
+
   const totalPaymentAmount = Object.values(selectedInvoices).reduce(
-    (sum, inv) => sum + (inv.selected ? inv.payment : 0), 
+    (sum, inv) => sum + (inv.selected ? inv.payment : 0),
     0
   );
 
   const selectedInvoiceCount = Object.values(selectedInvoices).filter(inv => inv.selected).length;
+
+  // Calculate payment summary
+  const totalInvoicesAmount = customerInvoices.reduce((sum, invoice) => sum + (invoice.balanceDue || 0), 0);
+  const amountReceived = totalAmountReceived;
+  const amountUsedForPayments = totalPaymentAmount;
+  const amountRefunded = 0; // This would be calculated from refunds
+  const amountInExcess = Math.max(0, amountReceived - amountUsedForPayments);
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
@@ -223,8 +343,8 @@ export default function PaymentsReceivedCreate() {
       return;
     }
 
-    if (selectedInvoiceCount === 0) {
-      toast({ title: "Please select at least one invoice", variant: "destructive" });
+    if (totalAmountReceived <= 0) {
+      toast({ title: "Please enter the amount received", variant: "destructive" });
       return;
     }
 
@@ -238,8 +358,8 @@ export default function PaymentsReceivedCreate() {
       mode: paymentMode,
       depositTo: depositTo,
       referenceNumber: referenceNumber,
-      amount: totalPaymentAmount,
-      unusedAmount: 0,
+      amount: totalAmountReceived,
+      unusedAmount: Math.max(0, totalAmountReceived - totalPaymentAmount),
       notes: notes,
       sendThankYou: sendThankYou,
       status: "PAID",
@@ -254,7 +374,8 @@ export default function PaymentsReceivedCreate() {
             invoiceDate: invoice?.date || '',
             invoiceAmount: invoice?.amount || 0,
             balanceDue: invoice?.balanceDue || 0,
-            paymentAmount: inv.payment
+            paymentAmount: inv.payment,
+            paymentReceivedDate: inv.receivedDate ? format(inv.receivedDate, "yyyy-MM-dd") : format(paymentDate, "yyyy-MM-dd")
           };
         }),
       // Store customer snapshot for immutability
@@ -271,7 +392,7 @@ export default function PaymentsReceivedCreate() {
       if (response.ok) {
         toast({
           title: "Payment Recorded",
-          description: `Payment of ${formatCurrency(totalPaymentAmount)} has been recorded.`
+          description: `Payment of ${formatCurrency(totalAmountReceived)} has been recorded.`
         });
         setLocation("/payments-received");
       } else {
@@ -440,12 +561,32 @@ export default function PaymentsReceivedCreate() {
             </div>
           </div>
 
+          {/* Amount Received Input */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                Amount Received *
+              </Label>
+              <Input
+                type="number"
+                value={totalAmountReceived || ''}
+                onChange={(e) => handleAmountReceivedChange(parseFloat(e.target.value) || 0)}
+                placeholder="Enter total amount received"
+                className="text-lg font-medium"
+                data-testid="input-amount-received"
+              />
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                This amount will be automatically allocated to unpaid invoices starting with the oldest.
+              </p>
+            </div>
+          </div>
+
           <Separator />
 
           {/* Outstanding Invoices */}
           <div className="space-y-4">
             <h3 className="font-medium">Outstanding Invoices</h3>
-            
+
             {selectedCustomerId ? (
               customerInvoices.length > 0 ? (
                 <div className="border rounded-lg overflow-hidden">
@@ -457,6 +598,7 @@ export default function PaymentsReceivedCreate() {
                         <TableHead>Date</TableHead>
                         <TableHead className="text-right">Invoice Amount</TableHead>
                         <TableHead className="text-right">Balance Due</TableHead>
+                        <TableHead className="text-center">Payment Received On</TableHead>
                         <TableHead className="text-right">Payment</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -472,8 +614,37 @@ export default function PaymentsReceivedCreate() {
                           </TableCell>
                           <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                           <TableCell>{formatDate(invoice.date)}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(invoice.amount)}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(invoice.balanceDue)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(invoice.amount || 0)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(invoice.balanceDue || 0)}</TableCell>
+                          <TableCell className="text-center">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={!selectedInvoices[invoice.id]?.selected}
+                                  className={cn(
+                                    "w-32 justify-start text-left font-normal",
+                                    !selectedInvoices[invoice.id]?.selected && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {selectedInvoices[invoice.id]?.selected
+                                    ? format(selectedInvoices[invoice.id]?.receivedDate || new Date(), "dd/MM/yyyy")
+                                    : "-"
+                                  }
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={selectedInvoices[invoice.id]?.receivedDate || new Date()}
+                                  onSelect={(date) => date && updateInvoiceReceivedDate(invoice.id, date)}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </TableCell>
                           <TableCell className="text-right">
                             <Input
                               type="number"
@@ -522,7 +693,93 @@ export default function PaymentsReceivedCreate() {
 
           <Separator />
 
-          {/* Notes */}
+          {/* Customer Purchased Items */}
+          <div className="space-y-4">
+            <h3 className="font-medium">Items Purchased by Customer</h3>
+
+            {selectedCustomerId ? (
+              customerPurchasedItems.length > 0 ? (
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead>Item Name</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Unit</TableHead>
+                        <TableHead className="text-right">Last Rate</TableHead>
+                        <TableHead className="text-center">Total Qty</TableHead>
+                        <TableHead className="text-center">Purchase Count</TableHead>
+                        <TableHead>Last Purchase Date</TableHead>
+                        <TableHead className="text-right">Total Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {customerPurchasedItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{item.name}</TableCell>
+                          <TableCell className="text-muted-foreground max-w-[200px] truncate" title={item.description}>
+                            {item.description || '-'}
+                          </TableCell>
+                          <TableCell>{item.unit}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.lastRate)}</TableCell>
+                          <TableCell className="text-center">{item.totalQuantity}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary">{item.purchaseCount}</Badge>
+                          </TableCell>
+                          <TableCell>{formatDate(item.lastPurchaseDate)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(item.totalAmount)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                  No items purchased by this customer yet
+                </div>
+              )
+            ) : (
+              <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                Select a customer to view purchased items
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Payment Summary */}
+          {selectedCustomerId && (
+            <div className="space-y-4">
+              <h3 className="font-medium">Payment Summary</h3>
+              <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 space-y-3">
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total Outstanding:</span>
+                    <span className="font-medium">{formatCurrency(totalInvoicesAmount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Amount Received:</span>
+                    <span className="font-medium text-green-600">{formatCurrency(amountReceived)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Amount used for Payments:</span>
+                    <span className="font-medium">{formatCurrency(amountUsedForPayments)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Amount Refunded:</span>
+                    <span className="font-medium">{formatCurrency(amountRefunded)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="text-muted-foreground">Amount in Excess:</span>
+                    <span className="font-bold text-orange-600">{formatCurrency(amountInExcess)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Separator />
+
           <div className="space-y-2">
             <Label className="text-sm font-medium">Notes</Label>
             <Textarea
@@ -534,7 +791,7 @@ export default function PaymentsReceivedCreate() {
             />
           </div>
 
-          {/* Send Thank You */}
+
           <div className="flex items-center gap-3">
             <Switch
               id="send-thank-you"
@@ -558,7 +815,7 @@ export default function PaymentsReceivedCreate() {
           <div className="flex items-center gap-3">
             <Button
               onClick={handleSavePayment}
-              disabled={isSubmitting || !selectedCustomerId || selectedInvoiceCount === 0}
+              disabled={isSubmitting || !selectedCustomerId || totalAmountReceived <= 0}
               data-testid="button-save"
             >
               <Save className="h-4 w-4 mr-2" />

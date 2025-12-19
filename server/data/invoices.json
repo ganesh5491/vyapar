@@ -1,6 +1,100 @@
 {
   "invoices": [
     {
+      "id": "1766123465739",
+      "invoiceNumber": "INV-00025",
+      "referenceNumber": "",
+      "date": "2025-12-19",
+      "dueDate": "2026-01-18",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "billingAddress": {
+        "street": "bhumkar chowk, pune",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "Sujay",
+      "placeOfSupply": "27 - Maharashtra",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "0.8985930328909532",
+          "itemId": "0.8985930328909532",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 10,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 60,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "Non-taxable",
+          "amount": 540
+        }
+      ],
+      "subTotal": 240,
+      "shippingCharges": 20,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 60,
+      "total": 620,
+      "amountPaid": 20,
+      "balanceDue": 600,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-19T05:51:05.739Z",
+      "updatedAt": "2025-12-19T05:56:40.829Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1766123800829",
+          "date": "2025-12-19T05:56:00.000Z",
+          "amount": 20,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-19T05:51:05.739Z",
+          "action": "created",
+          "description": "Invoice created for ₹620",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-19T05:53:29.830Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-19T05:56:40.829Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹20 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766057884823",
       "invoiceNumber": "INV-00024",
       "referenceNumber": "",
@@ -62,8 +156,8 @@
       "igst": 0,
       "adjustment": 0,
       "total": 1486,
-      "amountPaid": 486,
-      "balanceDue": 1000,
+      "amountPaid": 986,
+      "balanceDue": 500,
       "customerNotes": "",
       "termsAndConditions": "",
       "status": "PARTIALLY_PAID",
@@ -72,13 +166,21 @@
       "sourceNumber": null,
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-18T11:38:04.823Z",
-      "updatedAt": "2025-12-18T12:05:30.223Z",
+      "updatedAt": "2025-12-19T05:38:06.834Z",
       "createdBy": "Admin User",
       "payments": [
         {
           "id": "1766059530223",
           "date": "2025-12-18T12:04:00.000Z",
           "amount": 486,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1766122686834",
+          "date": "2025-12-19T05:37:00.000Z",
+          "amount": 500,
           "paymentMode": "cash",
           "reference": "",
           "notes": ""
@@ -104,6 +206,13 @@
           "timestamp": "2025-12-18T12:05:30.223Z",
           "action": "payment_recorded",
           "description": "Payment of ₹486 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-19T05:38:06.834Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹500 recorded",
           "user": "Admin User"
         }
       ]
@@ -2518,5 +2627,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 25
+  "nextInvoiceNumber": 26
 }

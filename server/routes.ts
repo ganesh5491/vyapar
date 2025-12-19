@@ -231,7 +231,7 @@ function numberToWords(num: number): string {
 
   const intPart = Math.floor(num);
   const rupees = intPart;
-  
+
   if (rupees >= 10000000) {
     const crores = Math.floor(rupees / 10000000);
     const remaining = rupees % 10000000;
@@ -462,24 +462,24 @@ export async function registerRoutes(
     try {
       const units = readUnits();
       const { name, uqc } = req.body;
-      
+
       // Validate required fields
       if (!name || !uqc) {
         return res.status(400).json({ success: false, error: "Unit name and UQC are required" });
       }
-      
+
       // Check for duplicate unit name
       const existingUnit = units.find((u: any) => u.name.toLowerCase() === name.toLowerCase());
       if (existingUnit) {
         return res.status(400).json({ success: false, error: "Unit name already exists" });
       }
-      
+
       // Check for duplicate UQC
       const existingUqc = units.find((u: any) => u.uqc.toUpperCase() === uqc.toUpperCase());
       if (existingUqc) {
         return res.status(400).json({ success: false, error: "UQC code already exists" });
       }
-      
+
       const newUnit = {
         id: Date.now().toString(),
         name: name.toLowerCase(),
@@ -500,25 +500,25 @@ export async function registerRoutes(
       if (index === -1) {
         return res.status(404).json({ success: false, error: "Unit not found" });
       }
-      
+
       const { name, uqc } = req.body;
-      
+
       // Check for duplicate unit name (excluding current unit)
-      const existingUnit = units.find((u: any, i: number) => 
+      const existingUnit = units.find((u: any, i: number) =>
         i !== index && u.name.toLowerCase() === name.toLowerCase()
       );
       if (existingUnit) {
         return res.status(400).json({ success: false, error: "Unit name already exists" });
       }
-      
+
       // Check for duplicate UQC (excluding current unit)
-      const existingUqc = units.find((u: any, i: number) => 
+      const existingUqc = units.find((u: any, i: number) =>
         i !== index && u.uqc.toUpperCase() === uqc.toUpperCase()
       );
       if (existingUqc) {
         return res.status(400).json({ success: false, error: "UQC code already exists" });
       }
-      
+
       units[index] = {
         ...units[index],
         name: name.toLowerCase(),
@@ -562,7 +562,7 @@ export async function registerRoutes(
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 1000;
       const status = req.query.status as string;
-      
+
       // Filter by status
       if (status === 'active') {
         items = items.filter((item: any) => item.isActive === true);
@@ -570,7 +570,7 @@ export async function registerRoutes(
         items = items.filter((item: any) => item.isActive === false);
       }
       // 'all' or no status returns all items
-      
+
       const offset = (page - 1) * limit;
       const paginatedItems = items.slice(offset, offset + limit);
 
@@ -860,11 +860,13 @@ export async function registerRoutes(
       const invoicesData = readInvoicesData();
       const quotesData = readQuotesData();
       const salesOrdersData = readSalesOrdersData();
-      
+      const paymentsData = readPaymentsReceivedData();
+
       const customerInvoices = (invoicesData.invoices || []).filter((inv: any) => inv.customerId === customerId);
       const customerQuotes = (quotesData.quotes || []).filter((q: any) => q.customerId === customerId);
       const customerSalesOrders = (salesOrdersData.salesOrders || []).filter((so: any) => so.customerId === customerId);
-      
+      const customerPayments = (paymentsData.paymentsReceived || []).filter((payment: any) => payment.customerId === customerId);
+
       res.json({
         success: true,
         data: {
@@ -878,7 +880,17 @@ export async function registerRoutes(
             balance: inv.balanceDue || inv.total || 0,
             status: inv.status || 'Draft'
           })),
-          customerPayments: [],
+          customerPayments: customerPayments.map((payment: any) => ({
+            id: payment.id,
+            type: 'payment',
+            date: payment.date,
+            number: payment.paymentNumber,
+            referenceNumber: payment.referenceNumber || '',
+            amount: payment.amount || 0,
+            unusedCredits: payment.unusedAmount || 0,
+            mode: payment.mode || 'Cash',
+            status: payment.status || 'Received'
+          })),
           quotes: customerQuotes.map((q: any) => ({
             id: q.id,
             type: 'quote',
@@ -938,6 +950,62 @@ export async function registerRoutes(
       res.json({ success: true, data: customer.activities || [] });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch activities" });
+    }
+  });
+
+  // Customer Purchased Items API
+  app.get("/api/customers/:id/purchased-items", (req: Request, res: Response) => {
+    try {
+      const invoicesData = readInvoicesData();
+      const customerId = req.params.id;
+
+      // Get all invoices for this customer
+      const customerInvoices = invoicesData.invoices.filter((invoice: any) => invoice.customerId === customerId);
+
+      // Extract all unique items from these invoices
+      const purchasedItems = new Map();
+
+      customerInvoices.forEach((invoice: any) => {
+        if (invoice.items && Array.isArray(invoice.items)) {
+          invoice.items.forEach((item: any) => {
+            const itemKey = item.itemId || item.name; // Use itemId if available, otherwise name
+            if (purchasedItems.has(itemKey)) {
+              // Update quantity and last purchase date
+              const existing = purchasedItems.get(itemKey);
+              existing.totalQuantity += item.quantity || 0;
+              existing.lastPurchaseDate = invoice.date > existing.lastPurchaseDate ? invoice.date : existing.lastPurchaseDate;
+              existing.totalAmount += item.amount || 0;
+              existing.purchaseCount += 1;
+            } else {
+              // Add new item
+              purchasedItems.set(itemKey, {
+                id: item.itemId || `${item.name}-${Math.random().toString(36).substr(2, 9)}`,
+                itemId: item.itemId,
+                name: item.name,
+                description: item.description || '',
+                unit: item.unit || 'pcs',
+                lastRate: item.rate || 0,
+                totalQuantity: item.quantity || 0,
+                lastPurchaseDate: invoice.date,
+                totalAmount: item.amount || 0,
+                purchaseCount: 1,
+                tax: item.tax || 0,
+                taxName: item.taxName || 'none'
+              });
+            }
+          });
+        }
+      });
+
+      // Convert Map to Array and sort by last purchase date (most recent first)
+      const itemsArray = Array.from(purchasedItems.values()).sort((a, b) =>
+        new Date(b.lastPurchaseDate).getTime() - new Date(a.lastPurchaseDate).getTime()
+      );
+
+      res.json({ success: true, data: itemsArray });
+    } catch (error) {
+      console.error('Error fetching customer purchased items:', error);
+      res.status(500).json({ success: false, message: "Failed to fetch customer purchased items" });
     }
   });
 
@@ -1415,18 +1483,26 @@ export async function registerRoutes(
   app.get("/api/invoices", (req: Request, res: Response) => {
     try {
       const data = readInvoicesData();
-      const invoices = data.invoices.map((invoice: any) => ({
+      const { customerId } = req.query;
+
+      let invoices = data.invoices.map((invoice: any) => ({
         id: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
         customerName: invoice.customerName,
         customerId: invoice.customerId,
         date: invoice.date,
         dueDate: invoice.dueDate,
-        amount: invoice.total,
-        status: invoice.status,
-        terms: invoice.paymentTerms,
-        balanceDue: invoice.balanceDue
+        amount: invoice.total || invoice.amount || 0,
+        status: invoice.status || 'DRAFT',
+        terms: invoice.paymentTerms || 'Due on Receipt',
+        balanceDue: invoice.balanceDue || invoice.total || invoice.amount || 0
       }));
+
+      // Filter by customerId if provided
+      if (customerId) {
+        invoices = invoices.filter((invoice: any) => invoice.customerId === customerId);
+      }
+
       res.json({ success: true, data: invoices });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch invoices" });
@@ -1633,7 +1709,7 @@ export async function registerRoutes(
       // Also create a record in Payments Received
       const paymentsData = readPaymentsReceivedData();
       const paymentNumber = generatePaymentNumber(paymentsData.nextPaymentNumber);
-      
+
       const newPaymentReceived = {
         id: `pr-${Date.now()}`,
         paymentNumber,
@@ -2070,11 +2146,11 @@ export async function registerRoutes(
       const billsData = readBillsData();
       const purchaseOrdersData = readPurchaseOrdersData();
       const expensesData = readExpensesData();
-      
+
       const vendorBills = (billsData.bills || []).filter((b: any) => b.vendorId === vendorId);
       const vendorPurchaseOrders = (purchaseOrdersData.purchaseOrders || []).filter((po: any) => po.vendorId === vendorId);
       const vendorExpenses = (expensesData.expenses || []).filter((e: any) => e.vendorId === vendorId);
-      
+
       res.json({
         success: true,
         data: {
@@ -2159,7 +2235,7 @@ export async function registerRoutes(
       if (vendorIndex === -1) {
         return res.status(404).json({ success: false, message: "Vendor not found" });
       }
-      
+
       if (!data.vendors[vendorIndex].attachments) {
         data.vendors[vendorIndex].attachments = [];
       }
@@ -2176,7 +2252,7 @@ export async function registerRoutes(
       data.vendors[vendorIndex].attachments.push(...newAttachments);
       data.vendors[vendorIndex].updatedAt = new Date().toISOString();
       writeVendorsData(data);
-      
+
       res.status(201).json({ success: true, data: newAttachments });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to upload attachments" });
@@ -2198,7 +2274,7 @@ export async function registerRoutes(
       const attachmentIndex = data.vendors[vendorIndex].attachments.findIndex(
         (a: any) => a.id === req.params.attachmentId
       );
-      
+
       if (attachmentIndex === -1) {
         return res.status(404).json({ success: false, message: "Attachment not found" });
       }
@@ -2206,7 +2282,7 @@ export async function registerRoutes(
       data.vendors[vendorIndex].attachments.splice(attachmentIndex, 1);
       data.vendors[vendorIndex].updatedAt = new Date().toISOString();
       writeVendorsData(data);
-      
+
       res.json({ success: true, message: "Attachment deleted successfully" });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to delete attachment" });
@@ -2450,17 +2526,17 @@ export async function registerRoutes(
     try {
       const challansData = readDeliveryChallansData();
       const challanIndex = challansData.deliveryChallans.findIndex((c: any) => c.id === req.params.id);
-      
+
       if (challanIndex === -1) {
         return res.status(404).json({ success: false, message: "Delivery challan not found" });
       }
 
       const challan = challansData.deliveryChallans[challanIndex];
       const now = new Date().toISOString();
-      
+
       challan.status = req.body.status;
       challan.updatedAt = now;
-      
+
       if (!challan.activityLogs) challan.activityLogs = [];
       challan.activityLogs.push({
         id: String(challan.activityLogs.length + 1),
@@ -2483,14 +2559,14 @@ export async function registerRoutes(
     try {
       const challansData = readDeliveryChallansData();
       const originalChallan = challansData.deliveryChallans.find((c: any) => c.id === req.params.id);
-      
+
       if (!originalChallan) {
         return res.status(404).json({ success: false, message: "Delivery challan not found" });
       }
 
       const now = new Date().toISOString();
       const newChallanNumber = generateChallanNumber(challansData.nextChallanNumber);
-      
+
       const clonedChallan = {
         ...originalChallan,
         id: String(Date.now()),
@@ -3645,10 +3721,19 @@ export async function registerRoutes(
   });
 
   // Payments Received API
-  app.get("/api/payments-received", (_req: Request, res: Response) => {
+  app.get("/api/payments-received", (req: Request, res: Response) => {
     try {
       const data = readPaymentsReceivedData();
-      res.json({ success: true, data: data.paymentsReceived });
+      const { customerId } = req.query;
+
+      let payments = data.paymentsReceived;
+
+      // Filter by customerId if provided
+      if (customerId) {
+        payments = payments.filter((payment: any) => payment.customerId === customerId);
+      }
+
+      res.json({ success: true, data: payments });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch payments received" });
     }
@@ -3658,11 +3743,11 @@ export async function registerRoutes(
     try {
       const data = readPaymentsReceivedData();
       const payment = data.paymentsReceived.find((p: any) => p.id === req.params.id);
-      
+
       if (!payment) {
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
-      
+
       res.json({ success: true, data: payment });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch payment" });
@@ -3674,7 +3759,7 @@ export async function registerRoutes(
       const data = readPaymentsReceivedData();
       const now = new Date().toISOString();
       const paymentNumber = generatePaymentNumber(data.nextPaymentNumber);
-      
+
       const newPayment = {
         id: `pr-${Date.now()}`,
         paymentNumber,
@@ -3688,8 +3773,51 @@ export async function registerRoutes(
       data.nextPaymentNumber++;
       writePaymentsReceivedData(data);
 
+      // Update invoice balances if invoices are included in the payment
+      if (req.body.invoices && Array.isArray(req.body.invoices)) {
+        const invoicesData = readInvoicesData();
+        let invoicesUpdated = false;
+
+        req.body.invoices.forEach((paymentInvoice: any) => {
+          const invoiceIndex = invoicesData.invoices.findIndex((inv: any) => inv.id === paymentInvoice.invoiceId);
+          if (invoiceIndex !== -1) {
+            const invoice = invoicesData.invoices[invoiceIndex];
+            const currentBalance = invoice.balanceDue || invoice.total || 0;
+            const newBalance = Math.max(0, currentBalance - (paymentInvoice.paymentAmount || 0));
+
+            invoicesData.invoices[invoiceIndex] = {
+              ...invoice,
+              balanceDue: newBalance,
+              amountPaid: (invoice.amountPaid || 0) + (paymentInvoice.paymentAmount || 0),
+              status: newBalance === 0 ? 'PAID' : newBalance < (invoice.total || 0) ? 'PARTIALLY_PAID' : invoice.status,
+              updatedAt: now
+            };
+
+            // Add payment record to invoice
+            if (!invoice.payments) {
+              invoicesData.invoices[invoiceIndex].payments = [];
+            }
+            invoicesData.invoices[invoiceIndex].payments.push({
+              id: newPayment.id,
+              date: paymentInvoice.paymentReceivedDate || req.body.date,
+              amount: paymentInvoice.paymentAmount,
+              paymentMode: req.body.mode || 'Cash',
+              reference: req.body.referenceNumber || '',
+              notes: req.body.notes || ''
+            });
+
+            invoicesUpdated = true;
+          }
+        });
+
+        if (invoicesUpdated) {
+          writeInvoicesData(invoicesData);
+        }
+      }
+
       res.json({ success: true, data: newPayment });
     } catch (error) {
+      console.error('Error creating payment:', error);
       res.status(500).json({ success: false, message: "Failed to create payment" });
     }
   });
@@ -3698,7 +3826,7 @@ export async function registerRoutes(
     try {
       const data = readPaymentsReceivedData();
       const index = data.paymentsReceived.findIndex((p: any) => p.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
@@ -3723,7 +3851,7 @@ export async function registerRoutes(
     try {
       const data = readPaymentsReceivedData();
       const index = data.paymentsReceived.findIndex((p: any) => p.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
@@ -3741,7 +3869,7 @@ export async function registerRoutes(
     try {
       const data = readPaymentsReceivedData();
       const index = data.paymentsReceived.findIndex((p: any) => p.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
@@ -3749,28 +3877,28 @@ export async function registerRoutes(
       const payment = data.paymentsReceived[index];
       const refundAmount = req.body.refundAmount || payment.amount;
       const now = new Date().toISOString();
-      
+
       payment.status = 'REFUNDED';
       payment.refundedAt = now;
       payment.refundAmount = refundAmount;
-      
+
       data.paymentsReceived[index] = payment;
       writePaymentsReceivedData(data);
 
       // Also update linked invoices if any
       if (payment.invoices && payment.invoices.length > 0) {
         const invoicesData = readInvoicesData();
-        
+
         payment.invoices.forEach((paymentInvoice: any) => {
           const invoiceIndex = invoicesData.invoices.findIndex((inv: any) => inv.id === paymentInvoice.invoiceId);
           if (invoiceIndex !== -1) {
             const invoice = invoicesData.invoices[invoiceIndex];
-            
+
             // Initialize refunds array if not exists
             if (!invoice.refunds) {
               invoice.refunds = [];
             }
-            
+
             // Add refund record
             invoice.refunds.push({
               id: `ref-${Date.now()}`,
@@ -3780,19 +3908,19 @@ export async function registerRoutes(
               date: now,
               reason: req.body.reason || 'Payment refunded'
             });
-            
+
             // Update amounts
             invoice.amountRefunded = (invoice.amountRefunded || 0) + (paymentInvoice.paymentAmount || refundAmount);
             invoice.amountPaid = Math.max(0, (invoice.amountPaid || 0) - (paymentInvoice.paymentAmount || refundAmount));
             invoice.balanceDue = invoice.total - invoice.amountPaid;
-            
+
             // Update status
             if (invoice.balanceDue >= invoice.total) {
               invoice.status = 'SENT';
             } else if (invoice.balanceDue > 0) {
               invoice.status = 'PARTIALLY_PAID';
             }
-            
+
             invoice.updatedAt = now;
             invoice.activityLogs = invoice.activityLogs || [];
             invoice.activityLogs.push({
@@ -3802,11 +3930,11 @@ export async function registerRoutes(
               description: `Refund of ₹${(paymentInvoice.paymentAmount || refundAmount).toLocaleString('en-IN')} recorded from Payment #${payment.paymentNumber}`,
               user: req.body.refundedBy || 'Admin User'
             });
-            
+
             invoicesData.invoices[invoiceIndex] = invoice;
           }
         });
-        
+
         writeInvoicesData(invoicesData);
       }
 
@@ -3885,13 +4013,13 @@ export async function registerRoutes(
       if (req.body.paymentId) {
         const paymentsData = readPaymentsReceivedData();
         const paymentIndex = paymentsData.paymentsReceived.findIndex((p: any) => p.id === req.body.paymentId);
-        
+
         if (paymentIndex !== -1) {
           const payment = paymentsData.paymentsReceived[paymentIndex];
           payment.status = 'REFUNDED';
           payment.refundedAt = now;
           payment.refundAmount = (payment.refundAmount || 0) + refundAmount;
-          
+
           paymentsData.paymentsReceived[paymentIndex] = payment;
           writePaymentsReceivedData(paymentsData);
         }
@@ -3949,12 +4077,21 @@ export async function registerRoutes(
   app.get("/api/customers/:customerId/unpaid-invoices", (req: Request, res: Response) => {
     try {
       const invoicesData = readInvoicesData();
-      const unpaidInvoices = invoicesData.invoices.filter((inv: any) => 
-        inv.customerId === req.params.customerId && 
-        inv.status !== 'PAID' && 
-        inv.balanceDue > 0
-      );
-      
+      const unpaidInvoices = invoicesData.invoices
+        .filter((inv: any) =>
+          inv.customerId === req.params.customerId &&
+          inv.status !== 'PAID' &&
+          (inv.balanceDue > 0 || 0)
+        )
+        .map((inv: any) => ({
+          id: inv.id,
+          invoiceNumber: inv.invoiceNumber,
+          date: inv.date,
+          amount: inv.total || inv.amount || 0,
+          balanceDue: inv.balanceDue || inv.total || 0,
+          status: inv.status
+        }));
+
       res.json({ success: true, data: unpaidInvoices });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch unpaid invoices" });
@@ -3966,21 +4103,21 @@ export async function registerRoutes(
     try {
       const data = readEWayBillsData();
       const { transactionType, status, period } = req.query;
-      
+
       let filteredBills = data.ewayBills || [];
-      
+
       if (transactionType && transactionType !== 'all') {
         filteredBills = filteredBills.filter((bill: any) => bill.documentType === transactionType);
       }
-      
+
       if (status && status !== 'all') {
         filteredBills = filteredBills.filter((bill: any) => bill.status === status);
       }
-      
+
       if (period && period !== 'all') {
         const now = new Date();
         let startDate = new Date();
-        
+
         switch (period) {
           case 'this_month':
             startDate = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -3992,12 +4129,12 @@ export async function registerRoutes(
             startDate = new Date(now.getFullYear(), 0, 1);
             break;
         }
-        
-        filteredBills = filteredBills.filter((bill: any) => 
+
+        filteredBills = filteredBills.filter((bill: any) =>
           new Date(bill.date) >= startDate
         );
       }
-      
+
       res.json({ success: true, data: filteredBills });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch e-way bills" });
@@ -4018,11 +4155,11 @@ export async function registerRoutes(
     try {
       const data = readEWayBillsData();
       const ewayBill = data.ewayBills.find((b: any) => b.id === req.params.id);
-      
+
       if (!ewayBill) {
         return res.status(404).json({ success: false, message: "E-Way Bill not found" });
       }
-      
+
       res.json({ success: true, data: ewayBill });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch e-way bill" });
@@ -4034,11 +4171,11 @@ export async function registerRoutes(
       const data = readEWayBillsData();
       const now = new Date().toISOString();
       const ewayBillNumber = generateEWayBillNumber(data.nextEWayBillNumber);
-      
+
       // Calculate expiry date (15 days from now for most cases)
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 15);
-      
+
       const newEWayBill = {
         id: `ewb-${Date.now()}`,
         ewayBillNumber,
@@ -4085,7 +4222,7 @@ export async function registerRoutes(
     try {
       const data = readEWayBillsData();
       const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "E-Way Bill not found" });
       }
@@ -4109,7 +4246,7 @@ export async function registerRoutes(
     try {
       const data = readEWayBillsData();
       const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "E-Way Bill not found" });
       }
@@ -4117,12 +4254,12 @@ export async function registerRoutes(
       const ewayBill = data.ewayBills[index];
       ewayBill.status = 'GENERATED';
       ewayBill.generatedAt = new Date().toISOString();
-      
+
       // Set expiry date to 15 days from now
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 15);
       ewayBill.expiryDate = expiryDate.toISOString().split('T')[0];
-      
+
       data.ewayBills[index] = ewayBill;
       writeEWayBillsData(data);
 
@@ -4136,7 +4273,7 @@ export async function registerRoutes(
     try {
       const data = readEWayBillsData();
       const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "E-Way Bill not found" });
       }
@@ -4145,7 +4282,7 @@ export async function registerRoutes(
       ewayBill.status = 'CANCELLED';
       ewayBill.cancelledAt = new Date().toISOString();
       ewayBill.cancelReason = req.body.reason || '';
-      
+
       data.ewayBills[index] = ewayBill;
       writeEWayBillsData(data);
 
@@ -4159,7 +4296,7 @@ export async function registerRoutes(
     try {
       const data = readEWayBillsData();
       const index = data.ewayBills.findIndex((b: any) => b.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "E-Way Bill not found" });
       }
@@ -4178,21 +4315,21 @@ export async function registerRoutes(
     try {
       const invoicesData = readInvoicesData();
       const ewayBillsData = readEWayBillsData();
-      
+
       // Get invoice IDs that already have e-way bills
       const invoicesWithEWayBills = new Set(
         ewayBillsData.ewayBills
           .filter((b: any) => b.documentType === 'invoices')
           .map((b: any) => b.documentId)
       );
-      
+
       // Filter invoices that don't have e-way bills yet
-      const pendingInvoices = invoicesData.invoices.filter((inv: any) => 
-        !invoicesWithEWayBills.has(inv.id) && 
+      const pendingInvoices = invoicesData.invoices.filter((inv: any) =>
+        !invoicesWithEWayBills.has(inv.id) &&
         inv.status !== 'DRAFT' &&
         inv.status !== 'CANCELLED'
       );
-      
+
       res.json({ success: true, data: pendingInvoices });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch pending invoices" });
@@ -4204,21 +4341,21 @@ export async function registerRoutes(
     try {
       const creditNotesData = readCreditNotesData();
       const ewayBillsData = readEWayBillsData();
-      
+
       // Get credit note IDs that already have e-way bills
       const creditNotesWithEWayBills = new Set(
         ewayBillsData.ewayBills
           .filter((b: any) => b.documentType === 'credit_notes')
           .map((b: any) => b.documentId)
       );
-      
+
       // Filter credit notes that don't have e-way bills yet
-      const pendingCreditNotes = creditNotesData.creditNotes.filter((cn: any) => 
-        !creditNotesWithEWayBills.has(cn.id) && 
+      const pendingCreditNotes = creditNotesData.creditNotes.filter((cn: any) =>
+        !creditNotesWithEWayBills.has(cn.id) &&
         cn.status !== 'DRAFT' &&
         cn.status !== 'CANCELLED'
       );
-      
+
       res.json({ success: true, data: pendingCreditNotes });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch pending credit notes" });
@@ -4230,21 +4367,21 @@ export async function registerRoutes(
     try {
       const deliveryChallansData = readDeliveryChallansData();
       const ewayBillsData = readEWayBillsData();
-      
+
       // Get delivery challan IDs that already have e-way bills
       const challansWithEWayBills = new Set(
         ewayBillsData.ewayBills
           .filter((b: any) => b.documentType === 'delivery_challans')
           .map((b: any) => b.documentId)
       );
-      
+
       // Filter delivery challans that don't have e-way bills yet
-      const pendingChallans = deliveryChallansData.deliveryChallans.filter((dc: any) => 
-        !challansWithEWayBills.has(dc.id) && 
+      const pendingChallans = deliveryChallansData.deliveryChallans.filter((dc: any) =>
+        !challansWithEWayBills.has(dc.id) &&
         dc.status !== 'DRAFT' &&
         dc.status !== 'CANCELLED'
       );
-      
+
       res.json({ success: true, data: pendingChallans });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch pending delivery challans" });
@@ -4296,11 +4433,11 @@ export async function registerRoutes(
     try {
       const data = readPaymentsMadeData();
       const payment = data.paymentsMade.find((p: any) => p.id === req.params.id);
-      
+
       if (!payment) {
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
-      
+
       res.json({ success: true, data: payment });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch payment" });
@@ -4312,7 +4449,7 @@ export async function registerRoutes(
       const data = readPaymentsMadeData();
       const now = new Date().toISOString();
       const paymentNumber = req.body.paymentNumber || generatePaymentMadeNumber(data.nextPaymentNumber);
-      
+
       const newPayment = {
         id: `pm-${Date.now()}`,
         paymentNumber,
@@ -4352,7 +4489,7 @@ export async function registerRoutes(
     try {
       const data = readPaymentsMadeData();
       const index = data.paymentsMade.findIndex((p: any) => p.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
@@ -4376,7 +4513,7 @@ export async function registerRoutes(
     try {
       const data = readPaymentsMadeData();
       const index = data.paymentsMade.findIndex((p: any) => p.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
@@ -4435,11 +4572,11 @@ export async function registerRoutes(
     try {
       const data = readVendorCreditsData();
       const credit = data.vendorCredits.find((c: any) => c.id === req.params.id);
-      
+
       if (!credit) {
         return res.status(404).json({ success: false, message: "Vendor credit not found" });
       }
-      
+
       res.json({ success: true, data: credit });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch vendor credit" });
@@ -4451,7 +4588,7 @@ export async function registerRoutes(
       const data = readVendorCreditsData();
       const now = new Date().toISOString();
       const creditNumber = req.body.creditNoteNumber || generateVendorCreditNumber(data.nextCreditNumber);
-      
+
       const newCredit = {
         id: `vc-${Date.now()}`,
         creditNumber,
@@ -4500,7 +4637,7 @@ export async function registerRoutes(
     try {
       const data = readVendorCreditsData();
       const index = data.vendorCredits.findIndex((c: any) => c.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Vendor credit not found" });
       }
@@ -4524,7 +4661,7 @@ export async function registerRoutes(
     try {
       const data = readVendorCreditsData();
       const index = data.vendorCredits.findIndex((c: any) => c.id === req.params.id);
-      
+
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Vendor credit not found" });
       }
