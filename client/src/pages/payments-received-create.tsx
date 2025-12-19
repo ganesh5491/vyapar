@@ -179,10 +179,22 @@ export default function PaymentsReceivedCreate() {
       const response = await fetch(`/api/invoices?customerId=${custId}`);
       if (response.ok) {
         const data = await response.json();
-        // Filter for unpaid invoices (PENDING, OVERDUE, PARTIALLY_PAID, or SENT with balance due)
-        const unpaidInvoices = (data.data || []).filter((inv: any) =>
-          inv.balanceDue > 0 && ['PENDING', 'OVERDUE', 'PARTIALLY_PAID', 'SENT'].includes(inv.status)
-        );
+        console.log('Raw invoices from API:', data.data);
+
+        // Filter for unpaid invoices (PENDING, OVERDUE, PARTIALLY_PAID, or SENT)
+        // Use balanceDue if available, otherwise use amount for new invoices
+        const unpaidInvoices = (data.data || []).filter((inv: any) => {
+          const balance = inv.balanceDue !== undefined ? inv.balanceDue : inv.amount;
+          const isUnpaid = balance > 0 && ['PENDING', 'OVERDUE', 'PARTIALLY_PAID', 'SENT'].includes(inv.status);
+          console.log(`Invoice ${inv.invoiceNumber}: balanceDue=${inv.balanceDue}, amount=${inv.amount}, status=${inv.status}, isUnpaid=${isUnpaid}`);
+          return isUnpaid;
+        }).map((inv: any) => ({
+          ...inv,
+          // Ensure balanceDue is set properly
+          balanceDue: inv.balanceDue !== undefined && inv.balanceDue > 0 ? inv.balanceDue : inv.amount
+        }));
+
+        console.log('Filtered unpaid invoices:', unpaidInvoices);
         setCustomerInvoices(unpaidInvoices);
 
         // Initialize selection state
@@ -298,7 +310,10 @@ export default function PaymentsReceivedCreate() {
     for (const invoice of sortedInvoices) {
       if (remainingAmount <= 0) break;
 
-      const invoiceBalance = invoice.balanceDue || 0;
+      // Use balanceDue if available, otherwise use amount
+      const invoiceBalance = invoice.balanceDue > 0 ? invoice.balanceDue : invoice.amount;
+      console.log(`Allocating to invoice ${invoice.invoiceNumber}: balance=${invoiceBalance}, remaining=${remainingAmount}`);
+
       if (invoiceBalance > 0) {
         const paymentAmount = Math.min(remainingAmount, invoiceBalance);
 
@@ -309,6 +324,7 @@ export default function PaymentsReceivedCreate() {
         };
 
         remainingAmount -= paymentAmount;
+        console.log(`Allocated ${paymentAmount} to ${invoice.invoiceNumber}, remaining: ${remainingAmount}`);
       }
     }
 
@@ -350,6 +366,26 @@ export default function PaymentsReceivedCreate() {
 
     setIsSubmitting(true);
 
+    // Build invoices array from selected invoices
+    const selectedInvoicesList = Object.entries(selectedInvoices)
+      .filter(([_, inv]) => inv.selected && inv.payment > 0)
+      .map(([id, inv]) => {
+        const invoice = customerInvoices.find(i => i.id === id);
+        return {
+          invoiceId: id,
+          invoiceNumber: invoice?.invoiceNumber || '',
+          invoiceDate: invoice?.date || '',
+          invoiceAmount: invoice?.amount || 0,
+          balanceDue: invoice?.balanceDue || 0,
+          paymentAmount: inv.payment,
+          paymentReceivedDate: inv.receivedDate ? format(inv.receivedDate, "yyyy-MM-dd") : format(paymentDate, "yyyy-MM-dd")
+        };
+      });
+
+    console.log('Selected Invoices State:', selectedInvoices);
+    console.log('Customer Invoices:', customerInvoices);
+    console.log('Invoices to save:', selectedInvoicesList);
+
     const paymentData = {
       date: format(paymentDate, "yyyy-MM-dd"),
       customerId: selectedCustomerId,
@@ -364,20 +400,7 @@ export default function PaymentsReceivedCreate() {
       sendThankYou: sendThankYou,
       status: "PAID",
       placeOfSupply: customerSnapshot?.placeOfSupply || formData.placeOfSupply || '',
-      invoices: Object.entries(selectedInvoices)
-        .filter(([_, inv]) => inv.selected && inv.payment > 0)
-        .map(([id, inv]) => {
-          const invoice = customerInvoices.find(i => i.id === id);
-          return {
-            invoiceId: id,
-            invoiceNumber: invoice?.invoiceNumber || '',
-            invoiceDate: invoice?.date || '',
-            invoiceAmount: invoice?.amount || 0,
-            balanceDue: invoice?.balanceDue || 0,
-            paymentAmount: inv.payment,
-            paymentReceivedDate: inv.receivedDate ? format(inv.receivedDate, "yyyy-MM-dd") : format(paymentDate, "yyyy-MM-dd")
-          };
-        }),
+      invoices: selectedInvoicesList,
       // Store customer snapshot for immutability
       customerSnapshot: customerSnapshot
     };

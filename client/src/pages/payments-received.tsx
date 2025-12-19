@@ -461,6 +461,61 @@ function PaymentCreateDialog({
   });
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [unpaidInvoices, setUnpaidInvoices] = useState<Invoice[]>([]);
+  const [selectedInvoices, setSelectedInvoices] = useState<Record<string, { payment: number; receivedDate: string }>>({});
+
+  // Auto-allocation function
+  const autoAllocatePayment = (totalAmount: number, invoices: Invoice[]) => {
+    if (invoices.length === 0) {
+      setSelectedInvoices({});
+      return;
+    }
+
+    if (totalAmount <= 0) {
+      setSelectedInvoices({});
+      return;
+    }
+
+    // Sort invoices by date (oldest first)
+    const sortedInvoices = [...invoices].sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    let remainingAmount = totalAmount;
+    const newSelectedInvoices: Record<string, { payment: number; receivedDate: string }> = {};
+
+    for (const invoice of sortedInvoices) {
+      if (remainingAmount <= 0) break;
+
+      const invoiceBalance = invoice.balanceDue > 0 ? invoice.balanceDue : invoice.amount;
+      if (invoiceBalance > 0) {
+        const paymentAmount = Math.min(remainingAmount, invoiceBalance);
+        newSelectedInvoices[invoice.id] = {
+          payment: paymentAmount,
+          receivedDate: new Date().toISOString().split('T')[0]
+        };
+        remainingAmount -= paymentAmount;
+        console.log(`Allocated ${paymentAmount} to ${invoice.invoiceNumber}, remaining: ${remainingAmount}`);
+      }
+    }
+
+    setSelectedInvoices(newSelectedInvoices);
+  };
+
+  // Handle amount change with auto-allocation
+  const handleAmountChange = (amount: string) => {
+    setFormData(prev => ({ ...prev, amount }));
+    const numAmount = parseFloat(amount) || 0;
+    if (numAmount > 0 && paymentType === 'invoice_payment') {
+      autoAllocatePayment(numAmount, unpaidInvoices);
+    } else {
+      setSelectedInvoices({});
+    }
+  };
+
+  // Calculate totals
+  const totalPaymentAmount = Object.values(selectedInvoices).reduce((sum, inv) => sum + inv.payment, 0);
+  const amountReceived = parseFloat(formData.amount) || 0;
+  const amountInExcess = Math.max(0, amountReceived - totalPaymentAmount);
 
   useEffect(() => {
     if (editPayment) {
@@ -523,7 +578,19 @@ function PaymentCreateDialog({
         const response = await fetch(`/api/customers/${customerId}/unpaid-invoices`);
         if (response.ok) {
           const data = await response.json();
-          setUnpaidInvoices(data.data || []);
+          console.log('Fetched unpaid invoices:', data.data);
+          const invoices = (data.data || []).map((inv: any) => ({
+            ...inv,
+            // Ensure balanceDue is set properly
+            balanceDue: inv.balanceDue > 0 ? inv.balanceDue : inv.amount
+          }));
+          setUnpaidInvoices(invoices);
+
+          // Auto-allocate if amount already entered
+          const amount = parseFloat(formData.amount) || 0;
+          if (amount > 0) {
+            autoAllocatePayment(amount, invoices);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch unpaid invoices:', error);
@@ -532,14 +599,30 @@ function PaymentCreateDialog({
   };
 
   const handleSubmit = () => {
+    // Build invoices array from selected invoices
+    const invoicePayments = Object.entries(selectedInvoices)
+      .filter(([_, inv]) => inv.payment > 0)
+      .map(([id, inv]) => {
+        const invoice = unpaidInvoices.find(i => i.id === id);
+        return {
+          invoiceId: id,
+          invoiceNumber: invoice?.invoiceNumber || '',
+          invoiceDate: invoice?.date || '',
+          invoiceAmount: invoice?.amount || 0,
+          balanceDue: invoice?.balanceDue || 0,
+          paymentAmount: inv.payment,
+          paymentReceivedDate: inv.receivedDate
+        };
+      });
+
     const paymentData = {
       ...formData,
       amount: parseFloat(formData.amount) || 0,
       bankCharges: parseFloat(formData.bankCharges) || 0,
       paymentType,
       status: 'PAID',
-      unusedAmount: parseFloat(formData.amount) || 0,
-      invoices: [],
+      unusedAmount: amountInExcess,
+      invoices: invoicePayments,
       attachments: [],
       journalEntries: [
         {
@@ -555,6 +638,7 @@ function PaymentCreateDialog({
       ]
     };
 
+    console.log('Saving payment with invoices:', paymentData);
     onSave(paymentData);
     onOpenChange(false);
   };
@@ -639,11 +723,13 @@ function PaymentCreateDialog({
                   <Input
                     type="number"
                     value={formData.amount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                    placeholder="Enter amount to auto-allocate"
                     className="rounded-l-none"
                     data-testid="input-amount"
                   />
                 </div>
+                <p className="text-xs text-slate-500">Amount will be auto-allocated to unpaid invoices (oldest first)</p>
               </div>
               <div className="space-y-2">
                 <Label>Bank Charges (if any)</Label>
@@ -771,7 +857,14 @@ function PaymentCreateDialog({
                       <Filter className="h-3 w-3" />
                       Filter by Date Range
                     </Button>
-                    <Button variant="link" size="sm" className="text-blue-600">Clear Applied Amount</Button>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-blue-600"
+                      onClick={() => setSelectedInvoices({})}
+                    >
+                      Clear Applied Amount
+                    </Button>
                   </div>
                 </div>
 
@@ -795,14 +888,45 @@ function PaymentCreateDialog({
                       </TableRow>
                     ) : (
                       unpaidInvoices.map(invoice => (
-                        <TableRow key={invoice.id}>
+                        <TableRow key={invoice.id} className={selectedInvoices[invoice.id]?.payment > 0 ? "bg-green-50" : ""}>
                           <TableCell>{formatDate(invoice.date)}</TableCell>
                           <TableCell className="text-blue-600">{invoice.invoiceNumber}</TableCell>
                           <TableCell className="text-right">{formatCurrency(invoice.amount || 0)}</TableCell>
                           <TableCell className="text-right">{formatCurrency(invoice.balanceDue || 0)}</TableCell>
-                          <TableCell>-</TableCell>
+                          <TableCell>
+                            {selectedInvoices[invoice.id]?.payment > 0 ? (
+                              <Input
+                                type="date"
+                                className="w-32"
+                                value={selectedInvoices[invoice.id]?.receivedDate || ''}
+                                onChange={(e) => setSelectedInvoices(prev => ({
+                                  ...prev,
+                                  [invoice.id]: {
+                                    ...prev[invoice.id],
+                                    receivedDate: e.target.value
+                                  }
+                                }))}
+                              />
+                            ) : '-'}
+                          </TableCell>
                           <TableCell className="text-right">
-                            <Input type="number" className="w-24 text-right" defaultValue="0" />
+                            <Input
+                              type="number"
+                              className="w-24 text-right"
+                              value={selectedInvoices[invoice.id]?.payment || ''}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0;
+                                const maxPayment = invoice.balanceDue || invoice.amount;
+                                const validPayment = Math.min(Math.max(0, value), maxPayment);
+                                setSelectedInvoices(prev => ({
+                                  ...prev,
+                                  [invoice.id]: {
+                                    payment: validPayment,
+                                    receivedDate: prev[invoice.id]?.receivedDate || new Date().toISOString().split('T')[0]
+                                  }
+                                }));
+                              }}
+                            />
                           </TableCell>
                         </TableRow>
                       ))
@@ -815,15 +939,15 @@ function PaymentCreateDialog({
                   <div className="w-64 space-y-2">
                     <div className="flex justify-between">
                       <span>Total</span>
-                      <span>0.00</span>
+                      <span>{formatCurrency(unpaidInvoices.reduce((sum, inv) => sum + (inv.balanceDue || inv.amount || 0), 0))}</span>
                     </div>
                     <div className="flex justify-between border-t pt-2">
                       <span>Amount Received :</span>
-                      <span>{formData.amount || '0.00'}</span>
+                      <span>{formatCurrency(amountReceived)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Amount used for Payments :</span>
-                      <span>0.00</span>
+                      <span>{formatCurrency(totalPaymentAmount)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Amount Refunded :</span>
@@ -831,7 +955,7 @@ function PaymentCreateDialog({
                     </div>
                     <div className="flex justify-between text-orange-600">
                       <span>Amount in Excess:</span>
-                      <span>{formatCurrency(parseFloat(formData.amount) || 0)}</span>
+                      <span>{formatCurrency(amountInExcess)}</span>
                     </div>
                   </div>
                 </div>

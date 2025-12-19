@@ -1294,7 +1294,278 @@
       ],
       "amountInWords": "Indian Rupee Two Hundred Only",
       "createdAt": "2025-12-19T07:12:30.376Z"
+    },
+    {
+      "id": "pr-1766128871035",
+      "paymentNumber": "",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "customerEmail": "prajwalkadam@gmail.com",
+      "amount": 100,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-19",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 100,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 100,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 100
+        }
+      ],
+      "amountInWords": "Indian Rupee One Hundred Only",
+      "createdAt": "2025-12-19T07:21:11.035Z"
+    },
+    {
+      "id": "pr-1766128983017",
+      "paymentNumber": "",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "customerEmail": "prajwalkadam@gmail.com",
+      "amount": 100,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-19",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 100,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 100,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 100
+        }
+      ],
+      "amountInWords": "Indian Rupee One Hundred Only",
+      "createdAt": "2025-12-19T07:23:03.017Z"
+    },
+    {
+      "id": "pr-1766129205507",
+      "paymentNumber": "40",
+      "date": "2025-12-19",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "customerEmail": "prajwalkadam@gmail.com",
+      "mode": "Bank Transfer",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "amount": 497,
+      "unusedAmount": 0,
+      "notes": "",
+      "sendThankYou": false,
+      "status": "PAID",
+      "placeOfSupply": "27 - Maharashtra",
+      "invoices": [
+        {
+          "invoiceId": "1766129121197",
+          "invoiceNumber": "INV-00026",
+          "invoiceDate": "2025-12-19",
+          "invoiceAmount": 152,
+          "balanceDue": 152,
+          "paymentAmount": 152,
+          "paymentReceivedDate": "2025-12-19"
+        },
+        {
+          "invoiceId": "1766123465739",
+          "invoiceNumber": "INV-00025",
+          "invoiceDate": "2025-12-19",
+          "invoiceAmount": 620,
+          "balanceDue": 600,
+          "paymentAmount": 345,
+          "paymentReceivedDate": "2025-12-19"
+        }
+      ],
+      "customerSnapshot": {
+        "customerId": "11",
+        "customerName": "Prajwal Traders",
+        "displayName": "Prajwal Traders",
+        "companyName": "Prajwal Traders",
+        "email": "prajwalkadam@gmail.com",
+        "phone": "9272940350",
+        "billingAddress": {
+          "street": "bhumkar chowk, pune",
+          "city": "Pune",
+          "state": "Maharashtra",
+          "country": "India",
+          "pincode": "411057"
+        },
+        "shippingAddress": {
+          "street": "bhumkar chowk, pune",
+          "city": "Pune",
+          "state": "Maharashtra",
+          "country": "India",
+          "pincode": "411057"
+        },
+        "gstTreatment": "Consumer",
+        "taxPreference": "taxable",
+        "gstin": "27AAGCA4900Q1ZQ",
+        "placeOfSupply": "27 - Maharashtra",
+        "pan": "AAGCA4900M",
+        "exemptionReason": "",
+        "currency": "INR",
+        "paymentTerms": "net_15",
+        "priceList": "",
+        "snapshotDate": "2025-12-19T07:25:37.158Z"
+      },
+      "amountInWords": "Indian Rupee Four Hundred Ninety Seven Only",
+      "createdAt": "2025-12-19T07:26:45.507Z"
+    },
+    {
+      "id": "pr-1766129705325",
+      "paymentNumber": "",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "customerEmail": "prajwalkadam@gmail.com",
+      "amount": 200,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-19",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 200,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 200,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 200
+        }
+      ],
+      "amountInWords": "Indian Rupee Two Hundred Only",
+      "createdAt": "2025-12-19T07:35:05.325Z"
+    },
+    {
+      "id": "pr-1766130072963",
+      "paymentNumber": "",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "customerEmail": "prajwalkadam@gmail.com",
+      "amount": 100,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-19",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 100,
+      "invoices": [],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 100,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 100
+        }
+      ],
+      "amountInWords": "Indian Rupee One Hundred Only",
+      "createdAt": "2025-12-19T07:41:12.963Z"
+    },
+    {
+      "id": "pr-1766130966853",
+      "paymentNumber": "",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "customerEmail": "prajwalkadam@gmail.com",
+      "amount": 100,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-19",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 0,
+      "invoices": [
+        {
+          "invoiceId": "1766123465739",
+          "invoiceNumber": "INV-00025",
+          "invoiceDate": "2025-12-19",
+          "invoiceAmount": 620,
+          "balanceDue": 255,
+          "paymentAmount": 100,
+          "paymentReceivedDate": "2025-12-19"
+        }
+      ],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 100,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 100
+        }
+      ],
+      "amountInWords": "Indian Rupee One Hundred Only",
+      "createdAt": "2025-12-19T07:56:06.853Z"
     }
   ],
-  "nextPaymentNumber": 38
+  "nextPaymentNumber": 44
 }

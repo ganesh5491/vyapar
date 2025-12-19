@@ -176,10 +176,71 @@ export default function PaymentsMadeCreate() {
     }
   }, [nextNumberData]);
 
+  // Re-apply auto-allocation when bills are loaded
+  useEffect(() => {
+    const amount = parseFloat(formData.paymentAmount) || 0;
+    if (vendorBills.length > 0 && amount > 0 && activeTab === "bill_payment") {
+      autoAllocatePayment(amount);
+    }
+  }, [billsData]);
+
   const vendors = vendorsData?.data || [];
-  const vendorBills = (billsData?.data || []).filter(
-    (b) => b.status !== "PAID" && b.amountDue > 0,
-  );
+
+  // Filter and fix bills - use amountDue if available, otherwise use total
+  const vendorBills = (billsData?.data || []).filter((b) => {
+    const balance = b.amountDue !== undefined && b.amountDue > 0 ? b.amountDue : b.total;
+    const isUnpaid = b.status !== "PAID" && balance > 0;
+    console.log(`Bill ${b.billNumber}: amountDue=${b.amountDue}, total=${b.total}, status=${b.status}, isUnpaid=${isUnpaid}`);
+    return isUnpaid;
+  }).map((b) => ({
+    ...b,
+    // Ensure amountDue is set properly
+    amountDue: b.amountDue !== undefined && b.amountDue > 0 ? b.amountDue : b.total
+  }));
+
+  // Auto-allocation function for payment amount
+  const autoAllocatePayment = (totalAmount: number) => {
+    if (vendorBills.length === 0) return;
+
+    if (totalAmount <= 0) {
+      setSelectedBills({});
+      return;
+    }
+
+    // Sort bills by date (oldest first)
+    const sortedBills = [...vendorBills].sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    let remainingAmount = totalAmount;
+    const newSelectedBills: { [key: string]: { payment: number; paymentMadeOn: string } } = {};
+
+    for (const bill of sortedBills) {
+      if (remainingAmount <= 0) break;
+
+      const billBalance = bill.amountDue > 0 ? bill.amountDue : bill.total;
+      if (billBalance > 0) {
+        const paymentAmount = Math.min(remainingAmount, billBalance);
+        newSelectedBills[bill.id] = {
+          payment: paymentAmount,
+          paymentMadeOn: new Date().toISOString().split("T")[0]
+        };
+        remainingAmount -= paymentAmount;
+        console.log(`Allocated ${paymentAmount} to bill ${bill.billNumber}, remaining: ${remainingAmount}`);
+      }
+    }
+
+    setSelectedBills(newSelectedBills);
+  };
+
+  // Handle payment amount change with auto-allocation
+  const handlePaymentAmountChange = (amount: string) => {
+    setFormData((prev) => ({ ...prev, paymentAmount: amount }));
+    const numAmount = parseFloat(amount) || 0;
+    if (numAmount > 0 && activeTab === "bill_payment") {
+      autoAllocatePayment(numAmount);
+    }
+  };
 
   const handleVendorChange = (vendorId: string) => {
     const vendor = vendors.find((v) => v.id === vendorId);
@@ -193,6 +254,11 @@ export default function PaymentsMadeCreate() {
         destinationOfSupply: vendor.sourceOfSupply || "",
       }));
       setSelectedBills({});
+      // Re-apply auto-allocation if payment amount exists
+      const amount = parseFloat(formData.paymentAmount) || 0;
+      if (amount > 0) {
+        setTimeout(() => autoAllocatePayment(amount), 100);
+      }
     }
   };
 
@@ -387,15 +453,14 @@ export default function PaymentsMadeCreate() {
                     step="0.01"
                     className="rounded-l-none"
                     value={formData.paymentAmount}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        paymentAmount: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => handlePaymentAmountChange(e.target.value)}
+                    placeholder="Enter amount to auto-allocate to bills"
                     data-testid="input-payment-amount"
                   />
                 </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Enter amount to automatically allocate across unpaid bills (oldest first)
+                </p>
               </div>
             </div>
 
@@ -827,6 +892,7 @@ export default function PaymentsMadeCreate() {
                         paymentAmount: e.target.value,
                       }))
                     }
+                    placeholder="Enter advance amount"
                     data-testid="input-payment-amount-advance"
                   />
                 </div>
