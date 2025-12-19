@@ -319,33 +319,29 @@
     - Vendor Name dropdown with searchable Popover/Command and blue search button (data-testid="button-add-vendor")
     - Delivery Address section with Organization/Customer radio toggle
     - Order# with auto-increment system, Reference# field, Expected Delivery Date picker
-    - Item table with horizontal scroll showing: ITEM DETAILS, ACCOUNT, QUANTITY, RATE, DISCOUNT (%), AMOUNT
-    - Blue "Add New Row" button for adding items (+ icon)
-    - Sub Total, Discount, Adjustment (+/-), Grand Total calculations
-    - Customer Notes section with blue link "+ Add more details"
-    - Terms & Conditions section with blue link "+ Add more details"
-    - Attachments section with "(Max size 10MB each, up to 10 files)" limit
-    - Save as Draft and Save as Open buttons at bottom
-    - All styling matched to reference image colors and spacing
+    - Items table with horizontal scroll and proper column widths
+    - Customer Details section with shipping address display
+    - Terms and Conditions with "Add Terms And Conditions" link
+    - Action buttons: Save as Draft, Save as Issued, Cancel
+    - All fields properly connected to form state
 [x] 86. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
-[x] 87. Updated Purchase Order UI to match screenshot (Dec 18, 2025):
-    - Reorganized form layout: Date and Delivery Date now on same row
-    - Moved Payment Terms to separate row below
-    - Added TDS/TCS radio buttons section before Reverse Charge checkbox
-    - Updated both purchase-order-create.tsx and purchase-order-edit.tsx
-    - Applied changes to both "New Purchase Order" and "Edit Purchase Order" pages
-    - Workflow restarted and verified running
-[x] 88. Enhanced Purchase Order Form UI to match refined screenshot (Dec 18, 2025):
-    - Changed form layout from 2-column to 3-column grid for better spacing
-    - Updated all form fields with proper spacing using space-y-2
-    - Added font-medium text-sm to labels for consistent styling
-    - Updated inputs with text-sm for visual consistency
-    - Grouped TDS/TCS and Reverse Charge sections in container with bg-slate-50 border
-    - Applied UI improvements to both purchase-order-create.tsx and purchase-order-edit.tsx
-    - Workflow restarted and verified running
-[x] 89. Removed space between sidebar and Purchase Order panel (Dec 18, 2025):
-    - Changed panel positioning from "fixed inset-y-0 right-0 w-full max-w-4xl" to "fixed inset-y-0 left-0 right-0"
-    - Added marginLeft style calculation to position panel right after sidebar
-    - Applied to both purchase-order-create.tsx and purchase-order-edit.tsx
-    - Panel now extends seamlessly from sidebar to right edge with no gap
-    - Workflow restarted and verified running
+[x] 87. Fixed Credit Note Create page - Customer autocomplete now triggers correctly (Dec 18, 2025):
+    - Added complete Customer interface with all required fields
+    - Added customers and customersLoading state variables
+    - Added useEffect to fetch customers from /api/customers on component mount
+    - Implemented handleCustomerSelect function to populate form fields:
+      * Sets customerName, billingAddress, and all item customerName fields
+      * Properly handles customer object selection from dropdown
+    - Updated Popover trigger to show selected customer name or placeholder
+    - CommandEmpty shows "No customers found" when search returns empty
+    - Loading state shows "Loading customers..." while fetching
+    - Customer list populated from API data instead of empty array
+[x] 88. Fixed Vendor Credits Create page - vendor_id foreign key constraint error (Dec 18, 2025):
+    - Root cause: Sending `vendorId` field but backend expects `vendor_id` for database FK
+    - Updated frontend vendor-credit-create.tsx: Changed `vendorId` to `vendor_id` in request body
+    - Updated backend POST /api/vendor-credits: Added fallback to accept both `vendor_id` and `vendorId`
+    - Updated backend GET /api/vendor-credits: Added proper join with vendors table to fetch vendor names
+    - Vendor credits now save correctly with proper vendor association
+    - Vendor name now displays in list view instead of just vendor_id
+[x] 89. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
+[x] 90. Session restart - reinstalled cross-env and verified application running (Dec 19, 2025)
