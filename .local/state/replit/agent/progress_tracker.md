@@ -356,3 +356,9 @@
     - Dropdown options now clearly show item prices for easy identification
     - Removed debug console logs for cleaner execution
     - All item data is properly populated when selecting from dropdown
+[x] 92. Fixed Invoice Item Details dropdown batched state updates (Dec 19, 2025):
+    - Changed from multiple rapid updateItem calls to single batched setItems call
+    - All item updates (productId, name, description, rate, gstRate) now happen in one state change
+    - This ensures React properly re-renders with all changes applied at once
+    - Prevents issues from state batching in React 18+
+    - Item selection now properly displays name, rate, and other details in the table row

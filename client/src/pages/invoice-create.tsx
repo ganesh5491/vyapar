@@ -1028,12 +1028,20 @@ export default function InvoiceCreate() {
                                           selectedProduct.intraStateTax?.includes('5') ? 5 :
                                             selectedProduct.intraStateTax?.includes('28') ? 28 : 0;
 
-                                      // Update all item details including description
-                                      updateItem(item.id, "productId", selectedProduct.id);
-                                      updateItem(item.id, "name", selectedProduct.name);
-                                      updateItem(item.id, "description", selectedProduct.description || '');
-                                      updateItem(item.id, "rate", rateNum);
-                                      updateItem(item.id, "gstRate", gstRate);
+                                      // Batch all updates into a single state change for better performance
+                                      setItems(prevItems => prevItems.map(prevItem => {
+                                        if (prevItem.id === item.id) {
+                                          return {
+                                            ...prevItem,
+                                            productId: selectedProduct.id,
+                                            name: selectedProduct.name,
+                                            description: selectedProduct.description || '',
+                                            rate: rateNum,
+                                            gstRate: gstRate
+                                          };
+                                        }
+                                        return prevItem;
+                                      }));
                                     }
                                   }}
                                 >
