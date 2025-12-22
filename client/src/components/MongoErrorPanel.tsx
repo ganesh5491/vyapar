@@ -13,12 +13,12 @@ export default function MongoErrorPanel() {
           connect ECONNREFUSED 127.0.0.1:27017
         </p>
         <div className="space-y-1">
-           <label className="text-xs text-slate-500">Connection String</label>
-           <Input 
-             value="mongodb://127.0.0.1:27017/baniya_db" 
-             readOnly 
-             className="font-mono text-xs bg-white border-slate-300 h-8"
-           />
+          <label className="text-xs text-slate-500">Connection String</label>
+          <Input
+            value="mongodb://127.0.0.1:27017/Billing_db"
+            readOnly
+            className="font-mono text-xs bg-white border-slate-300 h-8"
+          />
         </div>
       </div>
     </div>

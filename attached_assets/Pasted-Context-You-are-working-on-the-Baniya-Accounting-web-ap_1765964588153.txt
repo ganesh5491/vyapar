@@ -1,6 +1,6 @@
 Context
 
-You are working on the Baniya Accounting web application (Zoho Books–like UI). Several critical UX and functionality bugs exist inside the Purchases module. These are not cosmetic issues — they break core accounting workflows and must be fixed properly, not patched.
+You are working on the Billing Accounting web application (Zoho Books–like UI). Several critical UX and functionality bugs exist inside the Purchases module. These are not cosmetic issues — they break core accounting workflows and must be fixed properly, not patched.
 
 Use the attached screenshots as exact UI and behavior references (Img 2, Img 3, Img 4, Img 5).
 Do not change routes, ports, or business logic, only fix broken navigation, layout, and visibility issues.

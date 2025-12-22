@@ -30,16 +30,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  const NavItem = ({ 
-    href, 
-    icon: Icon, 
-    label, 
+  const NavItem = ({
+    href,
+    icon: Icon,
+    label,
     active,
-    indent = false 
-  }: { 
-    href: string; 
-    icon?: any; 
-    label: string; 
+    indent = false
+  }: {
+    href: string;
+    icon?: any;
+    label: string;
     active?: boolean;
     indent?: boolean;
   }) => {
@@ -58,7 +58,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         >
           {Icon && (
             <Icon className={cn(
-              "h-4 w-4", 
+              "h-4 w-4",
               isActive ? "text-indigo-600" : "text-slate-400"
             )} />
           )}
@@ -68,19 +68,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const CollapsibleNavItem = ({ 
+  const CollapsibleNavItem = ({
     id,
-    icon: Icon, 
+    icon: Icon,
     label,
-    children 
-  }: { 
+    children
+  }: {
     id: string;
-    icon: any; 
+    icon: any;
     label: string;
     children: React.ReactNode;
   }) => {
     const isOpen = openMenu === id;
-    
+
     return (
       <Collapsible open={isOpen} onOpenChange={(open) => setOpenMenu(open ? id : null)}>
         <CollapsibleTrigger asChild>
@@ -88,8 +88,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             variant="ghost"
             className={cn(
               "w-full justify-start gap-3 font-medium transition-all duration-200 px-4 h-10",
-              isOpen 
-                ? "bg-indigo-50 text-indigo-700" 
+              isOpen
+                ? "bg-indigo-50 text-indigo-700"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
             )}
           >
@@ -115,7 +115,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <span className="font-display font-bold text-white text-xl">B</span>
         </div>
         <div>
-          <h1 className="font-display font-bold text-lg leading-tight tracking-tight text-slate-900">Baniya</h1>
+          <h1 className="font-display font-bold text-lg leading-tight tracking-tight text-slate-900">Billing</h1>
           <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Accounting</p>
         </div>
       </div>
@@ -123,11 +123,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <ScrollArea className="flex-1 py-3">
         <div className="px-2 space-y-0.5">
           <NavItem href="/" icon={Home} label="Home" />
-          
+
           <CollapsibleNavItem id="items" icon={Package} label="Items">
             <NavItem href="/items" label="Items" indent />
           </CollapsibleNavItem>
-          
+
           <CollapsibleNavItem id="sales" icon={ShoppingCart} label="Sales">
             <NavItem href="/customers" label="Customers" indent />
             <NavItem href="/estimates" label="Quotes" indent />
@@ -138,7 +138,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <NavItem href="/credit-notes" label="Credit Notes" indent />
             <NavItem href="/eway-bills" label="e-Way Bills" indent />
           </CollapsibleNavItem>
-          
+
           <CollapsibleNavItem id="purchases" icon={ShoppingBag} label="Purchases">
             <NavItem href="/vendors" label="Vendors" indent />
             <NavItem href="/expenses" label="Expenses" indent />
@@ -147,24 +147,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <NavItem href="/payments-made" label="Payments Made" indent />
             <NavItem href="/vendor-credits" label="Vendor Credits" indent />
           </CollapsibleNavItem>
-          
+
           <NavItem href="/time-tracking" icon={Clock} label="Time Tracking (TBD)" />
-          
+
           <NavItem href="/banking" icon={Building2} label="Banking (TBD)" />
-          
+
           <CollapsibleNavItem id="filing" icon={FileCheck} label="Filing & Compliance (TBD)">
             <NavItem href="/filing-compliance" label="GST Filing" indent />
           </CollapsibleNavItem>
-          
+
           <CollapsibleNavItem id="accountant" icon={UserCog} label="Accountant (TBD)">
             <NavItem href="/manual-journals" label="Manual Journals" indent />
             <NavItem href="/bulk-update" label="Bulk Update" indent />
             <NavItem href="/chart-of-accounts" label="Chart of Accounts" indent />
             <NavItem href="/transaction-locking" label="Transaction Locking" indent />
           </CollapsibleNavItem>
-          
+
           <NavItem href="/reports" icon={BarChart3} label="Reports" />
-          
+
           <NavItem href="/documents" icon={FolderOpen} label="Documents (TBD)" />
         </div>
       </ScrollArea>
@@ -178,7 +178,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-900 truncate">Admin User</p>
-              <p className="text-xs text-slate-500 truncate">admin@baniya.com</p>
+              <p className="text-xs text-slate-500 truncate">admin@Billing.com</p>
             </div>
             <SettingsIcon className="h-4 w-4 text-slate-400" />
           </div>

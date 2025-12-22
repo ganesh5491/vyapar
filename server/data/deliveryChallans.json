@@ -112,7 +112,100 @@
           "user": "Admin User"
         }
       ]
+    },
+    {
+      "id": "1766379554480",
+      "challanNumber": "DC-00002",
+      "referenceNumber": "",
+      "date": "2025-12-22",
+      "customerId": "8",
+      "customerName": "CYBAEM TECH PRIVATE LIMITED ",
+      "challanType": "supply_on_approval",
+      "billingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "Hinjewadi",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "placeOfSupply": "",
+      "gstin": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 10.799999999999999,
+          "taxName": "GST18",
+          "amount": 70.8
+        },
+        {
+          "id": "0.31308794175036103",
+          "itemId": "0.31308794175036103",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 10.799999999999999,
+          "taxName": "GST18",
+          "amount": 70.8
+        }
+      ],
+      "subTotal": 120,
+      "cgst": 10.799999999999999,
+      "sgst": 10.799999999999999,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 141.6,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "OPEN",
+      "invoiceStatus": "INVOICED",
+      "invoiceId": "1766379779207",
+      "createdAt": "2025-12-22T04:59:14.480Z",
+      "updatedAt": "2025-12-22T05:02:59.207Z",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-22T04:59:14.480Z",
+          "action": "created",
+          "description": "Delivery challan DC-00002 created",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-22T05:02:56.303Z",
+          "action": "status_changed",
+          "description": "Status changed to OPEN",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-22T05:02:59.207Z",
+          "action": "converted",
+          "description": "Converted to invoice INV-00028",
+          "user": "Admin User"
+        }
+      ]
     }
   ],
-  "nextChallanNumber": 2
+  "nextChallanNumber": 3
 }

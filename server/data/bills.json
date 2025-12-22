@@ -1,6 +1,259 @@
 {
   "bills": [
     {
+      "id": "1766381072824",
+      "billNumber": "10",
+      "orderNumber": "PO-2025-0008",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "vendorAddress": {},
+      "billDate": "2025-12-22",
+      "dueDate": "2025-12-22",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0008",
+      "items": [
+        {
+          "id": "item-1766381045444-0",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Cost of Goods Sold",
+          "quantity": 13,
+          "rate": 50,
+          "tax": "IGST18",
+          "taxAmount": 117,
+          "customerDetails": "none",
+          "amount": 650
+        },
+        {
+          "id": "item-1766381045444-1",
+          "itemName": "Rice (Copy)",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Cost of Goods Sold",
+          "quantity": 31,
+          "rate": 50,
+          "tax": "CGST9",
+          "taxAmount": 139.5,
+          "customerDetails": "none",
+          "amount": 1550
+        }
+      ],
+      "subTotal": 2200,
+      "discountType": "percent",
+      "discountValue": 10,
+      "discountAmount": 220,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 256.5,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 2236.5,
+      "amountPaid": 2236.5,
+      "balanceDue": 0,
+      "notes": "",
+      "attachments": [],
+      "status": "PAID",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-22T05:24:32.824Z",
+      "updatedAt": "2025-12-22T06:44:09.899Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-22T05:24:32.824Z",
+          "action": "created",
+          "description": "Bill created for ₹2,236.5",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-22T05:24:50.896Z",
+          "action": "payment",
+          "description": "Payment of ₹236.5 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-22T05:25:53.274Z",
+          "action": "payment",
+          "description": "Payment of ₹111 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-22T06:44:09.899Z",
+          "action": "payment",
+          "description": "Payment of ₹1,889 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1766374500345",
+      "billNumber": "7",
+      "orderNumber": "PO-2025-0004",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "vendorAddress": {},
+      "billDate": "2025-12-22",
+      "dueDate": "2025-12-22",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0004",
+      "items": [
+        {
+          "id": "item-1766374489435-0",
+          "itemName": "Rice (Copy)",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Cost of Goods Sold",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "gst_18",
+          "taxAmount": 9,
+          "customerDetails": "none",
+          "amount": 50
+        },
+        {
+          "id": "item-1766374489435-1",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Cost of Goods Sold",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "gst_18",
+          "taxAmount": 9,
+          "customerDetails": "none",
+          "amount": 50
+        }
+      ],
+      "subTotal": 100,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 18,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 118,
+      "amountPaid": 118,
+      "balanceDue": 0,
+      "notes": "",
+      "attachments": [],
+      "status": "PAID",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-22T03:35:00.345Z",
+      "updatedAt": "2025-12-22T03:56:14.939Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-22T03:35:00.345Z",
+          "action": "created",
+          "description": "Bill created for ₹118",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-22T03:56:14.939Z",
+          "action": "payment",
+          "description": "Payment of ₹118 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1766373805363",
+      "billNumber": "6",
+      "orderNumber": "PO-2025-0005",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "vendorAddress": {},
+      "billDate": "2025-12-22",
+      "dueDate": "2025-12-22",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0005",
+      "items": [
+        {
+          "id": "item-1766373797071-0",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Inventory Asset",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "gst18",
+          "taxAmount": 9,
+          "customerDetails": "none",
+          "amount": 50
+        },
+        {
+          "id": "item-1766373797071-1",
+          "itemName": "Rice (Copy)",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Inventory Asset",
+          "quantity": 21,
+          "rate": 50,
+          "tax": "gst_18",
+          "taxAmount": 189,
+          "customerDetails": "none",
+          "amount": 1050
+        }
+      ],
+      "subTotal": 1100,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 198,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 1298,
+      "amountPaid": 898,
+      "balanceDue": 400,
+      "notes": "",
+      "attachments": [],
+      "status": "PARTIALLY_PAID",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-22T03:23:25.363Z",
+      "updatedAt": "2025-12-22T04:20:24.592Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-22T03:23:25.363Z",
+          "action": "created",
+          "description": "Bill created for ₹1,298",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-22T03:46:32.327Z",
+          "action": "payment",
+          "description": "Payment of ₹298 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-22T04:04:30.355Z",
+          "action": "payment",
+          "description": "Payment of ₹500 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-22T04:20:24.592Z",
+          "action": "payment",
+          "description": "Payment of ₹100 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766137256492",
       "billNumber": "5",
       "orderNumber": "PO-2025-0004",
@@ -48,15 +301,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 539.901,
-      "amountPaid": 0,
-      "balanceDue": 539.901,
+      "amountPaid": 539.901,
+      "balanceDue": 0,
       "notes": "",
       "attachments": [],
-      "status": "OPEN",
+      "status": "PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-19T09:40:56.492Z",
-      "updatedAt": "2025-12-19T09:40:56.492Z",
+      "updatedAt": "2025-12-22T03:33:46.842Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -64,6 +317,20 @@
           "timestamp": "2025-12-19T09:40:56.492Z",
           "action": "created",
           "description": "Bill created for ₹539.901",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-22T03:06:52.815Z",
+          "action": "payment",
+          "description": "Payment of ₹439.901 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-22T03:33:46.842Z",
+          "action": "payment",
+          "description": "Payment of ₹100 recorded",
           "user": "Admin User"
         }
       ]
@@ -133,7 +400,7 @@
       ]
     }
   ],
-  "nextBillNumber": 6,
+  "nextBillNumber": 11,
   "accounts": [
     {
       "id": "1",

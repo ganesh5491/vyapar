@@ -1,6 +1,37 @@
 {
   "expenses": [
     {
+      "id": "8",
+      "expenseNumber": "EXP-00008",
+      "date": "2025-12-22",
+      "expenseAccount": "Cost Of Goods Sold",
+      "amount": 5000,
+      "currency": "INR",
+      "paidThrough": "Petty Cash",
+      "expenseType": "services",
+      "sac": "",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "Andhra Pradesh",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "reverseCharge": false,
+      "tax": "gst_18",
+      "taxAmount": 0,
+      "amountIs": "tax_exclusive",
+      "invoiceNumber": "12121",
+      "notes": "",
+      "customerId": "11",
+      "customerName": "Prajwal Traders",
+      "reportingTags": [],
+      "isBillable": false,
+      "status": "recorded",
+      "attachments": [],
+      "createdAt": "2025-12-22T05:16:52.983Z",
+      "updatedAt": "2025-12-22T05:16:52.983Z",
+      "createdTime": "2025-12-22T05:16:52.983Z"
+    },
+    {
       "id": "7",
       "expenseNumber": "EXP-00007",
       "date": "2025-12-19",
@@ -86,6 +117,6 @@
     "defaultUnit": "km",
     "mileageRates": []
   },
-  "nextExpenseId": 8,
+  "nextExpenseId": 9,
   "nextMileageId": 3
 }

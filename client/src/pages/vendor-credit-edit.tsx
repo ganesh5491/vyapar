@@ -3,6 +3,7 @@ import { useLocation, useParams } from "wouter";
 import { ArrowLeft, RefreshCw, Upload, Plus, Trash2, Search, FileText, Info, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AccountSelectDropdown } from "@/components/AccountSelectDropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,12 +25,7 @@ const TDS_TCS_OPTIONS = [
   { value: "contractor_2", label: "Payment to Contractor [2%]" },
 ];
 
-const ACCOUNT_OPTIONS = [
-  { value: "cost_of_goods_sold", label: "Cost of Goods Sold" },
-  { value: "inventory", label: "Inventory" },
-  { value: "purchase_returns", label: "Purchase Returns" },
-  { value: "other_expense", label: "Other Expense" },
-];
+// Account dropdown is now handled by AccountSelectDropdown component
 
 const TAX_OPTIONS = [
   { value: "gst_5", label: "GST [5%]" },
@@ -299,7 +295,7 @@ export default function VendorCreditEdit() {
     const discount = calculateDiscount();
     const tdsTcs = calculateTdsTcs();
     const adjustment = parseFloat(formData.adjustment) || 0;
-    
+
     if (formData.taxType === 'tds') {
       return subTotal + taxAmount - discount - tdsTcs + adjustment;
     }
@@ -365,9 +361,9 @@ export default function VendorCreditEdit() {
       <div className="border-b border-slate-200 bg-white px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setLocation("/vendor-credits")}
               data-testid="button-back"
             >
@@ -380,8 +376,8 @@ export default function VendorCreditEdit() {
             <Button variant="outline" onClick={() => setLocation("/vendor-credits")}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={saving}
               className="bg-blue-600 hover:bg-blue-700"
               data-testid="button-save"
@@ -407,8 +403,8 @@ export default function VendorCreditEdit() {
           <div className="md:col-span-2">
             <Label className="text-red-500">Vendor Name*</Label>
             <div className="flex gap-2">
-              <Select 
-                value={formData.vendorId} 
+              <Select
+                value={formData.vendorId}
                 onValueChange={handleVendorChange}
               >
                 <SelectTrigger className="flex-1" data-testid="select-vendor">
@@ -438,7 +434,7 @@ export default function VendorCreditEdit() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <Label className="text-red-500">Credit Note#*</Label>
-            <Input 
+            <Input
               value={formData.creditNoteNumber}
               onChange={(e) => setFormData(prev => ({ ...prev, creditNoteNumber: e.target.value }))}
               data-testid="input-credit-note-number"
@@ -447,7 +443,7 @@ export default function VendorCreditEdit() {
 
           <div>
             <Label>Reference Number</Label>
-            <Input 
+            <Input
               value={formData.referenceNumber}
               onChange={(e) => setFormData(prev => ({ ...prev, referenceNumber: e.target.value }))}
               data-testid="input-reference-number"
@@ -456,7 +452,7 @@ export default function VendorCreditEdit() {
 
           <div>
             <Label>Order Number</Label>
-            <Input 
+            <Input
               value={formData.orderNumber}
               onChange={(e) => setFormData(prev => ({ ...prev, orderNumber: e.target.value }))}
               data-testid="input-order-number"
@@ -465,7 +461,7 @@ export default function VendorCreditEdit() {
 
           <div>
             <Label>Vendor Credit Date</Label>
-            <Input 
+            <Input
               type="date"
               value={formData.vendorCreditDate}
               onChange={(e) => setFormData(prev => ({ ...prev, vendorCreditDate: e.target.value }))}
@@ -476,7 +472,7 @@ export default function VendorCreditEdit() {
 
         <div>
           <Label>Subject</Label>
-          <Input 
+          <Input
             placeholder="Enter a subject within 250 characters"
             maxLength={250}
             value={formData.subject}
@@ -486,7 +482,7 @@ export default function VendorCreditEdit() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Checkbox 
+          <Checkbox
             checked={formData.reverseCharge}
             onCheckedChange={(checked) => setFormData(prev => ({ ...prev, reverseCharge: !!checked }))}
             data-testid="checkbox-reverse-charge"
@@ -536,8 +532,8 @@ export default function VendorCreditEdit() {
                           <span className="text-slate-400">:</span>
                         </td>
                         <td className="px-4 py-3">
-                          <Select 
-                            value={item.itemId} 
+                          <Select
+                            value={item.itemId}
                             onValueChange={(v) => updateItem(item.id, 'itemId', v)}
                           >
                             <SelectTrigger data-testid={`select-item-${index}`}>
@@ -559,24 +555,15 @@ export default function VendorCreditEdit() {
                           </Select>
                         </td>
                         <td className="px-4 py-3">
-                          <Select 
-                            value={item.account} 
+                          <AccountSelectDropdown
+                            value={item.account}
                             onValueChange={(v) => updateItem(item.id, 'account', v)}
-                          >
-                            <SelectTrigger data-testid={`select-account-${index}`}>
-                              <SelectValue placeholder="Select an account" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ACCOUNT_OPTIONS.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            placeholder="Select an account"
+                            testId={`select-account-${index}`}
+                          />
                         </td>
                         <td className="px-4 py-3">
-                          <Input 
+                          <Input
                             type="number"
                             step="0.01"
                             className="w-20 text-center"
@@ -586,7 +573,7 @@ export default function VendorCreditEdit() {
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <Input 
+                          <Input
                             type="number"
                             step="0.01"
                             className="w-24 text-right"
@@ -596,8 +583,8 @@ export default function VendorCreditEdit() {
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <Select 
-                            value={item.tax} 
+                          <Select
+                            value={item.tax}
                             onValueChange={(v) => updateItem(item.id, 'tax', v)}
                           >
                             <SelectTrigger data-testid={`select-tax-${index}`}>
@@ -617,8 +604,8 @@ export default function VendorCreditEdit() {
                           {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-4 py-3">
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => removeItem(item.id)}
                             data-testid={`button-remove-item-${index}`}
@@ -634,8 +621,8 @@ export default function VendorCreditEdit() {
             </div>
 
             <div className="px-4 py-3 border-t">
-              <Button 
-                variant="link" 
+              <Button
+                variant="link"
                 className="text-blue-600 p-0"
                 onClick={addItem}
                 data-testid="button-add-item"
@@ -650,7 +637,7 @@ export default function VendorCreditEdit() {
         <div className="grid grid-cols-2 gap-6">
           <div>
             <Label>Notes</Label>
-            <Textarea 
+            <Textarea
               placeholder="Notes for internal use"
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
@@ -664,10 +651,10 @@ export default function VendorCreditEdit() {
               <span>Sub Total</span>
               <span className="font-medium">{calculateSubTotal().toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <span className="text-sm">Discount</span>
-              <Select 
+              <Select
                 value={formData.discountType}
                 onValueChange={(v) => setFormData(prev => ({ ...prev, discountType: v as "percentage" | "amount" }))}
               >
@@ -679,7 +666,7 @@ export default function VendorCreditEdit() {
                   <SelectItem value="amount">Amount</SelectItem>
                 </SelectContent>
               </Select>
-              <Input 
+              <Input
                 type="number"
                 className="w-20 text-right"
                 value={formData.discountValue}
@@ -698,7 +685,7 @@ export default function VendorCreditEdit() {
 
             <div className="flex items-center gap-2">
               <span className="text-sm">TDS/TCS</span>
-              <Select 
+              <Select
                 value={formData.taxType}
                 onValueChange={(v) => setFormData(prev => ({ ...prev, taxType: v as "tds" | "tcs" }))}
               >
@@ -710,7 +697,7 @@ export default function VendorCreditEdit() {
                   <SelectItem value="tcs">TCS</SelectItem>
                 </SelectContent>
               </Select>
-              <Select 
+              <Select
                 value={formData.tdsTcs}
                 onValueChange={(v) => setFormData(prev => ({ ...prev, tdsTcs: v }))}
               >
@@ -730,7 +717,7 @@ export default function VendorCreditEdit() {
 
             <div className="flex items-center gap-2">
               <span className="text-sm">Adjustment</span>
-              <Input 
+              <Input
                 type="number"
                 className="w-24 text-right"
                 value={formData.adjustment}

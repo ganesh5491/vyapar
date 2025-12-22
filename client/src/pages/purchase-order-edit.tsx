@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { Plus, X, Search, Upload, ChevronDown, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountSelectDropdown } from "@/components/AccountSelectDropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -120,12 +121,7 @@ const TAX_OPTIONS = [
   { value: "igst28", label: "IGST 28%" }
 ];
 
-const ACCOUNTS = [
-  "Cost of Goods Sold",
-  "Inventory Asset",
-  "Purchase",
-  "Raw Materials"
-];
+// Account dropdown is now handled by AccountSelectDropdown component
 
 const INDIAN_STATES = [
   "AN - Andaman and Nicobar Islands",
@@ -978,19 +974,13 @@ export default function PurchaseOrderEdit() {
                         </Select>
                       </div>
                       <div className="p-2">
-                        <Select
+                        <AccountSelectDropdown
                           value={item.account}
                           onValueChange={(value) => updateLineItem(item.id, 'account', value)}
-                        >
-                          <SelectTrigger className="border-0 shadow-none h-8 text-sm" data-testid={`select-account-${index}`}>
-                            <SelectValue placeholder="Select an account" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ACCOUNTS.map(acc => (
-                              <SelectItem key={acc} value={acc}>{acc}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          placeholder="Select an account"
+                          triggerClassName="border-0 shadow-none h-8 text-sm"
+                          testId={`select-account-${index}`}
+                        />
                       </div>
                       <div className="p-2">
                         <Input
@@ -1212,7 +1202,7 @@ export default function PurchaseOrderEdit() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Label className="font-semibold text-sm">Email Communications</Label>
-                <span 
+                <span
                   className="text-blue-600 text-sm cursor-pointer"
                   onClick={() => {
                     const allEmails = selectedVendor?.email ? [selectedVendor.email] : [];
@@ -1228,8 +1218,8 @@ export default function PurchaseOrderEdit() {
                 </Button>
                 {selectedVendor?.email && (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-md text-sm">
-                    <Checkbox 
-                      id="vendorEmail" 
+                    <Checkbox
+                      id="vendorEmail"
                       checked={formData.emailCommunications.includes(selectedVendor.email)}
                       onCheckedChange={(checked) => {
                         if (checked) {

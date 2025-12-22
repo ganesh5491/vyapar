@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { 
-  Plus, Search, ChevronDown, MoreHorizontal, Pencil, Trash2, 
+import {
+  Plus, Search, ChevronDown, MoreHorizontal, Pencil, Trash2,
   X, Mail, FileText, Printer, Filter, Download,
-  Eye, Check, List, Grid3X3, CreditCard, Copy, Clock, 
+  Eye, Check, List, Grid3X3, CreditCard, Copy, Clock,
   BookOpen, Ban, Upload, RefreshCw, Lightbulb
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -150,7 +150,7 @@ function BillPDFView({ bill }: { bill: Bill }) {
             Paid
           </Badge>
         </div>
-        
+
         <div className="p-8">
           <div className="flex justify-between items-start mb-8">
             <div>
@@ -269,12 +269,11 @@ function BillDetailView({ bill }: { bill: Bill }) {
         <div>
           <h2 className="text-2xl font-bold mb-1">BILL</h2>
           <p className="text-slate-600">Bill# <span className="font-semibold">{bill.billNumber}</span></p>
-          <Badge 
-            className={`mt-2 ${
-              bill.status === 'PAID' ? 'bg-green-500 text-white' : 
-              bill.status === 'OVERDUE' ? 'bg-red-500 text-white' : 
-              'bg-amber-500 text-white'
-            }`}
+          <Badge
+            className={`mt-2 ${bill.status === 'PAID' ? 'bg-green-500 text-white' :
+              bill.status === 'OVERDUE' ? 'bg-red-500 text-white' :
+                'bg-amber-500 text-white'
+              }`}
           >
             {bill.status}
           </Badge>
@@ -398,10 +397,10 @@ function BillDetailView({ bill }: { bill: Bill }) {
   );
 }
 
-function BillDetailPanel({ 
-  bill, 
-  onClose, 
-  onEdit, 
+function BillDetailPanel({
+  bill,
+  onClose,
+  onEdit,
   onDelete,
   onMarkPaid,
   onRecordPayment,
@@ -410,9 +409,9 @@ function BillDetailPanel({
   onCreateVendorCredits,
   onViewJournal,
   onExpectedPaymentDate
-}: { 
-  bill: Bill; 
-  onClose: () => void; 
+}: {
+  bill: Bill;
+  onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onMarkPaid: () => void;
@@ -571,7 +570,7 @@ function RecordPaymentDialog({
       const response = await fetch('/api/payments-made/next-number');
       if (response.ok) {
         const data = await response.json();
-        setPaymentNumber(data.data || "1");
+        setPaymentNumber(data.data?.nextNumber || "1");
       }
     } catch (error) {
       console.error('Failed to fetch next payment number:', error);
@@ -598,7 +597,7 @@ function RecordPaymentDialog({
 
     setIsSubmitting(true);
     try {
-      // Record payment on the bill
+      // Record payment on the bill - this also creates a payment in Payments Made
       const billResponse = await fetch(`/api/bills/${bill.id}/record-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -619,28 +618,6 @@ function RecordPaymentDialog({
       if (!billResponse.ok) {
         throw new Error('Failed to record payment');
       }
-
-      // Also create a payment record in Payments Made
-      await fetch('/api/payments-made', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paymentNumber,
-          vendorId: bill.vendorId,
-          vendorName: bill.vendorName,
-          billId: bill.id,
-          billNumber: bill.billNumber,
-          paymentDate,
-          paymentMadeOn,
-          paymentMode,
-          paidThrough,
-          reference,
-          amount,
-          notes,
-          status,
-          attachments: []
-        })
-      });
 
       toast({ title: status === 'DRAFT' ? "Payment saved as draft" : "Payment recorded successfully" });
       onPaymentRecorded();
@@ -692,7 +669,7 @@ function RecordPaymentDialog({
           </div>
 
           {/* Info Message */}
-      
+
 
           {/* Payment Mode */}
           <div className="space-y-2">
@@ -1095,18 +1072,18 @@ export default function Bills() {
           <div className="flex items-center gap-2">
             {!selectedBill && (
               <>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   className={`h-9 w-9 ${viewMode === 'list' ? 'bg-slate-100' : ''}`}
                   onClick={() => setViewMode('list')}
                   data-testid="button-list-view"
                 >
                   <List className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   className={`h-9 w-9 ${viewMode === 'table' ? 'bg-slate-100' : ''}`}
                   onClick={() => setViewMode('table')}
                   data-testid="button-table-view"
@@ -1115,8 +1092,8 @@ export default function Bills() {
                 </Button>
               </>
             )}
-            <Button 
-              onClick={() => setLocation("/bills/new")} 
+            <Button
+              onClick={() => setLocation("/bills/new")}
               className="bg-blue-600 hover:bg-blue-700 gap-1.5 h-9"
               data-testid="button-new-bill"
             >
@@ -1176,32 +1153,66 @@ export default function Bills() {
                 </Button>
               )}
             </div>
-          ) : viewMode === 'list' && selectedBill ? (
-            <div className="divide-y divide-slate-100">
-              {paginatedItems.map((bill) => (
-                <div
-                  key={bill.id}
-                  onClick={() => handleBillClick(bill)}
-                  className={`p-4 cursor-pointer hover-elevate ${selectedBill?.id === bill.id ? 'bg-blue-50 border-l-2 border-l-blue-600' : ''}`}
-                  data-testid={`row-bill-${bill.id}`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-3">
-                      <Checkbox 
+          ) : selectedBill ? (
+            // When a bill is selected, show only the table view (not the list view with names)
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50">
+                  <TableHead className="w-10"></TableHead>
+                  <TableHead className="text-xs">DATE</TableHead>
+                  <TableHead className="text-xs">BILL#</TableHead>
+                  <TableHead className="text-xs">REFERENCE NUMBER</TableHead>
+                  <TableHead className="text-xs">VENDOR NAME</TableHead>
+                  <TableHead className="text-xs">STATUS</TableHead>
+                  <TableHead className="text-xs">DUE DATE</TableHead>
+                  <TableHead className="text-xs text-right">AMOUNT</TableHead>
+                  <TableHead className="text-xs text-right">BALANCE DUE</TableHead>
+                  <TableHead className="w-10"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedItems.map((bill) => (
+                  <TableRow
+                    key={bill.id}
+                    onClick={() => handleBillClick(bill)}
+                    className={`cursor-pointer hover-elevate ${selectedBill?.id === bill.id ? 'bg-blue-50' : ''}`}
+                    data-testid={`row-bill-${bill.id}`}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
                         checked={selectedBills.includes(bill.id)}
                         onClick={(e) => toggleSelectBill(bill.id, e)}
                       />
-                      <div>
-                        <p className="font-medium text-slate-900 truncate max-w-[180px]">{bill.vendorName}</p>
-                        <p className="text-sm text-slate-500">{bill.billNumber} - {formatDate(bill.billDate)}</p>
-                        {getStatusBadge(bill.status)}
-                      </div>
-                    </div>
-                    <p className="font-semibold text-slate-900">{formatCurrency(bill.total)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </TableCell>
+                    <TableCell className="text-sm">{formatDate(bill.billDate)}</TableCell>
+                    <TableCell className="text-sm text-blue-600 font-medium">{bill.billNumber}</TableCell>
+                    <TableCell className="text-sm">{bill.orderNumber || '-'}</TableCell>
+                    <TableCell className="text-sm">{bill.vendorName}</TableCell>
+                    <TableCell>{getStatusBadge(bill.status)}</TableCell>
+                    <TableCell className="text-sm">{formatDate(bill.dueDate)}</TableCell>
+                    <TableCell className="text-sm text-right font-medium">{formatCurrency(bill.total)}</TableCell>
+                    <TableCell className="text-sm text-right">{formatCurrency(bill.balanceDue)}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setLocation(`/bills/${bill.id}/edit`)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(bill.id)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           ) : (
             <Table>
               <TableHeader>
@@ -1227,7 +1238,7 @@ export default function Bills() {
                     data-testid={`row-bill-${bill.id}`}
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedBills.includes(bill.id)}
                         onClick={(e) => toggleSelectBill(bill.id, e)}
                       />
@@ -1252,8 +1263,8 @@ export default function Bills() {
                             <Pencil className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-red-600" 
+                          <DropdownMenuItem
+                            className="text-red-600"
                             onClick={(e) => { e.stopPropagation(); handleDelete(bill.id); }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" /> Delete

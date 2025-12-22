@@ -5,6 +5,7 @@ import {
   Upload, Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountSelectDropdown } from "@/components/AccountSelectDropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -709,21 +710,13 @@ export default function BillEdit() {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          <Select
+                          <AccountSelectDropdown
                             value={item.account}
                             onValueChange={(value) => updateItem(item.id, 'account', value)}
-                          >
-                            <SelectTrigger className="text-sm" data-testid={`select-account-${item.id}`}>
-                              <SelectValue placeholder="Select an account" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {accounts.map(account => (
-                                <SelectItem key={account.id} value={account.name}>
-                                  {account.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            placeholder="Select an account"
+                            triggerClassName="text-sm"
+                            testId={`select-account-${item.id}`}
+                          />
                         </TableCell>
                         <TableCell>
                           <Input

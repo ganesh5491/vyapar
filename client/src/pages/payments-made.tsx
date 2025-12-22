@@ -81,11 +81,11 @@ interface Vendor {
 // Convert number to words for Indian Rupees
 function numberToWords(num: number): string {
   if (num === 0) return "Zero Only";
-  
+
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
     "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
   const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-  
+
   function convertLessThanOneThousand(n: number): string {
     let result = "";
     if (n >= 100) {
@@ -101,7 +101,7 @@ function numberToWords(num: number): string {
     }
     return result.trim();
   }
-  
+
   const crore = Math.floor(num / 10000000);
   num %= 10000000;
   const lakh = Math.floor(num / 100000);
@@ -110,15 +110,26 @@ function numberToWords(num: number): string {
   num %= 1000;
   const remainder = Math.floor(num);
   const paise = Math.round((num % 1) * 100);
-  
+
   let result = "Indian Rupee ";
   if (crore > 0) result += convertLessThanOneThousand(crore) + " Crore ";
   if (lakh > 0) result += convertLessThanOneThousand(lakh) + " Lakh ";
   if (thousand > 0) result += convertLessThanOneThousand(thousand) + " Thousand ";
   if (remainder > 0) result += convertLessThanOneThousand(remainder);
-  
+
   result += " Only";
   return result.trim();
+}
+
+// Helper to safely get payment number as string (handles corrupted data)
+function getPaymentNumberString(paymentNumber: any): string {
+  if (typeof paymentNumber === 'string') {
+    return paymentNumber;
+  }
+  if (paymentNumber && typeof paymentNumber === 'object' && paymentNumber.nextNumber) {
+    return paymentNumber.nextNumber;
+  }
+  return '';
 }
 
 export default function PaymentsMade() {
@@ -141,7 +152,7 @@ export default function PaymentsMade() {
   const vendors = vendorsData?.data || [];
 
   const filteredPayments = payments.filter(payment =>
-    String(payment.paymentNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getPaymentNumberString(payment.paymentNumber).toLowerCase().includes(searchQuery.toLowerCase()) ||
     String(payment.vendorName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     String(payment.reference || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -203,11 +214,11 @@ export default function PaymentsMade() {
 
   const getBillNumbers = (payment: PaymentMade) => {
     if (!payment.billPayments) return '-';
-    
+
     if (Array.isArray(payment.billPayments)) {
       return payment.billPayments.map(bp => bp.billNumber).join(', ') || '-';
     }
-    
+
     const billNums = Object.values(payment.billPayments).map(bp => bp.billNumber);
     return billNums.length > 0 ? billNums.join(', ') : '-';
   };
@@ -279,7 +290,7 @@ export default function PaymentsMade() {
               </DropdownMenu>
             </div>
             <div className="flex items-center gap-2">
-              <Button 
+              <Button
                 className="gap-2"
                 onClick={() => setLocation('/payments-made/new')}
                 data-testid="button-record-payment"
@@ -295,8 +306,8 @@ export default function PaymentsMade() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search payments..." 
+              <Input
+                placeholder="Search payments..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -322,7 +333,7 @@ export default function PaymentsMade() {
                 <p className="text-muted-foreground mb-4 max-w-sm">
                   Record payments made to vendors to keep track of your accounts payable.
                 </p>
-                <Button 
+                <Button
                   className="gap-2"
                   onClick={() => setLocation('/payments-made/new')}
                   data-testid="button-record-first-payment"
@@ -365,7 +376,7 @@ export default function PaymentsMade() {
                         <Checkbox data-testid={`checkbox-payment-${payment.id}`} />
                       </td>
                       <td className="px-4 py-3 text-sm">{formatDate(payment.paymentDate)}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-primary">{payment.paymentNumber}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-primary">{getPaymentNumberString(payment.paymentNumber)}</td>
                       <td className="px-4 py-3 text-sm">{payment.reference || '-'}</td>
                       <td className="px-4 py-3 text-sm">{payment.vendorName}</td>
                       <td className="px-4 py-3 text-sm">{getBillNumbers(payment)}</td>
@@ -419,7 +430,7 @@ export default function PaymentsMade() {
       {selectedPayment && (
         <div className="w-[600px] border-l bg-white dark:bg-slate-900 flex flex-col h-full overflow-hidden">
           {/* Detail Header - Sidebar with List */}
-          <div className="border-b">
+          {/* <div className="border-b">
             <div className="max-h-[200px] overflow-y-auto">
               {filteredPayments.map((payment) => (
                 <div
@@ -443,11 +454,11 @@ export default function PaymentsMade() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Detail Actions */}
           <div className="flex items-center justify-between p-3 border-b bg-slate-50 dark:bg-slate-800">
-            <div className="font-semibold">{selectedPayment.paymentNumber}</div>
+            <div className="font-semibold">{getPaymentNumberString(selectedPayment.paymentNumber)}</div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="gap-1">
                 <Plus className="h-3 w-3" />
@@ -517,37 +528,37 @@ export default function PaymentsMade() {
               {/* Payment Details */}
               <div className="p-6">
                 <h3 className="text-center text-lg font-bold mb-6">PAYMENTS MADE</h3>
-                
+
                 <div className="flex gap-8">
                   {/* Left Column - Details */}
                   <div className="flex-1 space-y-4">
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="text-muted-foreground">Payment#</div>
-                      <div className="font-medium">{selectedPayment.paymentNumber}</div>
-                      
+                      <div className="font-medium">{getPaymentNumberString(selectedPayment.paymentNumber)}</div>
+
                       <div className="text-muted-foreground">Payment Date</div>
                       <div>{formatDate(selectedPayment.paymentDate)}</div>
-                      
+
                       <div className="text-muted-foreground">Reference Number</div>
                       <div>{selectedPayment.reference || '-'}</div>
-                      
+
                       <div className="text-muted-foreground">Paid To</div>
                       <div className="text-primary font-medium">{selectedPayment.vendorName}</div>
-                      
+
                       <div className="text-muted-foreground">Place Of Supply</div>
                       <div>{selectedPayment.sourceOfSupply || '-'}</div>
-                      
+
                       <div className="text-muted-foreground">Payment Mode</div>
                       <div className="font-medium">{getPaymentModeLabel(selectedPayment.paymentMode)}</div>
-                      
+
                       <div className="text-muted-foreground">Paid Through</div>
                       <div className="font-medium">{getPaidThroughLabel(selectedPayment.paidThrough)}</div>
-                      
+
                       <div className="text-muted-foreground">Amount Paid In Words</div>
                       <div className="text-primary font-medium">{numberToWords(selectedPayment.paymentAmount)}</div>
                     </div>
                   </div>
-                  
+
                   {/* Right Column - Amount Box */}
                   <div className="w-40">
                     <div className="bg-green-500 text-white p-4 rounded-lg text-center">
@@ -628,7 +639,7 @@ export default function PaymentsMade() {
                       </div>
                     </div>
 
-                    <div className="font-semibold mb-2">Vendor Payment - {selectedPayment.paymentNumber}</div>
+                    <div className="font-semibold mb-2">Vendor Payment - {getPaymentNumberString(selectedPayment.paymentNumber)}</div>
                     <table className="w-full text-sm">
                       <thead className="bg-slate-100 dark:bg-slate-700">
                         <tr>

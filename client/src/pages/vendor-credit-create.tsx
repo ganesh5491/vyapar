@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useLocation, useSearch } from "wouter";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, RefreshCw, Upload, Plus, Trash2, Search, FileText, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AccountSelectDropdown, normalizeAccountValue } from "@/components/AccountSelectDropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,12 +26,7 @@ const TDS_TCS_OPTIONS = [
   { value: "contractor_2", label: "Payment to Contractor [2%]" },
 ];
 
-const ACCOUNT_OPTIONS = [
-  { value: "cost_of_goods_sold", label: "Cost of Goods Sold" },
-  { value: "inventory", label: "Inventory" },
-  { value: "purchase_returns", label: "Purchase Returns" },
-  { value: "other_expense", label: "Other Expense" },
-];
+// Account dropdown is now handled by AccountSelectDropdown component
 
 const TAX_OPTIONS = [
   { value: "gst_5", label: "GST [5%]" },
@@ -41,9 +37,29 @@ const TAX_OPTIONS = [
   { value: "igst_12", label: "IGST [12%]" },
   { value: "igst_18", label: "IGST [18%]" },
   { value: "igst_28", label: "IGST [28%]" },
+  { value: "cgst_9", label: "CGST [9%]" },
+  { value: "cgst_14", label: "CGST [14%]" },
+  { value: "sgst_9", label: "SGST [9%]" },
+  { value: "sgst_14", label: "SGST [14%]" },
   { value: "exempt", label: "Exempt" },
   { value: "nil", label: "Nil Rated" },
 ];
+
+// normalizeAccountValue is imported from AccountSelectDropdown component
+
+// Helper function to normalize tax value from bill format (e.g., "IGST18", "CGST9") to select option format (e.g., "igst_18", "cgst_9")
+const normalizeTaxValue = (tax: string): string => {
+  if (!tax) return "";
+  // Extract prefix and percentage: "IGST18" -> ["IGST", "18"], "CGST9" -> ["CGST", "9"]
+  const match = tax.match(/^([A-Za-z]+)(\d+)$/);
+  if (match) {
+    const prefix = match[1].toLowerCase();
+    const percent = match[2];
+    return `${prefix}_${percent}`;
+  }
+  // Already in correct format or unknown
+  return tax.toLowerCase().replace(/\s+/g, '_');
+};
 
 interface Vendor {
   id: string;
@@ -74,11 +90,13 @@ interface LineItem {
 
 export default function VendorCreditCreate() {
   const [, setLocation] = useLocation();
+  const searchString = useSearch();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
-  // Get query params from URL
-  const urlParams = new URLSearchParams(window.location.search);
+  // Get query params from URL using wouter's useSearch for proper reactivity
+  const urlParams = new URLSearchParams(searchString);
   const billId = urlParams.get('billId');
   const vendorIdFromUrl = urlParams.get('vendorId');
 
@@ -130,8 +148,10 @@ export default function VendorCreditCreate() {
 
   // Pre-populate form with bill data when it loads
   useEffect(() => {
-    if (billData?.data && !billDataLoaded) {
+    if (billData?.data && !billDataLoaded && productsData?.data) {
       const bill = billData.data;
+      const productsList = productsData.data;
+
       setFormData(prev => ({
         ...prev,
         vendorId: bill.vendorId || "",
@@ -149,9 +169,9 @@ export default function VendorCreditCreate() {
           const quantity = item.quantity || 1;
           const rate = item.rate || 0;
           const amount = quantity * rate;
-          const tax = item.tax || "";
+          const tax = normalizeTaxValue(item.tax || "");
           let taxAmount = item.taxAmount || 0;
-          
+
           // Calculate tax amount if not provided
           if (!taxAmount && tax) {
             const taxMatch = tax.match(/(\d+)/);
@@ -160,13 +180,19 @@ export default function VendorCreditCreate() {
               taxAmount = (amount * taxPercent) / 100;
             }
           }
-          
+
+          // Find matching product by name to get the correct itemId
+          const itemName = item.itemName || item.name || "";
+          const matchingProduct = productsList.find(
+            (p: any) => p.name.toLowerCase() === itemName.toLowerCase()
+          );
+
           return {
             id: `item-${Date.now()}-${index}`,
-            itemId: item.id || "",
-            itemName: item.itemName || item.name || "",
+            itemId: matchingProduct?.id || "",
+            itemName: itemName,
             description: item.description || "",
-            account: item.account || "cost_of_goods_sold",
+            account: normalizeAccountValue(item.account || ""),
             quantity,
             rate,
             tax,
@@ -179,7 +205,7 @@ export default function VendorCreditCreate() {
 
       setBillDataLoaded(true);
     }
-  }, [billData, billDataLoaded]);
+  }, [billData, billDataLoaded, productsData]);
 
   // Also handle vendor from URL if provided without bill
   useEffect(() => {
@@ -313,7 +339,7 @@ export default function VendorCreditCreate() {
     const discount = calculateDiscount();
     const tdsTcs = calculateTdsTcs();
     const adjustment = parseFloat(formData.adjustment) || 0;
-    
+
     if (formData.taxType === 'tds') {
       return subTotal + itemTaxAmount - discount - tdsTcs + adjustment;
     }
@@ -349,6 +375,8 @@ export default function VendorCreditCreate() {
       });
 
       if (response.ok) {
+        // Invalidate the vendor credits query to ensure fresh data on list page
+        queryClient.invalidateQueries({ queryKey: ['/api/vendor-credits'] });
         toast({ title: `Vendor credit ${status === 'DRAFT' ? 'saved as draft' : 'created'} successfully` });
         setLocation('/vendor-credits');
       } else {
@@ -366,9 +394,9 @@ export default function VendorCreditCreate() {
     <div className="min-h-screen bg-slate-50">
       <div className="border-b border-slate-200 bg-white px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setLocation("/vendor-credits")}
             data-testid="button-back"
           >
@@ -385,7 +413,7 @@ export default function VendorCreditCreate() {
             <Info className="h-5 w-5 text-blue-600 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm text-blue-800">
-                Creating vendor credit from <span className="font-semibold">Bill #{formData.billNumber}</span>. 
+                Creating vendor credit from <span className="font-semibold">Bill #{formData.billNumber}</span>.
                 The vendor and items have been pre-populated from the bill.
               </p>
             </div>
@@ -408,8 +436,8 @@ export default function VendorCreditCreate() {
           <div className="md:col-span-2">
             <Label className="text-red-500">Vendor Name*</Label>
             <div className="flex gap-2">
-              <Select 
-                value={formData.vendorId} 
+              <Select
+                value={formData.vendorId}
                 onValueChange={handleVendorChange}
               >
                 <SelectTrigger className="flex-1" data-testid="select-vendor">
@@ -440,7 +468,7 @@ export default function VendorCreditCreate() {
           <div>
             <Label className="text-red-500">Credit Note#*</Label>
             <div className="relative">
-              <Input 
+              <Input
                 value={formData.creditNoteNumber}
                 onChange={(e) => setFormData(prev => ({ ...prev, creditNoteNumber: e.target.value }))}
                 data-testid="input-credit-note-number"
@@ -451,7 +479,7 @@ export default function VendorCreditCreate() {
 
           <div>
             <Label>Order Number</Label>
-            <Input 
+            <Input
               value={formData.orderNumber}
               onChange={(e) => setFormData(prev => ({ ...prev, orderNumber: e.target.value }))}
               data-testid="input-order-number"
@@ -460,7 +488,7 @@ export default function VendorCreditCreate() {
 
           <div>
             <Label>Vendor Credit Date</Label>
-            <Input 
+            <Input
               type="date"
               value={formData.vendorCreditDate}
               onChange={(e) => setFormData(prev => ({ ...prev, vendorCreditDate: e.target.value }))}
@@ -471,7 +499,7 @@ export default function VendorCreditCreate() {
 
         <div>
           <Label>Subject</Label>
-          <Input 
+          <Input
             placeholder="Enter a subject within 250 characters"
             maxLength={250}
             value={formData.subject}
@@ -481,7 +509,7 @@ export default function VendorCreditCreate() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Checkbox 
+          <Checkbox
             checked={formData.reverseCharge}
             onCheckedChange={(checked) => setFormData(prev => ({ ...prev, reverseCharge: !!checked }))}
             data-testid="checkbox-reverse-charge"
@@ -532,8 +560,8 @@ export default function VendorCreditCreate() {
                           <span className="text-slate-400">⋮⋮</span>
                         </td>
                         <td className="px-4 py-3">
-                          <Select 
-                            value={item.itemId} 
+                          <Select
+                            value={item.itemId}
                             onValueChange={(v) => updateItem(item.id, 'itemId', v)}
                           >
                             <SelectTrigger data-testid={`select-item-${index}`}>
@@ -555,24 +583,15 @@ export default function VendorCreditCreate() {
                           </Select>
                         </td>
                         <td className="px-4 py-3">
-                          <Select 
-                            value={item.account} 
+                          <AccountSelectDropdown
+                            value={item.account}
                             onValueChange={(v) => updateItem(item.id, 'account', v)}
-                          >
-                            <SelectTrigger data-testid={`select-account-${index}`}>
-                              <SelectValue placeholder="Select an account" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ACCOUNT_OPTIONS.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            placeholder="Select an account"
+                            testId={`select-account-${index}`}
+                          />
                         </td>
                         <td className="px-4 py-3">
-                          <Input 
+                          <Input
                             type="number"
                             step="0.01"
                             className="w-20 text-center"
@@ -582,7 +601,7 @@ export default function VendorCreditCreate() {
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <Input 
+                          <Input
                             type="number"
                             step="0.01"
                             className="w-24 text-right"
@@ -592,8 +611,8 @@ export default function VendorCreditCreate() {
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <Select 
-                            value={item.tax} 
+                          <Select
+                            value={item.tax}
                             onValueChange={(v) => updateItem(item.id, 'tax', v)}
                           >
                             <SelectTrigger data-testid={`select-tax-${index}`}>
@@ -612,8 +631,8 @@ export default function VendorCreditCreate() {
                           {item.amount.toFixed(2)}
                         </td>
                         <td className="px-4 py-3">
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => removeItem(item.id)}
                             className="text-red-500 h-8 w-8"
@@ -631,8 +650,8 @@ export default function VendorCreditCreate() {
           </div>
 
           <div className="flex gap-4 mt-4">
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               className="text-blue-600 gap-1"
               onClick={addItem}
               data-testid="button-add-row"
@@ -656,7 +675,7 @@ export default function VendorCreditCreate() {
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-slate-600 flex-shrink-0">Discount</span>
-              <Input 
+              <Input
                 type="number"
                 step="0.01"
                 className="w-20 h-8"
@@ -664,8 +683,8 @@ export default function VendorCreditCreate() {
                 onChange={(e) => setFormData(prev => ({ ...prev, discountValue: e.target.value }))}
                 data-testid="input-discount"
               />
-              <Select 
-                value={formData.discountType} 
+              <Select
+                value={formData.discountType}
                 onValueChange={(v: "percentage" | "amount") => setFormData(prev => ({ ...prev, discountType: v }))}
               >
                 <SelectTrigger className="w-16 h-8">
@@ -682,26 +701,26 @@ export default function VendorCreditCreate() {
             <div className="flex items-center gap-2">
               <div className="flex gap-2">
                 <label className="flex items-center gap-1 text-sm">
-                  <input 
-                    type="radio" 
-                    name="taxType" 
+                  <input
+                    type="radio"
+                    name="taxType"
                     checked={formData.taxType === 'tds'}
                     onChange={() => setFormData(prev => ({ ...prev, taxType: 'tds' }))}
                   />
                   TDS
                 </label>
                 <label className="flex items-center gap-1 text-sm">
-                  <input 
-                    type="radio" 
-                    name="taxType" 
+                  <input
+                    type="radio"
+                    name="taxType"
                     checked={formData.taxType === 'tcs'}
                     onChange={() => setFormData(prev => ({ ...prev, taxType: 'tcs' }))}
                   />
                   TCS
                 </label>
               </div>
-              <Select 
-                value={formData.tdsTcs} 
+              <Select
+                value={formData.tdsTcs}
                 onValueChange={(v) => setFormData(prev => ({ ...prev, tdsTcs: v }))}
               >
                 <SelectTrigger className="flex-1 h-8" data-testid="select-tds-tcs">
@@ -722,7 +741,7 @@ export default function VendorCreditCreate() {
               <Button variant="outline" size="sm" className="text-xs h-8">
                 Adjustment
               </Button>
-              <Input 
+              <Input
                 type="number"
                 step="0.01"
                 className="w-24 h-8"
@@ -743,7 +762,7 @@ export default function VendorCreditCreate() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
             <Label>Notes</Label>
-            <Textarea 
+            <Textarea
               rows={3}
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
@@ -767,15 +786,15 @@ export default function VendorCreditCreate() {
 
       <div className="border-t border-slate-200 bg-white px-6 py-4 sticky bottom-0">
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => handleSubmit('DRAFT')}
             disabled={saving}
             data-testid="button-save-draft"
           >
             {saving ? 'Saving...' : 'Save as Draft'}
           </Button>
-          <Button 
+          <Button
             className="bg-blue-600 hover:bg-blue-700"
             onClick={() => handleSubmit('OPEN')}
             disabled={saving}
@@ -783,7 +802,7 @@ export default function VendorCreditCreate() {
           >
             {saving ? 'Saving...' : 'Save as Open'}
           </Button>
-          <Button 
+          <Button
             variant="ghost"
             onClick={() => setLocation('/vendor-credits')}
             data-testid="button-cancel"

@@ -206,11 +206,15 @@ export default function PaymentsMadeCreate() {
 
   const vendors = vendorsData?.data || [];
 
-  // Filter and fix bills - use amountDue if available, otherwise use total
+  // Filter bills by vendor and unpaid status - use amountDue if available, otherwise use total
   const vendorBills = (billsData?.data || []).filter((b) => {
+    // First check if bill belongs to selected vendor
+    if (b.vendorId !== formData.vendorId) {
+      return false;
+    }
     const balance = b.amountDue !== undefined && b.amountDue > 0 ? b.amountDue : b.total;
     const isUnpaid = b.status !== "PAID" && balance > 0;
-    console.log(`Bill ${b.billNumber}: amountDue=${b.amountDue}, total=${b.total}, status=${b.status}, isUnpaid=${isUnpaid}`);
+    console.log(`Bill ${b.billNumber}: vendorId=${b.vendorId}, amountDue=${b.amountDue}, total=${b.total}, status=${b.status}, isUnpaid=${isUnpaid}`);
     return isUnpaid;
   }).map((b) => ({
     ...b,
@@ -628,7 +632,7 @@ export default function PaymentsMadeCreate() {
                             colSpan={7}
                             className="px-4 py-8 text-center text-slate-500"
                           >
-                            There are no bills for this vendor.
+                            There are no unpaid bills for this vendor.
                           </td>
                         </tr>
                       ) : (

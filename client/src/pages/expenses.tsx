@@ -20,6 +20,7 @@ import {
   Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountSelectDropdown, getAccountLabel } from "@/components/AccountSelectDropdown";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -980,64 +981,13 @@ export default function Expenses() {
                       Expense Account
                       <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <Popover open={expenseAccountOpen} onOpenChange={setExpenseAccountOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={expenseAccountOpen}
-                          className={`w-full justify-between font-normal h-10 px-3 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors ${expenseForm.expenseAccount ? 'text-slate-900' : 'text-slate-500'}`}
-                          data-testid="select-expense-account"
-                        >
-                          <span className="truncate">{expenseForm.expenseAccount || "Select expense account"}</span>
-                          <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${expenseAccountOpen ? 'rotate-180' : ''}`} />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
-                        <Command className="rounded-lg">
-                          <div className="flex items-center border-b px-3 py-2 bg-slate-50">
-                            <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
-                            <CommandInput placeholder="Search accounts..." className="h-9 border-0 focus:ring-0 bg-transparent" />
-                          </div>
-                          <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain" style={{ scrollBehavior: 'auto' }}>
-                            <CommandEmpty className="py-6 text-center text-sm text-slate-500">No account found.</CommandEmpty>
-                            <CommandGroup>
-                              {EXPENSE_ACCOUNTS.map((account) => (
-                                <CommandItem
-                                  key={account}
-                                  value={account}
-                                  onSelect={() => {
-                                    setExpenseForm(prev => ({ ...prev, expenseAccount: account }));
-                                    setExpenseAccountOpen(false);
-                                  }}
-                                  className="cursor-pointer hover:bg-blue-50 px-3 py-2.5"
-                                >
-                                  <Check
-                                    className={`mr-2 h-4 w-4 text-blue-600 ${expenseForm.expenseAccount === account ? "opacity-100" : "opacity-0"}`}
-                                  />
-                                  <span className="text-slate-700">{account}</span>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                            <div className="border-t px-3 py-2 bg-slate-50">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                onClick={() => {
-                                  setShowCreateExpenseAccountDialog(true);
-                                  setExpenseAccountOpen(false);
-                                }}
-                                type="button"
-                              >
-                                <Plus className="h-4 w-4" />
-                                Create New Account
-                              </Button>
-                            </div>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                    <AccountSelectDropdown
+                      value={expenseForm.expenseAccount}
+                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, expenseAccount: value }))}
+                      placeholder="Select expense account"
+                      triggerClassName="h-10 px-3 border-slate-300 hover:border-blue-400 hover:bg-slate-50 transition-colors"
+                      testId="select-expense-account"
+                    />
                     <button className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors" data-testid="button-itemize">Itemize</button>
                   </div>
                 </div>
@@ -1087,7 +1037,7 @@ export default function Expenses() {
                         >
                           <span className="truncate">{expenseForm.paidThrough || "Select paid through account"}</span>
                           <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${paidThroughOpen ? 'rotate-180' : ''}`} />
-                        </Button>
+                        </Button>ACCOUNT
                       </PopoverTrigger>
                       <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
                         <Command className="rounded-lg">

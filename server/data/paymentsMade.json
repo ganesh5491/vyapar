@@ -1,4 +1,191 @@
 {
-  "paymentsMade": [],
-  "nextPaymentNumber": 4
+  "paymentsMade": [
+    {
+      "id": "pm-1766375192336",
+      "paymentNumber": "PM-00006",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 298,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #6",
+      "billPayments": {
+        "1766373805363": {
+          "billId": "1766373805363",
+          "billNumber": "6",
+          "billAmount": 1298,
+          "amountPaid": 298
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T03:46:32.336Z",
+      "updatedAt": "2025-12-22T03:46:32.336Z"
+    },
+    {
+      "id": "pm-1766377224644",
+      "paymentNumber": "PM-00007",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 100,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #6",
+      "billPayments": {
+        "1766373805363": {
+          "billId": "1766373805363",
+          "billNumber": "6",
+          "billAmount": 1298,
+          "amountPaid": 100
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T04:20:24.592Z",
+      "updatedAt": "2025-12-22T04:20:24.592Z"
+    },
+    {
+      "id": "pm-1766380736534",
+      "paymentNumber": "PM-00008",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 296,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #9",
+      "billPayments": {
+        "1766380705723": {
+          "billId": "1766380705723",
+          "billNumber": "9",
+          "billAmount": 1296,
+          "amountPaid": 296
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T05:18:56.531Z",
+      "updatedAt": "2025-12-22T05:18:56.531Z"
+    },
+    {
+      "id": "pm-1766381090900",
+      "paymentNumber": "PM-00009",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 236.5,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #10",
+      "billPayments": {
+        "1766381072824": {
+          "billId": "1766381072824",
+          "billNumber": "10",
+          "billAmount": 2236.5,
+          "amountPaid": 236.5
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T05:24:50.896Z",
+      "updatedAt": "2025-12-22T05:24:50.896Z"
+    },
+    {
+      "id": "pm-1766381153277",
+      "paymentNumber": "PM-00010",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 111,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #10",
+      "billPayments": {
+        "1766381072824": {
+          "billId": "1766381072824",
+          "billNumber": "10",
+          "billAmount": 2236.5,
+          "amountPaid": 111
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T05:25:53.274Z",
+      "updatedAt": "2025-12-22T05:25:53.274Z"
+    },
+    {
+      "id": "pm-1766385849905",
+      "paymentNumber": "PM-00011",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1889,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #10",
+      "billPayments": {
+        "1766381072824": {
+          "billId": "1766381072824",
+          "billNumber": "10",
+          "billAmount": 2236.5,
+          "amountPaid": 1889
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T06:44:09.899Z",
+      "updatedAt": "2025-12-22T06:44:09.899Z"
+    }
+  ],
+  "nextPaymentNumber": 12
 }

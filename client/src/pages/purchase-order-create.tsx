@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Plus, X, Search, Upload, ChevronDown, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountSelectDropdown } from "@/components/AccountSelectDropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -132,12 +133,7 @@ const TAX_OPTIONS = [
   { value: "igst28", label: "IGST 28%" }
 ];
 
-const ACCOUNTS = [
-  "Cost of Goods Sold",
-  "Inventory Asset",
-  "Purchase",
-  "Raw Materials"
-];
+// Account dropdown is now handled by AccountSelectDropdown component
 
 export default function PurchaseOrderCreate() {
   const [, setLocation] = useLocation();
@@ -843,19 +839,13 @@ export default function PurchaseOrderCreate() {
                         </Select>
                       </div>
                       <div className="p-2">
-                        <Select
+                        <AccountSelectDropdown
                           value={item.account}
                           onValueChange={(value) => updateLineItem(item.id, 'account', value)}
-                        >
-                          <SelectTrigger className="border-0 shadow-none h-8 text-sm" data-testid={`select-account-${index}`}>
-                            <SelectValue placeholder="Select an account" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ACCOUNTS.map(acc => (
-                              <SelectItem key={acc} value={acc}>{acc}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          placeholder="Select an account"
+                          triggerClassName="border-0 shadow-none h-8 text-sm"
+                          testId={`select-account-${index}`}
+                        />
                       </div>
                       <div className="p-2">
                         <Input

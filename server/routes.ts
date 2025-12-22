@@ -452,6 +452,28 @@ function generateBillNumber(num: number): string {
   return String(num);
 }
 
+// Payments Made Helper Functions (defined early for use in bills record-payment)
+const PAYMENTS_MADE_FILE_PATH = path.join(DATA_DIR, "paymentsMade.json");
+
+function readPaymentsMadeDataGlobal() {
+  ensureDataDir();
+  if (!fs.existsSync(PAYMENTS_MADE_FILE_PATH)) {
+    const defaultData = { paymentsMade: [], nextPaymentNumber: 1 };
+    fs.writeFileSync(PAYMENTS_MADE_FILE_PATH, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+  return JSON.parse(fs.readFileSync(PAYMENTS_MADE_FILE_PATH, "utf-8"));
+}
+
+function writePaymentsMadeDataGlobal(data: any) {
+  ensureDataDir();
+  fs.writeFileSync(PAYMENTS_MADE_FILE_PATH, JSON.stringify(data, null, 2));
+}
+
+function generatePaymentMadeNumberGlobal(num: number): string {
+  return `PM-${String(num).padStart(5, '0')}`;
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -3580,7 +3602,47 @@ export async function registerRoutes(
       data.bills[billIndex] = bill;
       writeBillsData(data);
 
-      res.json({ success: true, data: bill });
+      // Also create a record in Payments Made
+      const paymentsMadeData = readPaymentsMadeDataGlobal();
+      const paymentNumber = generatePaymentMadeNumberGlobal(paymentsMadeData.nextPaymentNumber);
+
+      const newPayment = {
+        id: `pm-${Date.now()}`,
+        paymentNumber,
+        vendorId: bill.vendorId,
+        vendorName: bill.vendorName,
+        gstTreatment: bill.gstTreatment || '',
+        sourceOfSupply: bill.sourceOfSupply || '',
+        destinationOfSupply: bill.destinationOfSupply || '',
+        descriptionOfSupply: '',
+        paymentAmount: paymentAmount,
+        reverseCharge: bill.reverseCharge || false,
+        tds: '',
+        paymentDate: req.body.paymentDate || now.split('T')[0],
+        paymentMode: req.body.paymentMode || 'Cash',
+        paidThrough: req.body.paidThrough || 'Petty Cash',
+        depositTo: req.body.depositTo || 'prepaid_expenses',
+        reference: req.body.reference || '',
+        notes: req.body.notes || `Payment for Bill #${bill.billNumber}`,
+        billPayments: {
+          [bill.id]: {
+            billId: bill.id,
+            billNumber: bill.billNumber,
+            billAmount: bill.total,
+            amountPaid: paymentAmount
+          }
+        },
+        paymentType: 'bill_payment',
+        status: 'PAID',
+        createdAt: now,
+        updatedAt: now
+      };
+
+      paymentsMadeData.paymentsMade.push(newPayment);
+      paymentsMadeData.nextPaymentNumber++;
+      writePaymentsMadeDataGlobal(paymentsMadeData);
+
+      res.json({ success: true, data: bill, payment: newPayment });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to record payment' });
     }
@@ -4564,7 +4626,12 @@ export async function registerRoutes(
     try {
       const data = readPaymentsMadeData();
       const now = new Date().toISOString();
-      const paymentNumber = req.body.paymentNumber || generatePaymentMadeNumber(data.nextPaymentNumber);
+
+      // Always generate payment number server-side to avoid corrupted data
+      const paymentNumber = generatePaymentMadeNumber(data.nextPaymentNumber);
+
+      // Handle both 'amount' and 'paymentAmount' field names
+      const paymentAmount = req.body.paymentAmount || req.body.amount || 0;
 
       const newPayment = {
         id: `pm-${Date.now()}`,
@@ -4575,12 +4642,12 @@ export async function registerRoutes(
         sourceOfSupply: req.body.sourceOfSupply || '',
         destinationOfSupply: req.body.destinationOfSupply || '',
         descriptionOfSupply: req.body.descriptionOfSupply || '',
-        paymentAmount: req.body.paymentAmount || 0,
+        paymentAmount: paymentAmount,
         reverseCharge: req.body.reverseCharge || false,
         tds: req.body.tds || '',
         paymentDate: req.body.paymentDate || now.split('T')[0],
-        paymentMode: req.body.paymentMode || 'cash',
-        paidThrough: req.body.paidThrough || 'petty_cash',
+        paymentMode: req.body.paymentMode || 'Cash',
+        paidThrough: req.body.paidThrough || 'Petty Cash',
         depositTo: req.body.depositTo || 'prepaid_expenses',
         reference: req.body.reference || '',
         notes: req.body.notes || '',

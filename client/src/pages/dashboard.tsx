@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  Plus, 
+import {
+  Plus,
   ChevronDown,
   TrendingUp,
   TrendingDown,
@@ -95,27 +95,27 @@ export default function Dashboard() {
         </div>
         <div>
           <h1 className="text-xl font-semibold" data-testid="text-greeting">Hello, Admin</h1>
-          <p className="text-sm text-muted-foreground" data-testid="text-company">Baniya Accounting</p>
+          <p className="text-sm text-muted-foreground" data-testid="text-company">Billing Accounting</p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-transparent border-b w-full justify-start rounded-none h-auto p-0 gap-0">
-          <TabsTrigger 
-            value="dashboard" 
+          <TabsTrigger
+            value="dashboard"
             className="data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 rounded-none px-4 py-3 font-medium text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             data-testid="tab-dashboard"
           >
             Dashboard
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="getting-started"
             className="data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 rounded-none px-4 py-3 font-medium text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             data-testid="tab-getting-started"
           >
             Getting Started
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="recent-updates"
             className="data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 rounded-none px-4 py-3 font-medium text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             data-testid="tab-recent-updates"
@@ -141,11 +141,11 @@ export default function Dashboard() {
                     Total Unpaid Invoices <span className="font-medium">{formatCurrency(dashboard?.summary?.totalReceivables?.totalUnpaid || 0)}</span>
                   </p>
                   <div className="w-full h-2 bg-muted rounded-full mt-2 overflow-hidden">
-                    <div 
-                      className="h-full bg-teal-500 rounded-full" 
-                      style={{ 
-                        width: `${((dashboard?.summary?.totalReceivables?.current || 0) / (dashboard?.summary?.totalReceivables?.totalUnpaid || 1)) * 100}%` 
-                      }} 
+                    <div
+                      className="h-full bg-teal-500 rounded-full"
+                      style={{
+                        width: `${((dashboard?.summary?.totalReceivables?.current || 0) / (dashboard?.summary?.totalReceivables?.totalUnpaid || 1)) * 100}%`
+                      }}
                     />
                   </div>
                 </div>
@@ -184,11 +184,11 @@ export default function Dashboard() {
                     Total Unpaid Bills <span className="font-medium">{formatCurrency(dashboard?.summary?.totalPayables?.totalUnpaid || 0)}</span>
                   </p>
                   <div className="w-full h-2 bg-muted rounded-full mt-2 overflow-hidden">
-                    <div 
-                      className="h-full bg-amber-500 rounded-full" 
-                      style={{ 
-                        width: `${((dashboard?.summary?.totalPayables?.current || 0) / (dashboard?.summary?.totalPayables?.totalUnpaid || 1)) * 100}%` 
-                      }} 
+                    <div
+                      className="h-full bg-amber-500 rounded-full"
+                      style={{
+                        width: `${((dashboard?.summary?.totalPayables?.current || 0) / (dashboard?.summary?.totalPayables?.totalUnpaid || 1)) * 100}%`
+                      }}
                     />
                   </div>
                 </div>
@@ -235,26 +235,26 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={dashboard?.cashFlow || []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis 
-                        dataKey="month" 
+                      <XAxis
+                        dataKey="month"
                         tick={{ fontSize: 11 }}
                         tickFormatter={(value) => value.split(' ')[0]}
                         className="fill-muted-foreground"
                       />
-                      <YAxis 
+                      <YAxis
                         tick={{ fontSize: 11 }}
                         tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
                         className="fill-muted-foreground"
                       />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value: number) => formatCurrency(value)}
                         contentStyle={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
                       />
-                      <Area 
-                        type="monotone" 
-                        dataKey="value" 
-                        stroke="#6366f1" 
-                        fill="#eef2ff" 
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#6366f1"
+                        fill="#eef2ff"
                         strokeWidth={2}
                       />
                     </AreaChart>
@@ -313,22 +313,20 @@ export default function Dashboard() {
                   <div className="inline-flex rounded-md border overflow-hidden">
                     <button
                       onClick={() => setIncomeExpenseMode("accrual")}
-                      className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                        incomeExpenseMode === "accrual" 
-                          ? "bg-muted" 
+                      className={`px-3 py-1.5 text-sm font-medium transition-colors ${incomeExpenseMode === "accrual"
+                          ? "bg-muted"
                           : "bg-background hover:bg-muted/50"
-                      }`}
+                        }`}
                       data-testid="button-accrual"
                     >
                       Accrual
                     </button>
                     <button
                       onClick={() => setIncomeExpenseMode("cash")}
-                      className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                        incomeExpenseMode === "cash" 
-                          ? "bg-muted" 
+                      className={`px-3 py-1.5 text-sm font-medium transition-colors ${incomeExpenseMode === "cash"
+                          ? "bg-muted"
                           : "bg-background hover:bg-muted/50"
-                      }`}
+                        }`}
                       data-testid="button-cash"
                     >
                       Cash
@@ -339,18 +337,18 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={dashboard?.incomeExpense || []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis 
-                        dataKey="month" 
+                      <XAxis
+                        dataKey="month"
                         tick={{ fontSize: 10 }}
                         tickFormatter={(value) => value.split(' ')[0]}
                         className="fill-muted-foreground"
                       />
-                      <YAxis 
+                      <YAxis
                         tick={{ fontSize: 10 }}
                         tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
                         className="fill-muted-foreground"
                       />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value: number) => formatCurrency(value)}
                         contentStyle={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
                       />
@@ -426,8 +424,8 @@ export default function Dashboard() {
                       {dashboard.topExpenses.slice(0, 5).map((expense, index) => (
                         <div key={expense.category} className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
+                            <div
+                              className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: EXPENSE_COLORS[index % EXPENSE_COLORS.length] }}
                             />
                             <span className="truncate max-w-32">{expense.category}</span>
@@ -461,8 +459,8 @@ export default function Dashboard() {
                           <span className="text-sm text-muted-foreground">{project.client}</span>
                         </div>
                         <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-indigo-500 rounded-full" 
+                          <div
+                            className="h-full bg-indigo-500 rounded-full"
                             style={{ width: `${project.progress}%` }}
                           />
                         </div>
@@ -559,7 +557,7 @@ export default function Dashboard() {
               <div className="text-center md:text-left">
                 <h3 className="font-semibold mb-3">Account on the go!</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Download the Baniya app for Android and iOS to manage your finances from anywhere, anytime!
+                  Download the Billing app for Android and iOS to manage your finances from anywhere, anytime!
                 </p>
                 <div className="flex items-center justify-center md:justify-start gap-4">
                   <div className="flex items-center gap-2 text-sm text-indigo-600">
@@ -569,7 +567,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">OTHER APPS</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
@@ -579,7 +577,7 @@ export default function Dashboard() {
                   <li className="hover:text-indigo-600 cursor-pointer">Inventory Management</li>
                 </ul>
               </div>
-              
+
               <div>
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">HELP & SUPPORT</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
@@ -589,7 +587,7 @@ export default function Dashboard() {
                   <li className="hover:text-indigo-600 cursor-pointer">Webinar</li>
                 </ul>
               </div>
-              
+
               <div>
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">QUICK LINKS</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
@@ -601,9 +599,9 @@ export default function Dashboard() {
                 </ul>
               </div>
             </div>
-            
+
             <div className="mt-8 pt-6 border-t text-center">
-              <p className="text-xs text-muted-foreground">2025, Baniya Accounting. All Rights Reserved.</p>
+              <p className="text-xs text-muted-foreground">2025, Billing Accounting. All Rights Reserved.</p>
             </div>
           </div>
         </TabsContent>

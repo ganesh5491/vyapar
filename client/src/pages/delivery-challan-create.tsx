@@ -56,9 +56,11 @@ interface InventoryItem {
   name: string;
   description?: string;
   hsnSac?: string;
+  rate?: string | number;
   sellingPrice?: number;
   unit?: string;
   type?: string;
+  intraStateTax?: string;
 }
 
 const CHALLAN_TYPES = [
@@ -81,7 +83,7 @@ const TAX_OPTIONS = [
 export default function DeliveryChallanCreate() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  
+
   // Transaction bootstrap for auto-population
   const {
     customerId: bootstrapCustomerId,
@@ -92,7 +94,7 @@ export default function DeliveryChallanCreate() {
     formData: bootstrapFormData,
     onCustomerChange
   } = useTransactionBootstrap({ transactionType: 'delivery_challan' });
-  
+
   const [date, setDate] = useState<Date>(new Date());
   const [challanNumber, setChallanNumber] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
@@ -106,14 +108,14 @@ export default function DeliveryChallanCreate() {
   const [saving, setSaving] = useState(false);
   const [customerIdFromUrl, setCustomerIdFromUrl] = useState<string | null>(null);
   const [shippingAddress, setShippingAddress] = useState("");
-  
+
   // Sync with bootstrap customer
   useEffect(() => {
     if (bootstrapCustomerId && !selectedCustomerId) {
       setSelectedCustomerId(bootstrapCustomerId);
     }
   }, [bootstrapCustomerId]);
-  
+
   // Update shipping address when customer snapshot changes  
   useEffect(() => {
     if (customerSnapshot) {
@@ -145,7 +147,7 @@ export default function DeliveryChallanCreate() {
     fetchNextChallanNumber();
     fetchCustomers();
     fetchInventoryItems();
-    
+
     // Parse customerId from URL
     const params = new URLSearchParams(location.split('?')[1]);
     const urlCustomerId = params.get('customerId');
@@ -153,7 +155,7 @@ export default function DeliveryChallanCreate() {
       setCustomerIdFromUrl(urlCustomerId);
     }
   }, [location]);
-  
+
   // Set customer from URL after customers are loaded
   useEffect(() => {
     if (customerIdFromUrl && customers.length > 0) {
@@ -180,6 +182,18 @@ export default function DeliveryChallanCreate() {
   const handleItemSelect = (challanItemId: number, inventoryItemId: string) => {
     const inventoryItem = inventoryItems.find(i => i.id === inventoryItemId);
     if (inventoryItem) {
+      // Parse rate - use rate field (for selling), handle string or number
+      const itemRate = typeof inventoryItem.rate === 'string'
+        ? parseFloat(inventoryItem.rate) || 0
+        : (inventoryItem.rate || inventoryItem.sellingPrice || 0);
+
+      // Parse GST rate from intraStateTax field (e.g., "gst18" -> 18)
+      let gstRate = 0;
+      if (inventoryItem.intraStateTax) {
+        const match = inventoryItem.intraStateTax.match(/\d+/);
+        if (match) gstRate = parseInt(match[0]);
+      }
+
       setItems(items.map(item => {
         if (item.id === challanItemId) {
           return {
@@ -187,7 +201,8 @@ export default function DeliveryChallanCreate() {
             name: inventoryItem.name,
             description: inventoryItem.description || "",
             hsnSac: inventoryItem.hsnSac || "",
-            rate: inventoryItem.sellingPrice || 0
+            rate: itemRate,
+            gstRate: gstRate
           };
         }
         return item;

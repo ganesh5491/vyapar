@@ -1,4 +1,4 @@
-# Baniya Accounting Application
+# Billing Accounting Application
 
 ## Overview
 A full-stack accounting application designed for comprehensive financial management, including invoices, customers, products, vendors, and expenses. It aims to provide an enterprise-grade solution for businesses, leveraging a modern tech stack and modular architecture to ensure scalability and maintainability.

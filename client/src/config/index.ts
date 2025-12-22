@@ -1,6 +1,6 @@
 export const config = {
   apiBaseUrl: import.meta.env.VITE_API_URL || '/api/v1',
-  appName: 'Baniya Accounting',
+  appName: 'Billing Accounting',
   version: '1.0.0',
   defaultPageSize: 10,
   maxPageSize: 100,

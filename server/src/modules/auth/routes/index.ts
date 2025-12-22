@@ -10,7 +10,7 @@ authRouter.post('/login', (req, res) => {
     data: {
       user: {
         id: '1',
-        email: email || 'admin@baniya.com',
+        email: email || 'admin@Billing.com',
         name: 'Admin User',
         role: 'admin',
       },
@@ -47,7 +47,7 @@ authRouter.get('/me', (req, res) => {
     success: true,
     data: {
       id: '1',
-      email: 'admin@baniya.com',
+      email: 'admin@Billing.com',
       name: 'Admin User',
       role: 'admin',
     },

@@ -10,7 +10,7 @@ export interface AuthenticatedRequest extends Request {
 
 export const authenticate = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
@@ -19,13 +19,13 @@ export const authenticate = (req: AuthenticatedRequest, res: Response, next: Nex
   }
 
   const token = authHeader.split(' ')[1];
-  
+
   try {
     // TODO: Implement actual JWT verification
     // For now, pass through for development
     req.user = {
       id: '1',
-      email: 'admin@baniya.com',
+      email: 'admin@Billing.com',
       role: 'admin',
     };
     next();
@@ -59,20 +59,20 @@ export const requireRole = (...roles: string[]) => {
 
 export const optionalAuth = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  
+
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
       // TODO: Implement actual JWT verification
       req.user = {
         id: '1',
-        email: 'admin@baniya.com',
+        email: 'admin@Billing.com',
         role: 'admin',
       };
     } catch (error) {
       // Ignore token errors for optional auth
     }
   }
-  
+
   next();
 };

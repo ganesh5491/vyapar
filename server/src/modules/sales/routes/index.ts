@@ -4,7 +4,7 @@ import { join } from 'path';
 
 export const salesRouter = Router();
 
-const quotesFilePath = join(process.cwd(), 'Baniya-9-12-230/server/data/quotes.json');
+const quotesFilePath = join(process.cwd(), 'Billing-9-12-230/server/data/quotes.json');
 
 function readQuotesData() {
   if (!existsSync(quotesFilePath)) {
@@ -60,7 +60,7 @@ salesRouter.post('/quotes', (req, res) => {
     const data = readQuotesData();
     const quoteNumber = generateQuoteNumber(data.nextQuoteNumber);
     const now = new Date().toISOString();
-    
+
     const newQuote = {
       id: String(Date.now()),
       quoteNumber,
@@ -103,11 +103,11 @@ salesRouter.post('/quotes', (req, res) => {
         }
       ]
     };
-    
+
     data.quotes.unshift(newQuote);
     data.nextQuoteNumber += 1;
     writeQuotesData(data);
-    
+
     res.status(201).json({ success: true, data: newQuote });
   } catch (error) {
     console.error('Error creating quote:', error);
@@ -119,14 +119,14 @@ salesRouter.put('/quotes/:id', (req, res) => {
   try {
     const data = readQuotesData();
     const quoteIndex = data.quotes.findIndex((q: any) => q.id === req.params.id);
-    
+
     if (quoteIndex === -1) {
       return res.status(404).json({ success: false, message: 'Quote not found' });
     }
-    
+
     const now = new Date().toISOString();
     const existingQuote = data.quotes[quoteIndex];
-    
+
     const updatedQuote = {
       ...existingQuote,
       ...req.body,
@@ -145,10 +145,10 @@ salesRouter.put('/quotes/:id', (req, res) => {
         }
       ]
     };
-    
+
     data.quotes[quoteIndex] = updatedQuote;
     writeQuotesData(data);
-    
+
     res.json({ success: true, data: updatedQuote });
   } catch (error) {
     console.error('Error updating quote:', error);
@@ -160,15 +160,15 @@ salesRouter.patch('/quotes/:id/status', (req, res) => {
   try {
     const data = readQuotesData();
     const quoteIndex = data.quotes.findIndex((q: any) => q.id === req.params.id);
-    
+
     if (quoteIndex === -1) {
       return res.status(404).json({ success: false, message: 'Quote not found' });
     }
-    
+
     const now = new Date().toISOString();
     const existingQuote = data.quotes[quoteIndex];
     const newStatus = req.body.status;
-    
+
     let actionDescription = '';
     switch (newStatus) {
       case 'SENT':
@@ -183,7 +183,7 @@ salesRouter.patch('/quotes/:id/status', (req, res) => {
       default:
         actionDescription = `Quote status changed to ${newStatus}`;
     }
-    
+
     existingQuote.status = newStatus;
     existingQuote.updatedAt = now;
     existingQuote.activityLogs.push({
@@ -193,10 +193,10 @@ salesRouter.patch('/quotes/:id/status', (req, res) => {
       description: actionDescription,
       user: req.body.updatedBy || 'Admin User'
     });
-    
+
     data.quotes[quoteIndex] = existingQuote;
     writeQuotesData(data);
-    
+
     res.json({ success: true, data: existingQuote });
   } catch (error) {
     console.error('Error updating quote status:', error);
@@ -208,14 +208,14 @@ salesRouter.delete('/quotes/:id', (req, res) => {
   try {
     const data = readQuotesData();
     const quoteIndex = data.quotes.findIndex((q: any) => q.id === req.params.id);
-    
+
     if (quoteIndex === -1) {
       return res.status(404).json({ success: false, message: 'Quote not found' });
     }
-    
+
     data.quotes.splice(quoteIndex, 1);
     writeQuotesData(data);
-    
+
     res.json({ success: true, message: 'Quote deleted successfully' });
   } catch (error) {
     console.error('Error deleting quote:', error);
