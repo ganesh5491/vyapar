@@ -319,91 +319,28 @@
     - Vendor Name dropdown with searchable Popover/Command and blue search button (data-testid="button-add-vendor")
     - Delivery Address section with Organization/Customer radio toggle
     - Order# with auto-increment system, Reference# field, Expected Delivery Date picker
-    - Items table with horizontal scroll and proper column widths
-    - Customer Details section with shipping address display
-    - Terms and Conditions with "Add Terms And Conditions" link
-    - Action buttons: Save as Draft, Save as Issued, Cancel
-    - All fields properly connected to form state
+    - Customer Name dropdown for customer address option
+    - "Add Destination Details" button linking to Inventory section
+    - Items table with scrollable container and min-widths for columns
+    - Add New Row button with plus icon to add more line items
+    - Discount, Adjustment, and TCS Amount fields with proper calculations
+    - Terms & Conditions and Notes textareas with same styling as reference
+    - Attach File button with file management
+    - Save as Draft, Save, and Cancel footer buttons
+    - Applied consistent styling to both create and edit pages
 [x] 86. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
-[x] 87. Fixed Credit Note Create page - Customer autocomplete now triggers correctly (Dec 18, 2025):
-    - Added complete Customer interface with all required fields
-    - Added customers and customersLoading state variables
-    - Added useEffect to fetch customers from /api/customers on component mount
-    - Implemented handleCustomerSelect function to populate form fields:
-      * Sets customerName, billingAddress, and all item customerName fields
-      * Properly handles customer object selection from dropdown
-    - Updated Popover trigger to show selected customer name or placeholder
-    - CommandEmpty shows "No customers found" when search returns empty
-    - Loading state shows "Loading customers..." while fetching
-    - Customer list populated from API data instead of empty array
-[x] 88. Fixed Vendor Credits Create page - vendor_id foreign key constraint error (Dec 18, 2025):
-    - Root cause: Sending `vendorId` field but backend expects `vendor_id` for database FK
-    - Updated frontend vendor-credit-create.tsx: Changed `vendorId` to `vendor_id` in request body
-    - Updated backend POST /api/vendor-credits: Added fallback to accept both `vendor_id` and `vendorId`
-    - Updated backend GET /api/vendor-credits: Added proper join with vendors table to fetch vendor names
-    - Vendor credits now save correctly with proper vendor association
-    - Vendor name now displays in list view instead of just vendor_id
-[x] 89. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
+[x] 87. Fixed Purchase Order Vendor dropdown showing empty when editing (Dec 18, 2025):
+    - PO edit now fetches vendors from /api/vendors on mount
+    - Sets vendorId from purchase order data for proper dropdown selection
+    - Vendor dropdown now shows correct vendor name when editing
+[x] 88. Fixed PO items table showing item details correctly (Dec 18, 2025):
+    - Added products fetching from /api/items on mount
+    - Item dropdown now shows product name, SKU, and price
+    - When selecting item, auto-populates: itemName, description, rate, hsnSac, account
+    - Amount auto-calculates based on quantity and rate
+    - All item fields populate correctly when editing existing PO
+[x] 89. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - latest session)
 [x] 90. Session restart - reinstalled cross-env and verified application running (Dec 19, 2025)
-[x] 91. Fixed Invoice Item Details dropdown - now fetches and displays all item data properly (Dec 19, 2025):
-    - Updated onValueChange handler in invoice-create.tsx to also populate the description field
-    - Improved dropdown to show item name with rate/price (e.g., "Item Name - ₹500.00")
-    - When selecting an item, all details are now fetched:
-      * Item name
-      * Item description
-      * Item rate (converted from string to number)
-      * GST rate (extracted from intraStateTax field)
-    - Dropdown options now clearly show item prices for easy identification
-    - Removed debug console logs for cleaner execution
-    - All item data is properly populated when selecting from dropdown
-[x] 92. Fixed Invoice Item Details dropdown batched state updates (Dec 19, 2025):
-    - Changed from multiple rapid updateItem calls to single batched setItems call
-    - All item updates (productId, name, description, rate, gstRate) now happen in one state change
-    - This ensures React properly re-renders with all changes applied at once
-    - Prevents issues from state batching in React 18+
-    - Item selection now properly displays name, rate, and other details in the table row
-[x] 93. Session restart - reinstalled cross-env and verified application running (Dec 22, 2025 - current session)
-[x] 94. Fixed "Bill Payment → unpaid bills not showing" issue (Dec 22, 2025):
-    - **Root cause**: /api/bills endpoint returned ALL bills without filtering
-    - **Backend fix**: Updated GET /api/bills endpoint to:
-      * Accept vendorId query parameter
-      * Filter bills by vendorId
-      * Filter for unpaid bills only (balanceDue > 0 and status !== 'PAID')
-      * Sort by billDate (oldest first) for proper payment allocation
-    - **Frontend fix**: Updated payments-made-create.tsx to:
-      * Enhanced Bill interface with balanceDue, billDate fields
-      * Updated query to pass vendorId as parameter to /api/bills?vendorId=X
-      * Simplified vendorBills filtering (backend now handles filtering)
-      * Fixed TypeScript error in autoAllocatePayment sort function
-    - **Payment allocation logic**: 
-      * Auto-allocates payment amounts to unpaid bills (oldest first)
-      * Supports partial payments and multiple bill payments
-      * Automatically updates Amount Due when payment is saved
-    - **Database structure**: Uses existing fields:
-      * balanceDue (remaining amount owed)
-      * amountPaid (total paid so far)
-      * status (OPEN, PARTIALLY_PAID, PAID)
-      * billDate (for sorting oldest first)
-    - **VERIFIED**: Server logs confirm API returns unpaid bills correctly
-      * Test API call: GET /api/bills?vendorId=6 returns test bill with balanceDue=11800
-      * Bill filtering working: Only bills with balanceDue > 0 and status !== 'PAID' appear
-      * Bill sorting working: Bills sorted by billDate (oldest first) for proper allocation
-
-## CRITICAL BUG FIX: Payment Recording Update (Completed 12/22/2025)
-- **Problem**: Bill `balanceDue` not updating after payment - showing 400 instead of 200 remaining after 200 RS paid
-- **Root Cause**: POST /api/payments-made endpoint saved payment but never updated bills in bills.json
-- **Solution**: Modified POST /api/payments-made to:
-  1. Save payment record (existing logic)
-  2. Read bills.json
-  3. Find bills that received payment from billPayments object
-  4. Update each bill's amountPaid, balanceDue, and status
-  5. Write updated bills back to bills.json
-- **Status Calculation**:
-  * PAID: balanceDue === 0
-  * PARTIALLY_PAID: amountPaid > 0 AND balanceDue > 0
-  * OPEN: balanceDue > 0 AND amountPaid === 0
-- **Verified** with test sequence:
-  * Payment 1 (200 RS): amountPaid=200, balanceDue=11600 ✓
-  * Payment 2 (200 RS): amountPaid=400, balanceDue=11400 ✓
-  * Payment 3 (200 RS): amountPaid=600, balanceDue=11200 ✓
-  * New payment screen correctly shows remaining balance, not total
+[x] 91. Session restart - reinstalled cross-env and verified application running (Dec 19, 2025 - current session)
+[x] 92. Session restart - reinstalled cross-env and verified application running (Dec 21, 2025)
+[x] 93. Session restart - reinstalled cross-env and verified application running (Dec 22, 2025)
