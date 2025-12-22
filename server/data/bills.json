@@ -1,6 +1,81 @@
 {
   "bills": [
     {
+      "id": "1766399984974",
+      "billNumber": "13",
+      "orderNumber": "PO-2025-0008",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "vendorAddress": {},
+      "billDate": "2025-12-22",
+      "dueDate": "2025-12-22",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0008",
+      "items": [
+        {
+          "id": "item-1766399968557-0",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Inventory Asset",
+          "quantity": 13,
+          "rate": 50,
+          "tax": "IGST18",
+          "taxAmount": 117,
+          "customerDetails": "none",
+          "amount": 650
+        },
+        {
+          "id": "item-1766399968557-1",
+          "itemName": "Rice (Copy)",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "Cost of Goods Sold",
+          "quantity": 31,
+          "rate": 50,
+          "tax": "CGST9",
+          "taxAmount": 139.5,
+          "customerDetails": "none",
+          "amount": 1550
+        }
+      ],
+      "subTotal": 2200,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 256.5,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 2456.5,
+      "amountPaid": 456,
+      "balanceDue": 2000.5,
+      "notes": "",
+      "attachments": [],
+      "status": "PARTIALLY_PAID",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-22T10:39:44.974Z",
+      "updatedAt": "2025-12-22T10:49:46.525Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-22T10:39:44.974Z",
+          "action": "created",
+          "description": "Bill created for ₹2,456.5",
+          "user": "Admin User"
+        },
+        {
+          "id": "1766400586531",
+          "timestamp": "2025-12-22T10:49:46.525Z",
+          "action": "payment",
+          "description": "Payment of ₹456 recorded via PM-00023",
+          "user": "System"
+        }
+      ]
+    },
+    {
       "id": "1766395458615",
       "billNumber": "11",
       "orderNumber": "",
@@ -79,49 +154,6 @@
           "timestamp": "2025-12-22T09:30:25.839Z",
           "action": "payment",
           "description": "Payment of ₹1,000 recorded via PM-00021",
-          "user": "System"
-        }
-      ]
-    },
-    {
-      "id": "test-unpaid-1",
-      "billNumber": "TEST-001",
-      "orderNumber": "PO-TEST-001",
-      "vendorId": "6",
-      "vendorName": "Sharma Traders Pvt Ltd",
-      "billDate": "2025-12-20",
-      "dueDate": "2025-12-27",
-      "paymentTerms": "Net 30",
-      "reverseCharge": false,
-      "subject": "Test Unpaid Bill - 10000",
-      "items": [],
-      "subTotal": 10000,
-      "discountType": "percent",
-      "discountValue": 0,
-      "discountAmount": 0,
-      "taxAmount": 1800,
-      "adjustment": 0,
-      "total": 11800,
-      "amountPaid": 1800,
-      "balanceDue": 10000,
-      "notes": "Test",
-      "status": "PARTIALLY_PAID",
-      "createdAt": "2025-12-20T00:00:00.000Z",
-      "updatedAt": "2025-12-22T09:18:55.563Z",
-      "createdBy": "Admin",
-      "activityLogs": [
-        {
-          "id": "1766395106900",
-          "timestamp": "2025-12-22T09:18:26.896Z",
-          "action": "payment",
-          "description": "Payment of ₹200 recorded via PM-00019",
-          "user": "System"
-        },
-        {
-          "id": "1766395135565",
-          "timestamp": "2025-12-22T09:18:55.563Z",
-          "action": "payment",
-          "description": "Payment of ₹1,000 recorded via PM-00020",
           "user": "System"
         }
       ]
@@ -526,7 +558,7 @@
       ]
     }
   ],
-  "nextBillNumber": 12,
+  "nextBillNumber": 14,
   "accounts": [
     {
       "id": "1",

@@ -35,6 +35,215 @@ I want iterative development. Ask before making major changes. I prefer detailed
 - **API Pattern**: All modules expose their functionalities through versioned API endpoints, following a consistent `/{module}/{resource}` pattern.
 - **Module Architecture**: Frontend modules export pages, types, API functions, services, and hooks. Backend modules adhere to Clean Architecture principles with distinct layers for controllers, services, repositories, models, and validators.
 
+## Vendor Credit Flow (Zoho Books Accounting Logic)
+
+### Overview
+Vendor Credits represent amounts owed BY the vendor TO the company. They are applied to reduce outstanding bills and can be refunded. The credit reflects at different stages of its lifecycle:
+
+### 1. VENDOR CREDIT CREATION
+
+**What happens:**
+- Vendor Credit is created and saved to `vendorCredits.json`
+- Initial status: `OPEN` (or `DRAFT` if saved as draft)
+- `balance` field equals `amount` (total credit amount available)
+
+**Where it reflects:**
+- ✅ **Vendor Credits list** - Shows as OPEN status
+- ✅ **Vendor Ledger** - Shows as a credit entry increasing vendor credit balance
+- ✅ **Vendor balance** - `unusedCredits` increases by credit amount
+- ❌ **Bills** - NO change yet
+- ❌ **Bank/Cash** - NO change
+
+**Accounting Entry (Journal):**
+```
+Date: Credit creation date
+Account Payable (Vendor name) [Debit]  | Amount: VC total
+  TO
+Accounts Receivable or Adjustments [Credit] | Amount: VC total
+
+Note: This is a "Suspense" entry until the credit is applied/used
+```
+
+**Data Structure:**
+```json
+{
+  "id": "vc-xxx",
+  "creditNumber": "VC-00010",
+  "vendorId": "6",
+  "vendorName": "Sharma Traders Pvt Ltd",
+  "items": [...],
+  "amount": 2456.5,          // Total credit amount
+  "balance": 2456.5,         // Remaining credit (unused portion)
+  "status": "OPEN",          // Status when created
+  "createdAt": "2025-12-22T11:14:31.399Z"
+}
+```
+
+---
+
+### 2. VENDOR CREDIT ADJUSTMENT (Applied against Bill)
+
+**What happens:**
+- Vendor Credit is applied to reduce a specific bill's amount due
+- Credit is linked to bill via `appliedToBillId` field
+- `balance` field in VC decreases
+- Bill's `balanceDue` decreases
+
+**Where it reflects:**
+- ✅ **Vendor Credits list** - Shows partially applied (status: `PARTIALLY_APPLIED` or `APPLIED`)
+- ✅ **Vendor Ledger** - Shows reduction of credit balance
+- ✅ **Bill detail** - Shows applied credit reducing Amount Due
+- ✅ **Vendor balance** - `unusedCredits` decreases by applied amount
+- ❌ **Bank/Cash** - NO change
+- ❌ **Payments Made** - NO entry created
+
+**Accounting Entry (Journal):**
+```
+Date: When credit is applied
+Accounts Payable (Vendor) [Debit]  | Amount: Applied credit amount
+  TO
+Accounts Payable Adjustment [Credit] | Amount: Applied credit amount
+
+Or simplified:
+Accounts Payable [Debit] | Applied amount
+  TO
+Vendor Credits Liability [Credit] | Applied amount
+```
+
+**Data Structure - Vendor Credit:**
+```json
+{
+  "id": "vc-xxx",
+  "creditNumber": "VC-00010",
+  "amount": 2456.5,
+  "balance": 456.5,          // ← DECREASED from original 2456.5
+  "status": "PARTIALLY_APPLIED",  // ← Status updated
+  "appliedCredits": [
+    {
+      "billId": "1766399984974",
+      "billNumber": "13",
+      "appliedAmount": 2000,
+      "appliedDate": "2025-12-22T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Data Structure - Bill:**
+```json
+{
+  "id": "1766399984974",
+  "billNumber": "13",
+  "total": 2456.5,
+  "amountPaid": 456,
+  "balanceDue": 2000.5,      // ← DECREASED by applied credit
+  "appliedCredits": [
+    {
+      "vendorCreditId": "vc-xxx",
+      "creditNumber": "VC-00010",
+      "appliedAmount": 2000
+    }
+  ]
+}
+```
+
+---
+
+### 3. VENDOR CREDIT REFUND
+
+**What happens:**
+- Vendor Credit balance (unused portion) is refunded to company
+- A payment entry is created in `Payments Made` (paymentsMade.json)
+- VC status becomes `REFUNDED`
+- Bank balance increases
+
+**Where it reflects:**
+- ✅ **Vendor Credits list** - Shows as REFUNDED status, balance becomes 0
+- ✅ **Payments Made list** - New payment entry created with type "Vendor Credit Refund"
+- ✅ **Vendor balance** - `unusedCredits` decreases to 0
+- ✅ **Bank/Cash** - Balance increases (if payment mode is "Bank Transfer", cash account updates)
+- ❌ **Bills** - Existing adjustments remain, NOT affected by refund
+- ❌ **Vendor Ledger** - Shows credit closure
+
+**Accounting Entry (Journal):**
+```
+Date: Refund date
+Bank/Cash Account [Debit] | Amount: Refunded amount
+  TO
+Accounts Payable or Vendor Credit Liability [Credit] | Amount: Refunded amount
+```
+
+**Data Structure - Vendor Credit:**
+```json
+{
+  "id": "vc-xxx",
+  "creditNumber": "VC-00010",
+  "amount": 2456.5,
+  "balance": 0,              // ← Set to 0 after refund
+  "status": "REFUNDED",      // ← Status changed to REFUNDED
+  "refundedAmount": 456.5,   // ← Amount that was refunded
+  "refundDetails": {
+    "paymentId": "pm-xxx",
+    "paymentNumber": "PM-00025",
+    "refundDate": "2025-12-22T13:00:00.000Z",
+    "refundMode": "Bank Transfer",
+    "refundAccount": "HDFC Business Account"
+  }
+}
+```
+
+**Data Structure - Payments Made (New Entry):**
+```json
+{
+  "id": "pm-xxx",
+  "paymentNumber": "PM-00025",
+  "paymentType": "VENDOR_CREDIT_REFUND",
+  "vendorId": "6",
+  "vendorName": "Sharma Traders Pvt Ltd",
+  "vendorCreditId": "vc-xxx",
+  "vendorCreditNumber": "VC-00010",
+  "date": "2025-12-22",
+  "paymentMode": "Bank Transfer",
+  "paidThrough": "HDFC Business Account",
+  "amount": 456.5,            // ← Refunded amount
+  "status": "PAID",
+  "reference": "VC-00010 Refund"
+}
+```
+
+---
+
+### Complete Vendor Credit Lifecycle Summary
+
+| Stage | VC Status | Balance | Bill Impact | Bank Impact | Vendor Balance | Where It Shows |
+|-------|-----------|---------|------------|------------|-----------------|-----------------|
+| **Created** | OPEN | Full amount | None | None | ↑ unusedCredits | VC List, Vendor Ledger |
+| **Partially Applied** | PARTIALLY_APPLIED | Reduced | Balanceddue↓ | None | ↓ unusedCredits | VC List, Bill Detail, Vendor Ledger |
+| **Fully Applied** | APPLIED | 0 | Balanceddue↓ | None | unusedCredits at 0 | VC List, Bill Detail |
+| **Refunded** | REFUNDED | 0 | No change | ↑ Bank balance | Cleared | VC List, Payments Made |
+
+---
+
+### Implementation Requirements Checklist
+
+- [ ] **VC Creation**: Save to `vendorCredits.json`, set `status: OPEN`, `balance: amount`
+- [ ] **Update Vendor**: Increase `vendor.unusedCredits` by credit amount
+- [ ] **VC Adjustment**: 
+  - Add bill reference to `appliedCredits` array in VC
+  - Reduce VC `balance` by applied amount
+  - Update Bill `balanceDue`
+  - Update Vendor `unusedCredits`
+- [ ] **VC Refund**:
+  - Create entry in `Payments Made`
+  - Set VC `status: REFUNDED`
+  - Set VC `balance: 0`
+  - Update Vendor `unusedCredits` to 0
+  - Update Bank account balance
+- [ ] **Vendor Ledger**: Show all VC transactions (creation, adjustments, refunds)
+- [ ] **Reports**: Track unused vs applied vs refunded credits by vendor
+
+---
+
 ## Recent Changes (December 2025)
 
 ### Vendor Credit and Purchase Order Improvements
