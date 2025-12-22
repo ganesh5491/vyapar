@@ -48,15 +48,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 2456.5,
-      "amountPaid": 456,
-      "balanceDue": 2000.5,
+      "amountPaid": 1456.5,
+      "balanceDue": 1000,
       "notes": "",
       "attachments": [],
       "status": "PARTIALLY_PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-22T10:39:44.974Z",
-      "updatedAt": "2025-12-22T10:49:46.525Z",
+      "updatedAt": "2025-12-22T11:39:19.763Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -72,6 +72,13 @@
           "action": "payment",
           "description": "Payment of ₹456 recorded via PM-00023",
           "user": "System"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-22T11:39:19.763Z",
+          "action": "payment",
+          "description": "Payment of ₹1,000.5 recorded",
+          "user": "Admin User"
         }
       ]
     },

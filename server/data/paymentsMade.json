@@ -534,7 +534,38 @@
       "status": "PAID",
       "createdAt": "2025-12-22T10:49:46.525Z",
       "updatedAt": "2025-12-22T10:49:46.525Z"
+    },
+    {
+      "id": "pm-1766403559767",
+      "paymentNumber": "PM-00024",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1000.5,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #13",
+      "billPayments": {
+        "1766399984974": {
+          "billId": "1766399984974",
+          "billNumber": "13",
+          "billAmount": 2456.5,
+          "amountPaid": 1000.5
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T11:39:19.763Z",
+      "updatedAt": "2025-12-22T11:39:19.763Z"
     }
   ],
-  "nextPaymentNumber": 24
+  "nextPaymentNumber": 25
 }
