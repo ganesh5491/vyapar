@@ -384,3 +384,7 @@
       * amountPaid (total paid so far)
       * status (OPEN, PARTIALLY_PAID, PAID)
       * billDate (for sorting oldest first)
+    - **VERIFIED**: Server logs confirm API returns unpaid bills correctly
+      * Test API call: GET /api/bills?vendorId=6 returns test bill with balanceDue=11800
+      * Bill filtering working: Only bills with balanceDue > 0 and status !== 'PAID' appear
+      * Bill sorting working: Bills sorted by billDate (oldest first) for proper allocation
