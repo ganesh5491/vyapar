@@ -86,6 +86,11 @@ interface LineItem {
   tax: string;
   taxAmount?: number;
   amount: number;
+  billId?: string;
+  billNumber?: string;
+  billDate?: string;
+  balanceDue?: number;
+  billTotal?: number;
 }
 
 export default function VendorCreditCreate() {
@@ -224,6 +229,11 @@ export default function VendorCreditCreate() {
   const vendors = vendorsData?.data || [];
   const products = productsData?.data || [];
 
+  const { data: billItemsData } = useQuery<{ success: boolean; data: any[] }>({
+    queryKey: ['/api/vendors', formData.vendorId, 'bill-items'],
+    enabled: !!formData.vendorId,
+  });
+
   const handleVendorChange = (vendorId: string) => {
     const vendor = vendors.find(v => v.id === vendorId);
     if (vendor) {
@@ -232,6 +242,39 @@ export default function VendorCreditCreate() {
         vendorId: vendor.id,
         vendorName: vendor.displayName,
       }));
+      
+      // Fetch bill items for this vendor
+      fetch(`/api/vendors/${vendorId}/bill-items`)
+        .then(res => res.json())
+        .then(response => {
+          if (response.success && response.data && response.data.length > 0) {
+            // Auto-populate items from vendor's bills
+            const billItems: LineItem[] = response.data.map((item: any, index: number) => ({
+              id: `item-${Date.now()}-${index}`,
+              itemId: item.itemId || "",
+              itemName: item.itemName || item.name || "",
+              description: item.description || "",
+              account: normalizeAccountValue(item.account || "cost_of_goods_sold"),
+              quantity: item.quantity || 1,
+              rate: item.rate || 0,
+              tax: normalizeTaxValue(item.tax || ""),
+              taxAmount: item.taxAmount || 0,
+              amount: (item.quantity || 1) * (item.rate || 0),
+              billId: item.billId,
+              billNumber: item.billNumber,
+              billDate: item.billDate,
+              balanceDue: item.balanceDue,
+              billTotal: item.billTotal,
+            }));
+            setItems(billItems);
+          } else {
+            setItems([]);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch bill items:", err);
+          setItems([]);
+        });
     }
   };
 

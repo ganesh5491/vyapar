@@ -4878,6 +4878,41 @@ export async function registerRoutes(
     }
   });
 
+  // ========== VENDOR BILL ITEMS API ==========
+  app.get("/api/vendors/:id/bill-items", (req: Request, res: Response) => {
+    try {
+      const vendorId = req.params.id;
+      const billsData = readBillsData();
+
+      // Filter bills by vendorId with balanceDue > 0
+      const vendorBills = billsData.bills.filter((b: any) => {
+        const balance = b.balanceDue !== undefined ? b.balanceDue : (b.total || 0);
+        return b.vendorId === vendorId && balance > 0;
+      });
+
+      // Extract all items from those bills, including bill reference info
+      const billItems = [];
+      vendorBills.forEach((bill: any) => {
+        if (bill.items && bill.items.length > 0) {
+          bill.items.forEach((item: any) => {
+            billItems.push({
+              ...item,
+              billId: bill.id,
+              billNumber: bill.billNumber,
+              billDate: bill.billDate,
+              balanceDue: bill.balanceDue || bill.total || 0,
+              billTotal: bill.total || 0
+            });
+          });
+        }
+      });
+
+      res.json({ success: true, data: billItems });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch bill items for vendor" });
+    }
+  });
+
   // ========== VENDOR CREDITS API ==========
   const VENDOR_CREDITS_FILE = path.join(DATA_DIR, "vendorCredits.json");
 
@@ -4940,6 +4975,20 @@ export async function registerRoutes(
       const now = new Date().toISOString();
       const creditNumber = req.body.creditNoteNumber || generateVendorCreditNumber(data.nextCreditNumber);
 
+      // Collect unique bill IDs from items to update their balanceDue
+      const billIdsToUpdate = new Set<string>();
+      const creditAmountByBill: { [billId: string]: number } = {};
+      
+      (req.body.items || []).forEach((item: any) => {
+        if (item.billId) {
+          billIdsToUpdate.add(item.billId);
+          if (!creditAmountByBill[item.billId]) {
+            creditAmountByBill[item.billId] = 0;
+          }
+          creditAmountByBill[item.billId] += item.amount || 0;
+        }
+      });
+
       const newCredit = {
         id: `vc-${Date.now()}`,
         creditNumber,
@@ -4974,9 +5023,28 @@ export async function registerRoutes(
         updatedAt: now
       };
 
+      // Update vendor credit in main storage
       data.vendorCredits.push(newCredit);
       data.nextCreditNumber++;
       writeVendorCreditsData(data);
+
+      // Update bill balanceDue for each bill referenced in items
+      if (billIdsToUpdate.size > 0) {
+        try {
+          const billsData = readBillsData();
+          billIdsToUpdate.forEach((billId: string) => {
+            const billIndex = billsData.bills.findIndex((b: any) => b.id === billId);
+            if (billIndex !== -1) {
+              const creditAmount = creditAmountByBill[billId] || 0;
+              billsData.bills[billIndex].balanceDue = Math.max(0, (billsData.bills[billIndex].balanceDue || billsData.bills[billIndex].total || 0) - creditAmount);
+              billsData.bills[billIndex].updatedAt = now;
+            }
+          });
+          writeBillsData(billsData);
+        } catch (billError) {
+          console.error("Warning: Could not update bill balances for vendor credits:", billError);
+        }
+      }
 
       res.json({ success: true, data: newCredit });
     } catch (error) {
