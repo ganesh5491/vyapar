@@ -344,3 +344,30 @@
 [x] 91. Session restart - reinstalled cross-env and verified application running (Dec 19, 2025 - current session)
 [x] 92. Session restart - reinstalled cross-env and verified application running (Dec 21, 2025)
 [x] 93. Session restart - reinstalled cross-env and verified application running (Dec 22, 2025)
+[x] 94. Implemented automatic population of bill items for vendor credits (Dec 22, 2025):
+    - Created /api/vendors/:id/bill-items backend endpoint that:
+      * Filters bills by vendorId with balanceDue > 0
+      * Extracts all items from those unpaid bills
+      * Includes bill reference info (billId, billNumber, billDate, balanceDue, billTotal)
+    - Updated POST /api/vendor-credits to reduce bill.balanceDue:
+      * Tracks which bills are referenced in credit items
+      * Reduces each bill's balanceDue by the credit amount
+      * Ensures balanceDue never goes below 0
+    - Updated vendor-credit-create.tsx frontend:
+      * Added useQuery hook to fetch bill items for selected vendor
+      * Added useEffect that watches billItemsData and populates items state
+      * Items automatically populate when vendor is selected
+      * Each item shows: itemName, quantity, rate, tax, amount, billId, billNumber, billDate, balanceDue
+[x] 95. Fixed empty Item Table in Vendor Credits (Dec 22, 2025):
+    - Issue: Items weren't displaying despite API working correctly
+    - Root cause: useQuery hook wasn't being used in a useEffect to populate items
+    - Fixed by:
+      * Adding custom queryFn to useQuery that properly fetches /api/vendors/:id/bill-items
+      * Creating useEffect that watches billItemsData and updates items state
+      * Items now auto-populate correctly when vendor is selected
+      * Removed manual fetch() calls in favor of proper useQuery pattern
+    - Now when vendor is selected:
+      * API returns unpaid bill items automatically
+      * Items table populates with bill item details
+      * User can adjust quantities or remove items
+      * On save, bill.balanceDue is reduced by credit amount
