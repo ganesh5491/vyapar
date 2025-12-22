@@ -603,29 +603,12 @@ export default function VendorCreditCreate() {
                           <span className="text-slate-400">⋮⋮</span>
                         </td>
                         <td className="px-4 py-3">
-                          <Select
-                            value={item.itemId || ""}
-                            onValueChange={(v) => updateItem(item.id, 'itemId', v)}
-                          >
-                            <SelectTrigger data-testid={`select-item-${index}`}>
-                              <SelectValue placeholder="Type or click to select an item.">
-                                {item.itemName || products.find(p => p.id === item.itemId)?.name || "Select an item"}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {productsLoading ? (
-                                <SelectItem value="_loading" disabled>Loading...</SelectItem>
-                              ) : products.length === 0 ? (
-                                <SelectItem value="_empty" disabled>No items found</SelectItem>
-                              ) : (
-                                products.map((product) => (
-                                  <SelectItem key={product.id} value={product.id}>
-                                    {product.name}
-                                  </SelectItem>
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
+                          <div className="space-y-1">
+                            <div className="font-medium text-slate-900">{item.itemName}</div>
+                            {item.description && (
+                              <div className="text-xs text-slate-500 line-clamp-1">{item.description}</div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <AccountSelectDropdown
