@@ -108,11 +108,16 @@ interface Vendor {
 interface Bill {
   id: string;
   billNumber: string;
-  date: string;
+  billDate?: string;
+  date?: string;
+  orderNumber?: string;
   purchaseOrderNumber?: string;
   total: number;
-  amountDue: number;
+  amountDue?: number;
+  balanceDue?: number;
+  amountPaid?: number;
   status: string;
+  vendorId?: string;
 }
 
 export default function PaymentsMadeCreate() {
@@ -158,6 +163,11 @@ export default function PaymentsMadeCreate() {
   }>({
     queryKey: ["/api/bills", formData.vendorId],
     enabled: !!formData.vendorId && activeTab === "bill_payment",
+    queryFn: async () => {
+      const response = await fetch(`/api/bills?vendorId=${encodeURIComponent(formData.vendorId)}`);
+      if (!response.ok) throw new Error('Failed to fetch bills');
+      return response.json();
+    }
   });
 
   const { data: nextNumberData } = useQuery<{
@@ -206,20 +216,13 @@ export default function PaymentsMadeCreate() {
 
   const vendors = vendorsData?.data || [];
 
-  // Filter bills by vendor and unpaid status - use amountDue if available, otherwise use total
-  const vendorBills = (billsData?.data || []).filter((b) => {
-    // First check if bill belongs to selected vendor
-    if (b.vendorId !== formData.vendorId) {
-      return false;
-    }
-    const balance = b.amountDue !== undefined && b.amountDue > 0 ? b.amountDue : b.total;
-    const isUnpaid = b.status !== "PAID" && balance > 0;
-    console.log(`Bill ${b.billNumber}: vendorId=${b.vendorId}, amountDue=${b.amountDue}, total=${b.total}, status=${b.status}, isUnpaid=${isUnpaid}`);
-    return isUnpaid;
-  }).map((b) => ({
+  // Bills are already filtered by backend for unpaid status and vendor
+  const vendorBills = (billsData?.data || []).map((b) => ({
     ...b,
-    // Ensure amountDue is set properly
-    amountDue: b.amountDue !== undefined && b.amountDue > 0 ? b.amountDue : b.total
+    // Normalize amountDue from balanceDue
+    amountDue: b.balanceDue !== undefined ? b.balanceDue : (b.total || 0),
+    // Ensure we have billDate for sorting
+    date: b.billDate || b.date,
   }));
 
   // Auto-allocation function for payment amount
@@ -232,9 +235,11 @@ export default function PaymentsMadeCreate() {
     }
 
     // Sort bills by date (oldest first)
-    const sortedBills = [...vendorBills].sort((a, b) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    const sortedBills = [...vendorBills].sort((a, b) => {
+      const dateA = new Date(a.date || new Date()).getTime();
+      const dateB = new Date(b.date || new Date()).getTime();
+      return dateA - dateB;
+    });
 
     let remainingAmount = totalAmount;
     const newSelectedBills: { [key: string]: { payment: number; paymentMadeOn: string } } = {};

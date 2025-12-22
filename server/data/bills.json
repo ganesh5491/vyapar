@@ -1,6 +1,33 @@
 {
   "bills": [
     {
+      "id": "test-unpaid-1",
+      "billNumber": "TEST-001",
+      "orderNumber": "PO-TEST-001",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "billDate": "2025-12-20",
+      "dueDate": "2025-12-27",
+      "paymentTerms": "Net 30",
+      "reverseCharge": false,
+      "subject": "Test Unpaid Bill - 10000",
+      "items": [],
+      "subTotal": 10000,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxAmount": 1800,
+      "adjustment": 0,
+      "total": 11800,
+      "amountPaid": 0,
+      "balanceDue": 11800,
+      "notes": "Test",
+      "status": "OPEN",
+      "createdAt": "2025-12-20T00:00:00.000Z",
+      "updatedAt": "2025-12-20T00:00:00.000Z",
+      "createdBy": "Admin"
+    },
+    {
       "id": "1766381072824",
       "billNumber": "10",
       "orderNumber": "PO-2025-0008",

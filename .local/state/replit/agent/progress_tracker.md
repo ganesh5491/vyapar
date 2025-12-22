@@ -363,3 +363,24 @@
     - Prevents issues from state batching in React 18+
     - Item selection now properly displays name, rate, and other details in the table row
 [x] 93. Session restart - reinstalled cross-env and verified application running (Dec 22, 2025 - current session)
+[x] 94. Fixed "Bill Payment → unpaid bills not showing" issue (Dec 22, 2025):
+    - **Root cause**: /api/bills endpoint returned ALL bills without filtering
+    - **Backend fix**: Updated GET /api/bills endpoint to:
+      * Accept vendorId query parameter
+      * Filter bills by vendorId
+      * Filter for unpaid bills only (balanceDue > 0 and status !== 'PAID')
+      * Sort by billDate (oldest first) for proper payment allocation
+    - **Frontend fix**: Updated payments-made-create.tsx to:
+      * Enhanced Bill interface with balanceDue, billDate fields
+      * Updated query to pass vendorId as parameter to /api/bills?vendorId=X
+      * Simplified vendorBills filtering (backend now handles filtering)
+      * Fixed TypeScript error in autoAllocatePayment sort function
+    - **Payment allocation logic**: 
+      * Auto-allocates payment amounts to unpaid bills (oldest first)
+      * Supports partial payments and multiple bill payments
+      * Automatically updates Amount Due when payment is saved
+    - **Database structure**: Uses existing fields:
+      * balanceDue (remaining amount owed)
+      * amountPaid (total paid so far)
+      * status (OPEN, PARTIALLY_PAID, PAID)
+      * billDate (for sorting oldest first)

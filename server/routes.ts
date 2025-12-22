@@ -3403,7 +3403,30 @@ export async function registerRoutes(
   app.get("/api/bills", (req: Request, res: Response) => {
     try {
       const data = readBillsData();
-      res.json({ success: true, data: data.bills });
+      const vendorId = req.query.vendorId as string;
+
+      let bills = data.bills;
+
+      // Filter by vendor if vendorId is provided
+      if (vendorId) {
+        bills = bills.filter((b: any) => b.vendorId === vendorId);
+      }
+
+      // Filter for unpaid bills (balanceDue > 0)
+      // Only return unpaid or partially paid bills
+      bills = bills.filter((b: any) => {
+        const balance = b.balanceDue !== undefined ? b.balanceDue : (b.total || 0);
+        return balance > 0 && b.status !== 'PAID';
+      });
+
+      // Sort by bill date (oldest first) for payment allocation
+      bills.sort((a: any, b: any) => {
+        const dateA = new Date(a.billDate || a.date || 0).getTime();
+        const dateB = new Date(b.billDate || b.date || 0).getTime();
+        return dateA - dateB;
+      });
+
+      res.json({ success: true, data: bills });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch bills" });
     }
