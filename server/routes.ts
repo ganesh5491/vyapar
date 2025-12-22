@@ -4691,15 +4691,32 @@ export async function registerRoutes(
         const billsData = readBillsData();
         const billPayments = req.body.billPayments || {};
 
+        // Build enriched billPayments object for storage (with bill details)
+        const enrichedBillPayments: Record<string, any> = {};
+
         // Update each bill that received a payment
         billsData.bills = billsData.bills.map((bill: any) => {
-          const billPaymentAmount = billPayments[bill.id];
-          
-          if (billPaymentAmount && billPaymentAmount > 0) {
+          const billPaymentEntry = billPayments[bill.id];
+
+          // Handle both formats:
+          // 1. Frontend format: { payment: 298, paymentMadeOn: "..." }
+          // 2. Direct amount format: number (for backwards compatibility)
+          let paymentAmount = 0;
+          if (billPaymentEntry) {
+            if (typeof billPaymentEntry === 'number') {
+              paymentAmount = billPaymentEntry;
+            } else if (typeof billPaymentEntry === 'object' && billPaymentEntry.payment !== undefined) {
+              paymentAmount = Number(billPaymentEntry.payment) || 0;
+            } else if (typeof billPaymentEntry === 'object' && billPaymentEntry.amountPaid !== undefined) {
+              paymentAmount = Number(billPaymentEntry.amountPaid) || 0;
+            }
+          }
+
+          if (paymentAmount > 0) {
             // Update bill's amountPaid and balanceDue
-            const newAmountPaid = (bill.amountPaid || 0) + billPaymentAmount;
+            const newAmountPaid = (bill.amountPaid || 0) + paymentAmount;
             const newBalanceDue = Math.max(0, (bill.total || 0) - newAmountPaid);
-            
+
             // Determine new status based on balanceDue
             let newStatus = 'OPEN';
             if (newBalanceDue === 0) {
@@ -4708,18 +4725,44 @@ export async function registerRoutes(
               newStatus = 'PARTIALLY_PAID';
             }
 
+            // Build enriched bill payment entry for storage
+            enrichedBillPayments[bill.id] = {
+              billId: bill.id,
+              billNumber: bill.billNumber,
+              billAmount: bill.total,
+              amountPaid: paymentAmount
+            };
+
+            // Add activity log for this payment
+            const activityLog = {
+              id: String(Date.now()),
+              timestamp: now,
+              action: 'payment',
+              description: `Payment of ₹${paymentAmount.toLocaleString('en-IN')} recorded via ${newPayment.paymentNumber}`,
+              user: 'System'
+            };
+
             return {
               ...bill,
               amountPaid: newAmountPaid,
               balanceDue: newBalanceDue,
               status: newStatus,
-              updatedAt: now
+              updatedAt: now,
+              activityLogs: [...(bill.activityLogs || []), activityLog]
             };
           }
           return bill;
         });
 
         writeBillsData(billsData);
+
+        // Update the stored payment with enriched billPayments (includes bill details)
+        if (Object.keys(enrichedBillPayments).length > 0) {
+          newPayment.billPayments = enrichedBillPayments;
+          // Re-write payments data with enriched billPayments
+          data.paymentsMade[data.paymentsMade.length - 1] = newPayment;
+          writePaymentsMadeData(data);
+        }
       } catch (billError) {
         console.error("Warning: Could not update bills after payment", billError);
         // Don't fail the payment if bill update fails, but log the error
@@ -4762,6 +4805,68 @@ export async function registerRoutes(
 
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Payment not found" });
+      }
+
+      const deletedPayment = data.paymentsMade[index];
+      const now = new Date().toISOString();
+
+      // Reverse the bill payment allocations before deleting
+      if (deletedPayment.billPayments && Object.keys(deletedPayment.billPayments).length > 0) {
+        try {
+          const billsData = readBillsData();
+
+          billsData.bills = billsData.bills.map((bill: any) => {
+            const billPaymentEntry = deletedPayment.billPayments[bill.id];
+            if (!billPaymentEntry) return bill;
+
+            // Get the payment amount that was allocated to this bill
+            let paymentAmount = 0;
+            if (typeof billPaymentEntry === 'number') {
+              paymentAmount = billPaymentEntry;
+            } else if (typeof billPaymentEntry === 'object' && billPaymentEntry.amountPaid !== undefined) {
+              paymentAmount = Number(billPaymentEntry.amountPaid) || 0;
+            } else if (typeof billPaymentEntry === 'object' && billPaymentEntry.payment !== undefined) {
+              paymentAmount = Number(billPaymentEntry.payment) || 0;
+            }
+
+            if (paymentAmount > 0) {
+              // Reverse the payment: decrease amountPaid, increase balanceDue
+              const newAmountPaid = Math.max(0, (bill.amountPaid || 0) - paymentAmount);
+              const newBalanceDue = (bill.total || 0) - newAmountPaid;
+
+              // Determine new status based on balanceDue
+              let newStatus = 'OPEN';
+              if (newBalanceDue === 0) {
+                newStatus = 'PAID';
+              } else if (newAmountPaid > 0 && newBalanceDue > 0) {
+                newStatus = 'PARTIALLY_PAID';
+              }
+
+              // Add activity log for payment reversal
+              const activityLog = {
+                id: String(Date.now()),
+                timestamp: now,
+                action: 'payment_reversed',
+                description: `Payment of ₹${paymentAmount.toLocaleString('en-IN')} reversed (${deletedPayment.paymentNumber} deleted)`,
+                user: 'System'
+              };
+
+              return {
+                ...bill,
+                amountPaid: newAmountPaid,
+                balanceDue: newBalanceDue,
+                status: newStatus,
+                updatedAt: now,
+                activityLogs: [...(bill.activityLogs || []), activityLog]
+              };
+            }
+            return bill;
+          });
+
+          writeBillsData(billsData);
+        } catch (billError) {
+          console.error("Warning: Could not reverse bill payments on delete", billError);
+        }
       }
 
       data.paymentsMade.splice(index, 1);

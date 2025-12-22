@@ -163,6 +163,9 @@ export default function PaymentsMadeCreate() {
   }>({
     queryKey: ["/api/bills", formData.vendorId],
     enabled: !!formData.vendorId && activeTab === "bill_payment",
+    // Always fetch fresh bills data to get updated balanceDue after payments
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
       const response = await fetch(`/api/bills?vendorId=${encodeURIComponent(formData.vendorId)}`);
       if (!response.ok) throw new Error('Failed to fetch bills');

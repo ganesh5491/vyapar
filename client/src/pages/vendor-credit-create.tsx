@@ -561,11 +561,13 @@ export default function VendorCreditCreate() {
                         </td>
                         <td className="px-4 py-3">
                           <Select
-                            value={item.itemId}
+                            value={item.itemId || ""}
                             onValueChange={(v) => updateItem(item.id, 'itemId', v)}
                           >
                             <SelectTrigger data-testid={`select-item-${index}`}>
-                              <SelectValue placeholder="Type or click to select an item." />
+                              <SelectValue placeholder="Type or click to select an item.">
+                                {item.itemName || products.find(p => p.id === item.itemId)?.name || "Select an item"}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               {productsLoading ? (
@@ -612,11 +614,13 @@ export default function VendorCreditCreate() {
                         </td>
                         <td className="px-4 py-3">
                           <Select
-                            value={item.tax}
+                            value={item.tax || ""}
                             onValueChange={(v) => updateItem(item.id, 'tax', v)}
                           >
                             <SelectTrigger data-testid={`select-tax-${index}`}>
-                              <SelectValue placeholder="Select a Tax" />
+                              <SelectValue placeholder="Select a Tax">
+                                {TAX_OPTIONS.find(o => o.value === item.tax)?.label || item.tax || "Select a Tax"}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               {TAX_OPTIONS.map((option) => (

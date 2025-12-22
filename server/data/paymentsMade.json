@@ -321,7 +321,158 @@
       "status": "PAID",
       "createdAt": "2025-12-22T08:43:27.653Z",
       "updatedAt": "2025-12-22T08:43:27.653Z"
+    },
+    {
+      "id": "pm-1766393430150",
+      "paymentNumber": "PM-00017",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[MH] - Maharashtra",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1200,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "test-unpaid-1": {
+          "payment": 1200,
+          "paymentMadeOn": "2025-12-22"
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T08:50:30.150Z",
+      "updatedAt": "2025-12-22T08:50:30.150Z"
+    },
+    {
+      "id": "pm-1766393478077",
+      "paymentNumber": "PM-00018",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "[AP] - Andhra Pradesh",
+      "destinationOfSupply": "[AP] - Andhra Pradesh",
+      "descriptionOfSupply": "",
+      "paymentAmount": 200,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "1766373805363": {
+          "payment": 200,
+          "paymentMadeOn": "2025-12-22"
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T08:51:18.077Z",
+      "updatedAt": "2025-12-22T08:51:18.077Z"
+    },
+    {
+      "id": "pm-1766395106896",
+      "paymentNumber": "PM-00019",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[MH] - Maharashtra",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentAmount": 200,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "test-unpaid-1": {
+          "billId": "test-unpaid-1",
+          "billNumber": "TEST-001",
+          "billAmount": 11800,
+          "amountPaid": 200
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T09:18:26.896Z",
+      "updatedAt": "2025-12-22T09:18:26.896Z"
+    },
+    {
+      "id": "pm-1766395135563",
+      "paymentNumber": "PM-00020",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[MH] - Maharashtra",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "test-unpaid-1": {
+          "billId": "test-unpaid-1",
+          "billNumber": "TEST-001",
+          "billAmount": 11800,
+          "amountPaid": 1000
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T09:18:55.563Z",
+      "updatedAt": "2025-12-22T09:18:55.563Z"
+    },
+    {
+      "id": "pm-1766395825841",
+      "paymentNumber": "PM-00021",
+      "vendorId": "4",
+      "vendorName": "Sham",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[HP] - Himachal Pradesh",
+      "destinationOfSupply": "[HP] - Himachal Pradesh",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-22",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "1766395458615": {
+          "billId": "1766395458615",
+          "billNumber": "11",
+          "billAmount": 2428.5,
+          "amountPaid": 1000
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-22T09:30:25.839Z",
+      "updatedAt": "2025-12-22T09:30:25.839Z"
     }
   ],
-  "nextPaymentNumber": 17
+  "nextPaymentNumber": 22
 }
