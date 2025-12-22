@@ -388,3 +388,22 @@
       * Test API call: GET /api/bills?vendorId=6 returns test bill with balanceDue=11800
       * Bill filtering working: Only bills with balanceDue > 0 and status !== 'PAID' appear
       * Bill sorting working: Bills sorted by billDate (oldest first) for proper allocation
+
+## CRITICAL BUG FIX: Payment Recording Update (Completed 12/22/2025)
+- **Problem**: Bill `balanceDue` not updating after payment - showing 400 instead of 200 remaining after 200 RS paid
+- **Root Cause**: POST /api/payments-made endpoint saved payment but never updated bills in bills.json
+- **Solution**: Modified POST /api/payments-made to:
+  1. Save payment record (existing logic)
+  2. Read bills.json
+  3. Find bills that received payment from billPayments object
+  4. Update each bill's amountPaid, balanceDue, and status
+  5. Write updated bills back to bills.json
+- **Status Calculation**:
+  * PAID: balanceDue === 0
+  * PARTIALLY_PAID: amountPaid > 0 AND balanceDue > 0
+  * OPEN: balanceDue > 0 AND amountPaid === 0
+- **Verified** with test sequence:
+  * Payment 1 (200 RS): amountPaid=200, balanceDue=11600 ✓
+  * Payment 2 (200 RS): amountPaid=400, balanceDue=11400 ✓
+  * Payment 3 (200 RS): amountPaid=600, balanceDue=11200 ✓
+  * New payment screen correctly shows remaining balance, not total

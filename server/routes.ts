@@ -4685,6 +4685,46 @@ export async function registerRoutes(
       data.nextPaymentNumber++;
       writePaymentsMadeData(data);
 
+      // CRITICAL FIX: Update bills after payment is recorded
+      // This ensures balanceDue and amountPaid are updated correctly
+      try {
+        const billsData = readBillsData();
+        const billPayments = req.body.billPayments || {};
+
+        // Update each bill that received a payment
+        billsData.bills = billsData.bills.map((bill: any) => {
+          const billPaymentAmount = billPayments[bill.id];
+          
+          if (billPaymentAmount && billPaymentAmount > 0) {
+            // Update bill's amountPaid and balanceDue
+            const newAmountPaid = (bill.amountPaid || 0) + billPaymentAmount;
+            const newBalanceDue = Math.max(0, (bill.total || 0) - newAmountPaid);
+            
+            // Determine new status based on balanceDue
+            let newStatus = 'OPEN';
+            if (newBalanceDue === 0) {
+              newStatus = 'PAID';
+            } else if (newAmountPaid > 0 && newBalanceDue > 0) {
+              newStatus = 'PARTIALLY_PAID';
+            }
+
+            return {
+              ...bill,
+              amountPaid: newAmountPaid,
+              balanceDue: newBalanceDue,
+              status: newStatus,
+              updatedAt: now
+            };
+          }
+          return bill;
+        });
+
+        writeBillsData(billsData);
+      } catch (billError) {
+        console.error("Warning: Could not update bills after payment", billError);
+        // Don't fail the payment if bill update fails, but log the error
+      }
+
       res.json({ success: true, data: newPayment });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to create payment" });

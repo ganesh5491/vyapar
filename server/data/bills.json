@@ -19,12 +19,12 @@
       "taxAmount": 1800,
       "adjustment": 0,
       "total": 11800,
-      "amountPaid": 0,
-      "balanceDue": 11800,
+      "amountPaid": 600,
+      "balanceDue": 11200,
       "notes": "Test",
-      "status": "OPEN",
+      "status": "PARTIALLY_PAID",
       "createdAt": "2025-12-20T00:00:00.000Z",
-      "updatedAt": "2025-12-20T00:00:00.000Z",
+      "updatedAt": "2025-12-22T08:41:50.675Z",
       "createdBy": "Admin"
     },
     {
