@@ -240,25 +240,30 @@ export default function VendorCreditCreate() {
 
   // Auto-populate items when bill items data is loaded
   useEffect(() => {
-    if (billItemsData?.data && billItemsData.data.length > 0 && !billId) {
-      const billItems: LineItem[] = billItemsData.data.map((item: any, index: number) => ({
-        id: `item-${Date.now()}-${index}`,
-        itemId: item.itemId || "",
-        itemName: item.itemName || item.name || "",
-        description: item.description || "",
-        account: normalizeAccountValue(item.account || "cost_of_goods_sold"),
-        quantity: item.quantity || 1,
-        rate: item.rate || 0,
-        tax: normalizeTaxValue(item.tax || ""),
-        taxAmount: item.taxAmount || 0,
-        amount: (item.quantity || 1) * (item.rate || 0),
-        billId: item.billId,
-        billNumber: item.billNumber,
-        billDate: item.billDate,
-        balanceDue: item.balanceDue,
-        billTotal: item.billTotal,
-      }));
-      setItems(billItems);
+    if (!billId && billItemsData) {
+      if (billItemsData.data && billItemsData.data.length > 0) {
+        const billItems: LineItem[] = billItemsData.data.map((item: any, index: number) => ({
+          id: `item-${Date.now()}-${index}`,
+          itemId: item.itemId || "",
+          itemName: item.itemName || item.name || "",
+          description: item.description || "",
+          account: normalizeAccountValue(item.account || "cost_of_goods_sold"),
+          quantity: item.quantity || 1,
+          rate: item.rate || 0,
+          tax: normalizeTaxValue(item.tax || ""),
+          taxAmount: item.taxAmount || 0,
+          amount: (item.quantity || 1) * (item.rate || 0),
+          billId: item.billId,
+          billNumber: item.billNumber,
+          billDate: item.billDate,
+          balanceDue: item.balanceDue,
+          billTotal: item.billTotal,
+        }));
+        setItems(billItems);
+      } else {
+        // Clear items when vendor has no unpaid bills
+        setItems([]);
+      }
     }
   }, [billItemsData, billId]);
 
