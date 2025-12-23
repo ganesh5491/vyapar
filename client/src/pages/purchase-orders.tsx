@@ -590,34 +590,106 @@ export default function PurchaseOrders() {
     }
   };
 
-  const handleMarkAsIssued = (poId: string) => {
-    // Update PO status to ISSUED
-    setPurchaseOrders(prev =>
-      prev.map(po =>
-        po.id === poId ? { ...po, status: 'ISSUED' } : po
-      )
-    );
-    toast({ title: "Purchase Order Issued", description: "Status updated successfully" });
+  const handleMarkAsIssued = async (poId: string) => {
+    try {
+      const response = await fetch(`/api/purchase-orders/${poId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'ISSUED',
+          updatedBy: 'Admin User'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update local state with the updated PO from server
+        setPurchaseOrders(prev =>
+          prev.map(po =>
+            po.id === poId ? data.data : po
+          )
+        );
+        toast({ title: "Purchase Order Issued", description: "Status updated successfully" });
+      } else {
+        throw new Error('Failed to update status');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update purchase order status",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleMarkAsReceived = (poId: string) => {
-    // Update PO status to RECEIVED
-    setPurchaseOrders(prev =>
-      prev.map(po =>
-        po.id === poId ? { ...po, status: 'RECEIVED', receiveStatus: 'RECEIVED' } : po
-      )
-    );
-    toast({ title: "Purchase Order Received", description: "Status updated successfully" });
+  const handleMarkAsReceived = async (poId: string) => {
+    try {
+      const response = await fetch(`/api/purchase-orders/${poId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'RECEIVED',
+          updatedBy: 'Admin User'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update local state with the updated PO from server
+        setPurchaseOrders(prev =>
+          prev.map(po =>
+            po.id === poId ? { ...data.data, receiveStatus: 'RECEIVED' } : po
+          )
+        );
+        toast({ title: "Purchase Order Received", description: "Status updated successfully" });
+      } else {
+        throw new Error('Failed to update status');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update purchase order status",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleMarkAsCancelled = (poId: string) => {
-    // Update PO status to CANCELLED
-    setPurchaseOrders(prev =>
-      prev.map(po =>
-        po.id === poId ? { ...po, status: 'CANCELLED' } : po
-      )
-    );
-    toast({ title: "Purchase Order Cancelled", description: "Status updated successfully" });
+  const handleMarkAsCancelled = async (poId: string) => {
+    try {
+      const response = await fetch(`/api/purchase-orders/${poId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'CANCELLED',
+          updatedBy: 'Admin User'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update local state with the updated PO from server
+        setPurchaseOrders(prev =>
+          prev.map(po =>
+            po.id === poId ? data.data : po
+          )
+        );
+        toast({ title: "Purchase Order Cancelled", description: "Status updated successfully" });
+      } else {
+        throw new Error('Failed to update status');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update purchase order status",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleClone = (poId: string) => {

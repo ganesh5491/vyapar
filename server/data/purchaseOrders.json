@@ -141,12 +141,12 @@
       "notes": "",
       "termsAndConditions": "",
       "attachments": [],
-      "status": "ISSUED",
+      "status": "CANCELLED",
       "receiveStatus": "YET TO BE RECEIVED",
       "billedStatus": "BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-23T10:32:17.920Z",
-      "updatedAt": "2025-12-23T10:53:02.131Z",
+      "updatedAt": "2025-12-23T11:57:02.299Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -161,6 +161,13 @@
           "timestamp": "2025-12-23T10:53:02.131Z",
           "action": "converted_to_bill",
           "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T11:57:02.299Z",
+          "action": "cancelled",
+          "description": "Purchase Order has been cancelled",
           "user": "Admin User"
         }
       ]
@@ -464,10 +471,10 @@
       "attachments": [],
       "status": "ISSUED",
       "receiveStatus": "YET TO BE RECEIVED",
-      "billedStatus": "YET TO BE BILLED",
+      "billedStatus": "BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-22T05:23:08.800Z",
-      "updatedAt": "2025-12-22T05:23:08.800Z",
+      "updatedAt": "2025-12-23T11:57:20.159Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -475,6 +482,13 @@
           "timestamp": "2025-12-22T05:23:08.800Z",
           "action": "created",
           "description": "Purchase Order created for ₹1,728",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T11:57:20.159Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
           "user": "Admin User"
         }
       ]

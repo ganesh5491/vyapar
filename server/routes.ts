@@ -2708,7 +2708,7 @@ export async function registerRoutes(
         data.vendors[vendorIndex].attachments = [];
       }
 
-      const files = req.files as any[] || [];
+      const files = ((req as any).files as any[]) || [];
       const newAttachments = files.map((file: any) => ({
         id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: file.originalname || file.name || 'file',
@@ -5217,7 +5217,7 @@ export async function registerRoutes(
       });
 
       // Extract all items from those bills, including bill reference info
-      const billItems = [];
+      const billItems: any[] = [];
       vendorBills.forEach((bill: any) => {
         if (bill.items && bill.items.length > 0) {
           bill.items.forEach((item: any) => {

@@ -104,103 +104,6 @@
       ]
     },
     {
-      "id": "1766395458615",
-      "billNumber": "11",
-      "orderNumber": "",
-      "vendorId": "4",
-      "vendorName": "Sham",
-      "vendorAddress": {
-        "street1": "flat No. 605, B wing ,Ganesh Galaxy, Dattangar",
-        "street2": "Aambegaoun, pune.",
-        "city": "Varodi Daymukh",
-        "state": "[TR] - Tripura",
-        "pinCode": "411046",
-        "country": "India",
-        "gstin": ""
-      },
-      "billDate": "2025-12-22",
-      "dueDate": "2025-12-22",
-      "paymentTerms": "Due on Receipt",
-      "reverseCharge": false,
-      "subject": "",
-      "items": [
-        {
-          "id": "1766395234413",
-          "itemName": "Rice",
-          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
-          "account": "input_tax_credits",
-          "quantity": 11,
-          "rate": 50,
-          "tax": "CGST9",
-          "taxAmount": 49.5,
-          "customerDetails": "3",
-          "amount": 550
-        },
-        {
-          "id": "1766395442478",
-          "itemName": "Rice (Copy)",
-          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
-          "account": "prepaid_expenses",
-          "quantity": 31,
-          "rate": 50,
-          "tax": "IGST18",
-          "taxAmount": 279,
-          "customerDetails": "6",
-          "amount": 1550
-        }
-      ],
-      "subTotal": 2100,
-      "discountType": "percent",
-      "discountValue": 0,
-      "discountAmount": 0,
-      "taxType": "TDS",
-      "taxCategory": "",
-      "taxAmount": 328.5,
-      "adjustment": 0,
-      "adjustmentDescription": "",
-      "total": 2428.5,
-      "amountPaid": 1000,
-      "balanceDue": 1428.5,
-      "notes": "",
-      "attachments": [],
-      "status": "UNPAID",
-      "pdfTemplate": "Standard Template",
-      "journalEntries": [],
-      "createdAt": "2025-12-22T09:24:18.615Z",
-      "updatedAt": "2025-12-23T10:08:43.402Z",
-      "createdBy": "Admin User",
-      "activityLogs": [
-        {
-          "id": "1",
-          "timestamp": "2025-12-22T09:24:18.615Z",
-          "action": "created",
-          "description": "Bill created for ₹2,428.5",
-          "user": "Admin User"
-        },
-        {
-          "id": "1766395825851",
-          "timestamp": "2025-12-22T09:30:25.839Z",
-          "action": "payment",
-          "description": "Payment of ₹1,000 recorded via PM-00021",
-          "user": "System"
-        },
-        {
-          "id": "3",
-          "timestamp": "2025-12-23T10:08:35.319Z",
-          "action": "payment",
-          "description": "Payment of ₹1,028.5 recorded",
-          "user": "Admin User"
-        },
-        {
-          "id": "4",
-          "timestamp": "2025-12-23T10:08:43.402Z",
-          "action": "payment",
-          "description": "Payment of ₹400 recorded",
-          "user": "Admin User"
-        }
-      ]
-    },
-    {
       "id": "1766381072824",
       "billNumber": "10",
       "orderNumber": "PO-2025-0008",
@@ -252,11 +155,11 @@
       "balanceDue": 0,
       "notes": "",
       "attachments": [],
-      "status": "PAID",
+      "status": "VOID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-22T05:24:32.824Z",
-      "updatedAt": "2025-12-22T06:44:09.899Z",
+      "updatedAt": "2025-12-23T11:37:03.508Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -285,6 +188,13 @@
           "timestamp": "2025-12-22T06:44:09.899Z",
           "action": "payment",
           "description": "Payment of ₹1,889 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-23T11:37:03.508Z",
+          "action": "void",
+          "description": "Bill has been voided",
           "user": "Admin User"
         }
       ]
