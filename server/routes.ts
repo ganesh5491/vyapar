@@ -733,7 +733,25 @@ export async function registerRoutes(
   app.get("/api/customers", (req: Request, res: Response) => {
     try {
       const data = readCustomersData();
-      res.json({ success: true, data: data.customers });
+      const invoicesData = readInvoicesData();
+
+      // Calculate outstanding receivables for each customer
+      const customersWithReceivables = data.customers.map((customer: any) => {
+        // Find all invoices for this customer
+        const customerInvoices = invoicesData.invoices.filter((inv: any) => inv.customerId === customer.id);
+
+        // Calculate total outstanding receivables (sum of balanceDue from unpaid/partially paid invoices)
+        const outstandingReceivables = customerInvoices.reduce((total: number, inv: any) => {
+          return total + (inv.balanceDue || 0);
+        }, 0);
+
+        return {
+          ...customer,
+          outstandingReceivables: outstandingReceivables
+        };
+      });
+
+      res.json({ success: true, data: customersWithReceivables });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch customers" });
     }
@@ -746,7 +764,20 @@ export async function registerRoutes(
       if (!customer) {
         return res.status(404).json({ success: false, message: "Customer not found" });
       }
-      res.json({ success: true, data: customer });
+
+      // Calculate outstanding receivables for this customer
+      const invoicesData = readInvoicesData();
+      const customerInvoices = invoicesData.invoices.filter((inv: any) => inv.customerId === customer.id);
+      const outstandingReceivables = customerInvoices.reduce((total: number, inv: any) => {
+        return total + (inv.balanceDue || 0);
+      }, 0);
+
+      const customerWithReceivables = {
+        ...customer,
+        outstandingReceivables: outstandingReceivables
+      };
+
+      res.json({ success: true, data: customerWithReceivables });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch customer" });
     }
@@ -1715,6 +1746,45 @@ export async function registerRoutes(
       const invoiceNumber = generateInvoiceNumber(data.nextInvoiceNumber);
       const now = new Date().toISOString();
 
+      // Calculate totals from items if not provided or zero
+      let calculatedSubTotal = req.body.subTotal || 0;
+      let calculatedTotal = req.body.total || 0;
+      let calculatedCgst = req.body.cgst || 0;
+      let calculatedSgst = req.body.sgst || 0;
+      let calculatedIgst = req.body.igst || 0;
+
+      const items = req.body.items || [];
+
+      // If total is 0 or not provided, calculate from items
+      if (calculatedTotal === 0 && items.length > 0) {
+        let itemsSubTotal = 0;
+        let itemsTotalTax = 0;
+
+        items.forEach((item: any) => {
+          const qty = item.quantity || item.ordered || 0;
+          const rate = item.rate || 0;
+          const itemAmount = qty * rate;
+          const discountAmount = item.discountType === 'percentage'
+            ? (itemAmount * (item.discount || 0)) / 100
+            : (item.discount || 0);
+          const taxableAmount = itemAmount - discountAmount;
+          const taxRate = item.tax || 0;
+          const taxAmount = (taxableAmount * taxRate) / 100;
+
+          itemsSubTotal += taxableAmount;
+          itemsTotalTax += taxAmount;
+
+          // Update item amount if not set
+          if (!item.amount || item.amount === 0) {
+            item.amount = taxableAmount + taxAmount;
+          }
+        });
+
+        calculatedSubTotal = itemsSubTotal;
+        calculatedTotal = itemsSubTotal + itemsTotalTax + (req.body.shippingCharges || 0) + (req.body.adjustment || 0);
+        calculatedIgst = itemsTotalTax;
+      }
+
       const newInvoice = {
         id: String(Date.now()),
         invoiceNumber,
@@ -1728,21 +1798,21 @@ export async function registerRoutes(
         salesperson: req.body.salesperson || '',
         placeOfSupply: req.body.placeOfSupply || '',
         paymentTerms: req.body.paymentTerms || 'Due on Receipt',
-        items: req.body.items || [],
-        subTotal: req.body.subTotal || 0,
+        items: items,
+        subTotal: calculatedSubTotal,
         shippingCharges: req.body.shippingCharges || 0,
-        cgst: req.body.cgst || 0,
-        sgst: req.body.sgst || 0,
-        igst: req.body.igst || 0,
+        cgst: calculatedCgst,
+        sgst: calculatedSgst,
+        igst: calculatedIgst,
         adjustment: req.body.adjustment || 0,
-        total: req.body.total || 0,
+        total: calculatedTotal,
         amountPaid: req.body.amountPaid || 0,
-        balanceDue: req.body.total || 0,
+        balanceDue: calculatedTotal,
         customerNotes: req.body.customerNotes || '',
         termsAndConditions: req.body.termsAndConditions || '',
         status: req.body.status || 'PENDING',
-        sourceType: req.body.sourceType || null,
-        sourceId: req.body.sourceId || null,
+        sourceType: req.body.salesOrderId ? 'sales_order' : (req.body.sourceType || null),
+        sourceId: req.body.salesOrderId || req.body.sourceId || null,
         sourceNumber: req.body.sourceNumber || null,
         pdfTemplate: req.body.pdfTemplate || 'Standard Template',
         createdAt: now,
@@ -1754,7 +1824,7 @@ export async function registerRoutes(
             id: '1',
             timestamp: now,
             action: 'created',
-            description: `Invoice created for ₹${req.body.total?.toLocaleString('en-IN') || '0.00'}`,
+            description: `Invoice created for ₹${calculatedTotal?.toLocaleString('en-IN') || '0.00'}`,
             user: req.body.createdBy || 'Admin User'
           }
         ]
@@ -1763,6 +1833,81 @@ export async function registerRoutes(
       data.invoices.unshift(newInvoice);
       data.nextInvoiceNumber += 1;
       writeInvoicesData(data);
+
+      // If salesOrderId is provided, update the sales order's invoices array
+      if (req.body.salesOrderId) {
+        try {
+          const salesOrderData = readSalesOrdersData();
+          const orderIndex = salesOrderData.salesOrders.findIndex((o: any) => o.id === req.body.salesOrderId);
+
+          if (orderIndex !== -1) {
+            const existingOrder = salesOrderData.salesOrders[orderIndex];
+
+            // Add invoice to sales order's invoices array
+            if (!existingOrder.invoices) {
+              existingOrder.invoices = [];
+            }
+
+            existingOrder.invoices.push({
+              id: newInvoice.id,
+              invoiceNumber: newInvoice.invoiceNumber,
+              date: newInvoice.date,
+              dueDate: newInvoice.dueDate,
+              status: newInvoice.status,
+              amount: newInvoice.total,
+              balanceDue: newInvoice.balanceDue
+            });
+
+            // Update sales order statuses
+            existingOrder.invoiceStatus = 'Invoiced';
+            existingOrder.updatedAt = now;
+
+            // Update items as invoiced if convertAll is true
+            if (req.body.convertAll) {
+              existingOrder.items = existingOrder.items.map((item: any) => ({
+                ...item,
+                invoicedQty: item.quantity || item.ordered,
+                invoiceStatus: 'Invoiced'
+              }));
+              existingOrder.orderStatus = 'CLOSED';
+            } else if (req.body.selectedItemIds) {
+              // Update only selected items
+              existingOrder.items = existingOrder.items.map((item: any) => {
+                if (req.body.selectedItemIds.includes(item.id)) {
+                  return {
+                    ...item,
+                    invoicedQty: item.quantity || item.ordered,
+                    invoiceStatus: 'Invoiced'
+                  };
+                }
+                return item;
+              });
+
+              // Check if all items are invoiced
+              const allInvoiced = existingOrder.items.every((item: any) => item.invoiceStatus === 'Invoiced');
+              if (allInvoiced) {
+                existingOrder.orderStatus = 'CLOSED';
+              }
+            }
+
+            // Add activity log
+            existingOrder.activityLogs = existingOrder.activityLogs || [];
+            existingOrder.activityLogs.push({
+              id: String(existingOrder.activityLogs.length + 1),
+              timestamp: now,
+              action: 'invoiced',
+              description: `Invoice ${newInvoice.invoiceNumber} created`,
+              user: req.body.createdBy || 'Admin User'
+            });
+
+            salesOrderData.salesOrders[orderIndex] = existingOrder;
+            writeSalesOrdersData(salesOrderData);
+          }
+        } catch (soError) {
+          console.error('Error updating sales order:', soError);
+          // Don't fail the invoice creation if sales order update fails
+        }
+      }
 
       res.status(201).json({ success: true, data: newInvoice });
     } catch (error) {
@@ -1806,7 +1951,7 @@ export async function registerRoutes(
       updatedInvoice.amountPaid = existingInvoice.amountPaid || 0;
       updatedInvoice.payments = existingInvoice.payments || [];
       updatedInvoice.balanceDue = Math.max(0, (updatedInvoice.total || 0) - updatedInvoice.amountPaid);
-      
+
       // Update status based on balance due
       if (updatedInvoice.balanceDue <= 0) {
         updatedInvoice.status = 'PAID';
@@ -5039,7 +5184,7 @@ export async function registerRoutes(
       // Collect unique bill IDs from items to update their balanceDue
       const billIdsToUpdate = new Set<string>();
       const creditAmountByBill: { [billId: string]: number } = {};
-      
+
       (req.body.items || []).forEach((item: any) => {
         if (item.billId) {
           billIdsToUpdate.add(item.billId);
@@ -5183,7 +5328,7 @@ export async function registerRoutes(
   app.post("/api/transporters", (req: Request, res: Response) => {
     try {
       const { name, transporterId } = req.body;
-      
+
       if (!name || !transporterId) {
         return res.status(400).json({ success: false, message: "Name and transporterId are required" });
       }

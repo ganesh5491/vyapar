@@ -42,6 +42,18 @@ interface Customer {
   shippingAddress?: any;
 }
 
+interface InventoryItem {
+  id: string;
+  name: string;
+  description?: string;
+  hsnSac?: string;
+  rate?: string | number;
+  sellingPrice?: number;
+  unit?: string;
+  type?: string;
+  intraStateTax?: string;
+}
+
 const CHALLAN_TYPES = [
   { value: "supply_on_approval", label: "Supply on Approval" },
   { value: "supply_for_job_work", label: "Supply for Job Work" },
@@ -63,13 +75,14 @@ export default function DeliveryChallanEdit() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/delivery-challans/:id/edit");
   const { toast } = useToast();
-  
+
   const [date, setDate] = useState<Date>(new Date());
   const [challanNumber, setChallanNumber] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
   const [challanType, setChallanType] = useState<string>("");
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [customerNotes, setCustomerNotes] = useState("");
   const [termsAndConditions, setTermsAndConditions] = useState("");
   const [adjustment, setAdjustment] = useState(0);
@@ -81,6 +94,7 @@ export default function DeliveryChallanEdit() {
 
   useEffect(() => {
     fetchCustomers();
+    fetchInventoryItems();
     if (params?.id) {
       fetchChallan(params.id);
     }
@@ -92,7 +106,7 @@ export default function DeliveryChallanEdit() {
       if (response.ok) {
         const data = await response.json();
         const challan = data.data;
-        
+
         setChallanNumber(challan.challanNumber.replace("DC-", ""));
         setReferenceNumber(challan.referenceNumber || "");
         setDate(new Date(challan.date));
@@ -102,7 +116,7 @@ export default function DeliveryChallanEdit() {
         setTermsAndConditions(challan.termsAndConditions || "");
         setAdjustment(challan.adjustment || 0);
         setStatus(challan.status);
-        
+
         const challanItems = challan.items.map((item: any, index: number) => ({
           id: index + 1,
           name: item.name,
@@ -114,7 +128,7 @@ export default function DeliveryChallanEdit() {
           discountValue: item.discount || 0,
           gstRate: item.taxName?.includes('18') ? 18 : (item.taxName?.includes('12') ? 12 : (item.taxName?.includes('5') ? 5 : (item.taxName?.includes('28') ? 28 : 0)))
         }));
-        
+
         setItems(challanItems.length > 0 ? challanItems : [{
           id: 1,
           name: "",
@@ -148,6 +162,57 @@ export default function DeliveryChallanEdit() {
       }
     } catch (error) {
       console.error('Failed to fetch customers:', error);
+    }
+  };
+
+  const fetchInventoryItems = async () => {
+    try {
+      const response = await fetch('/api/items');
+      if (response.ok) {
+        const data = await response.json();
+        setInventoryItems(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+    }
+  };
+
+  const handleItemSelect = (challanItemId: number, inventoryItemId: string) => {
+    const inventoryItem = inventoryItems.find(i => i.id === inventoryItemId);
+    if (inventoryItem) {
+      // Parse rate - use rate field (for selling), handle string or number
+      let itemRate = 0;
+      if (typeof inventoryItem.rate === 'string') {
+        // Remove commas and parse as float
+        itemRate = parseFloat(inventoryItem.rate.replace(/,/g, '')) || 0;
+      } else if (typeof inventoryItem.rate === 'number') {
+        itemRate = inventoryItem.rate;
+      } else if (inventoryItem.sellingPrice) {
+        itemRate = typeof inventoryItem.sellingPrice === 'string'
+          ? parseFloat(inventoryItem.sellingPrice.replace(/,/g, '')) || 0
+          : inventoryItem.sellingPrice;
+      }
+
+      // Parse GST rate from intraStateTax field (e.g., "gst18" -> 18)
+      let gstRate = 0;
+      if (inventoryItem.intraStateTax) {
+        const match = inventoryItem.intraStateTax.match(/\d+/);
+        if (match) gstRate = parseInt(match[0]);
+      }
+
+      setItems(items.map(item => {
+        if (item.id === challanItemId) {
+          return {
+            ...item,
+            name: inventoryItem.name,
+            description: inventoryItem.description || "",
+            hsnSac: inventoryItem.hsnSac || "",
+            rate: itemRate,
+            gstRate: gstRate
+          };
+        }
+        return item;
+      }));
     }
   };
 
@@ -457,13 +522,23 @@ export default function DeliveryChallanEdit() {
                   return (
                     <TableRow key={item.id}>
                       <TableCell>
-                        <Input
-                          value={item.name}
-                          onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                          placeholder="Type or click to select an item."
-                          className="border-0 shadow-none focus-visible:ring-0 px-0"
-                          data-testid={`input-item-name-${index}`}
-                        />
+                        <Select
+                          value={item.name ? inventoryItems.find(i => i.name === item.name)?.id : ""}
+                          onValueChange={(value) => handleItemSelect(item.id, value)}
+                        >
+                          <SelectTrigger className="border-0 shadow-none focus-visible:ring-0 px-0" data-testid={`select-item-${index}`}>
+                            <SelectValue placeholder="Type or click to select an item.">
+                              {item.name || "Type or click to select an item."}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {inventoryItems.map((invItem) => (
+                              <SelectItem key={invItem.id} value={invItem.id}>
+                                {invItem.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         <Input

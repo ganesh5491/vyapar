@@ -48,15 +48,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 2456.5,
-      "amountPaid": 1656.5,
-      "balanceDue": 800,
+      "amountPaid": 2456.5,
+      "balanceDue": 0,
       "notes": "",
       "attachments": [],
-      "status": "PARTIALLY_PAID",
+      "status": "PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-22T10:39:44.974Z",
-      "updatedAt": "2025-12-22T11:39:57.711Z",
+      "updatedAt": "2025-12-23T10:08:16.979Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -86,6 +86,20 @@
           "action": "payment",
           "description": "Payment of ₹200 recorded via PM-00025",
           "user": "System"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-23T10:08:00.489Z",
+          "action": "payment",
+          "description": "Payment of ₹500 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-23T10:08:16.979Z",
+          "action": "payment",
+          "description": "Payment of ₹300 recorded",
+          "user": "Admin User"
         }
       ]
     },
@@ -145,15 +159,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 2428.5,
-      "amountPaid": 1000,
-      "balanceDue": 1428.5,
+      "amountPaid": 2428.5,
+      "balanceDue": 0,
       "notes": "",
       "attachments": [],
-      "status": "PARTIALLY_PAID",
+      "status": "PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-22T09:24:18.615Z",
-      "updatedAt": "2025-12-22T09:30:25.839Z",
+      "updatedAt": "2025-12-23T10:08:43.402Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -169,6 +183,20 @@
           "action": "payment",
           "description": "Payment of ₹1,000 recorded via PM-00021",
           "user": "System"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T10:08:35.319Z",
+          "action": "payment",
+          "description": "Payment of ₹1,028.5 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-23T10:08:43.402Z",
+          "action": "payment",
+          "description": "Payment of ₹400 recorded",
+          "user": "Admin User"
         }
       ]
     },

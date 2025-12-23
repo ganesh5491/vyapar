@@ -183,9 +183,17 @@ export default function DeliveryChallanCreate() {
     const inventoryItem = inventoryItems.find(i => i.id === inventoryItemId);
     if (inventoryItem) {
       // Parse rate - use rate field (for selling), handle string or number
-      const itemRate = typeof inventoryItem.rate === 'string'
-        ? parseFloat(inventoryItem.rate.replace(/,/g, '')) || 0
-        : (inventoryItem.rate || inventoryItem.sellingPrice || 0);
+      let itemRate = 0;
+      if (typeof inventoryItem.rate === 'string') {
+        // Remove commas and parse as float
+        itemRate = parseFloat(inventoryItem.rate.replace(/,/g, '')) || 0;
+      } else if (typeof inventoryItem.rate === 'number') {
+        itemRate = inventoryItem.rate;
+      } else if (inventoryItem.sellingPrice) {
+        itemRate = typeof inventoryItem.sellingPrice === 'string'
+          ? parseFloat(inventoryItem.sellingPrice.replace(/,/g, '')) || 0
+          : inventoryItem.sellingPrice;
+      }
 
       // Parse GST rate from intraStateTax field (e.g., "gst18" -> 18)
       let gstRate = 0;
