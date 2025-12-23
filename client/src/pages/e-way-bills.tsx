@@ -1350,7 +1350,7 @@ export default function EWayBills() {
                                             <SelectContent>
                                                 {invoices.map((inv) => (
                                                     <SelectItem key={inv.id} value={inv.id}>
-                                                        {inv.invoiceNumber} - {formatCurrency(inv.total)}
+                                                        {inv.invoiceNumber}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -1402,7 +1402,7 @@ export default function EWayBills() {
                                             <SelectContent>
                                                 {deliveryChallans.map((dc) => (
                                                     <SelectItem key={dc.id} value={dc.id}>
-                                                        {dc.challanNumber} - {formatCurrency(dc.total)}
+                                                        {dc.challanNumber}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -1454,7 +1454,7 @@ export default function EWayBills() {
                                             <SelectContent>
                                                 {salesOrders.map((so) => (
                                                     <SelectItem key={so.id} value={so.id}>
-                                                        {so.salesOrderNumber} - {formatCurrency(so.total)}
+                                                        {so.salesOrderNumber}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -1656,14 +1656,14 @@ export default function EWayBills() {
                                                     <span className="font-medium">Taxable Amount</span>
                                                     <span className="font-semibold min-w-[120px] text-right">
                                                         {formatCurrency(
-                                                            selectedItems.reduce((sum, item) => sum + (item.amount || item.total || 0), 0)
+                                                            selectedItems.reduce((sum, item) => sum + ((item.amount || item.total || 0) * (100 - (item.discount || 0)) / 100), 0)
                                                         )}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-end items-center gap-8 text-base font-bold border-t pt-2">
                                                     <span>TOTAL</span>
                                                     <span className="min-w-[120px] text-right text-blue-600">
-                                                        {formatCurrency(formData.total)}
+                                                        {formatCurrency(selectedItems.reduce((sum, item) => sum + (item.amount || item.total || 0), 0))}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1676,7 +1676,7 @@ export default function EWayBills() {
                             <div className="bg-slate-50 dark:bg-slate-800 rounded-lg border p-4">
                                 <h3 className="font-semibold text-sm text-muted-foreground mb-2">Total Amount</h3>
                                 <p className="text-2xl font-bold text-blue-600" data-testid="text-form-total">
-                                    {formatCurrency(formData.total)}
+                                    {formatCurrency(selectedItems.reduce((sum, item) => sum + (item.amount || item.total || 0), 0) || formData.total)}
                                 </p>
                             </div>
 
