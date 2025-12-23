@@ -364,8 +364,7 @@ export default function InvoiceEdit() {
         adjustment,
         total: finalTotal,
         customerNotes,
-        termsAndConditions,
-        balanceDue: finalTotal
+        termsAndConditions
       };
 
       const response = await fetch(`/api/invoices/${params.id}`, {

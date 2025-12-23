@@ -1754,6 +1754,18 @@ export async function registerRoutes(
         ]
       };
 
+      // Preserve payments and recalculate balance due correctly
+      updatedInvoice.amountPaid = existingInvoice.amountPaid || 0;
+      updatedInvoice.payments = existingInvoice.payments || [];
+      updatedInvoice.balanceDue = Math.max(0, (updatedInvoice.total || 0) - updatedInvoice.amountPaid);
+      
+      // Update status based on balance due
+      if (updatedInvoice.balanceDue <= 0) {
+        updatedInvoice.status = 'PAID';
+      } else if (updatedInvoice.amountPaid > 0) {
+        updatedInvoice.status = 'PARTIALLY_PAID';
+      }
+
       data.invoices[invoiceIndex] = updatedInvoice;
       writeInvoicesData(data);
 

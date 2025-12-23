@@ -190,3 +190,13 @@
     - Proper error handling for undefined amount values
     - Session restart - verified application running with fixes applied (Dec 23, 2025)
 [x] 90. Session restart - reinstalled cross-env and verified application running (Dec 23, 2025 - current session)
+[x] 91. Fixed payment reconciliation logic in invoice edit (Dec 23, 2025):
+    - Issue: Previously recorded payments were not being subtracted correctly when invoice items were added
+    - Root cause: invoice-edit.tsx was setting balanceDue to finalTotal without preserving amountPaid
+    - Root cause: server PUT endpoint wasn't preserving amountPaid and recalculating balance correctly
+    - Fix 1: Removed balanceDue from invoice-edit.tsx request body (line 368), let backend calculate it
+    - Fix 2: Updated PUT endpoint to preserve amountPaid and payments array (lines 1761-1762)
+    - Fix 3: Added proper balance due calculation: balanceDue = total - amountPaid (line 1763)
+    - Fix 4: Updated status automatically based on balance due (lines 1766-1770)
+    - Result: Balance due now correctly reflects: New Invoice Total - Total Payments Already Recorded
+    - Session restart verified - application running with fixes applied
