@@ -1,6 +1,107 @@
 {
   "quotes": [
     {
+      "id": "1766479661159",
+      "quoteNumber": "QT-000020",
+      "referenceNumber": "",
+      "date": "2025-12-23",
+      "expiryDate": "2025-12-17",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "afshjd",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "name": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "quantity": 1,
+          "unit": "",
+          "rate": 45000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 45000
+        },
+        {
+          "id": "1766479637328",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 2,
+          "unit": "",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 120
+        }
+      ],
+      "subTotal": 45120,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 1128,
+      "sgst": 1128,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 47376,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-23T08:47:41.159Z",
+      "updatedAt": "2025-12-23T08:48:11.384Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T08:47:41.159Z",
+          "action": "created",
+          "description": "Quote created for ₹47,313",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T08:47:57.485Z",
+          "action": "updated",
+          "description": "Quote has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T08:48:11.384Z",
+          "action": "converted",
+          "description": "Converted to Sales Order SO-00017",
+          "user": "Admin User",
+          "link": "/sales-orders/1766479691385"
+        }
+      ],
+      "updatedBy": "Admin User",
+      "attachments": [],
+      "convertedTo": "sales-order"
+    },
+    {
       "id": "1766473951215",
       "quoteNumber": "QT-000019",
       "referenceNumber": "852",
@@ -1282,5 +1383,5 @@
       "convertedTo": "invoice"
     }
   ],
-  "nextQuoteNumber": 20
+  "nextQuoteNumber": 21
 }
