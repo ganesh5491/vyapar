@@ -207,7 +207,200 @@
       "amountInWords": "Indian Rupee Nine Hundred Fifty Only",
       "journalEntries": [],
       "createdAt": "2025-12-23T06:12:21.783Z"
+    },
+    {
+      "id": "pr-1766474001601",
+      "paymentNumber": "49",
+      "date": "2025-12-23",
+      "referenceNumber": "",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1766473984410",
+          "invoiceNumber": "INV-00031",
+          "invoiceDate": "2025-12-23",
+          "invoiceAmount": 495000,
+          "amountDue": 475000,
+          "paymentAmount": 20000
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 20000,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00031",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "PAID",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Twenty Thousand Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-23T07:13:21.596Z"
+    },
+    {
+      "id": "pr-ref-1766474106772",
+      "paymentNumber": "REF-50",
+      "date": "2025-12-23",
+      "referenceNumber": "",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1766473984410",
+          "invoiceNumber": "INV-00031",
+          "invoiceDate": "2025-12-23",
+          "invoiceAmount": 495000,
+          "refundAmount": 1000
+        }
+      ],
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "amount": -1000,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Refund processed",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "REFUNDED",
+      "paymentType": "refund",
+      "placeOfSupply": "",
+      "descriptionOfSupply": "",
+      "amountInWords": "Refund: Indian Rupee One Thousand Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-23T07:15:06.766Z",
+      "isRefund": true,
+      "originalInvoiceId": "1766473984410"
+    },
+    {
+      "id": "pr-1766474498499",
+      "paymentNumber": "0008",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "customerEmail": "finance@technovaglobal.com",
+      "amount": 50000,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-23",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "211333",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 0,
+      "invoices": [
+        {
+          "invoiceId": "1766473984410",
+          "invoiceNumber": "INV-00031",
+          "invoiceDate": "2025-12-23",
+          "invoiceAmount": 495000,
+          "balanceDue": 476000,
+          "paymentAmount": 50000,
+          "paymentReceivedDate": "2025-12-23"
+        }
+      ],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 50000,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 50000
+        }
+      ],
+      "amountInWords": "Indian Rupee Fifty Thousand Only",
+      "createdAt": "2025-12-23T07:21:38.499Z"
+    },
+    {
+      "id": "pr-1766475506111",
+      "paymentNumber": "52",
+      "date": "2025-12-23",
+      "referenceNumber": "",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1766470017031",
+          "invoiceNumber": "INV-00030",
+          "invoiceDate": "2025-12-23",
+          "invoiceAmount": 239050,
+          "amountDue": 199100,
+          "paymentAmount": 39000
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 39000,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00030",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "PAID",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Thirty Nine Thousand Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-23T07:38:26.104Z"
+    },
+    {
+      "id": "pr-1766475506126",
+      "paymentNumber": "53",
+      "date": "2025-12-23",
+      "referenceNumber": "",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1766470017031",
+          "invoiceNumber": "INV-00030",
+          "invoiceDate": "2025-12-23",
+          "invoiceAmount": 239050,
+          "amountDue": 160100,
+          "paymentAmount": 39000
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 39000,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00030",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "PAID",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Thirty Nine Thousand Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-23T07:38:26.120Z"
     }
   ],
-  "nextPaymentNumber": 49
+  "nextPaymentNumber": 54
 }

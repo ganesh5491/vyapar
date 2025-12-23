@@ -1,6 +1,84 @@
 {
   "quotes": [
     {
+      "id": "1766473951215",
+      "quoteNumber": "QT-000019",
+      "referenceNumber": "852",
+      "date": "2025-12-23",
+      "expiryDate": "",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "Sujay",
+      "projectName": "",
+      "subject": "\t HP ProDesk Desktop",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "name": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "quantity": 11,
+          "unit": "",
+          "rate": 45000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 495000
+        }
+      ],
+      "subTotal": 495000,
+      "shippingCharges": 1000,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 496000,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-23T07:12:31.215Z",
+      "updatedAt": "2025-12-23T07:12:45.006Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T07:12:31.215Z",
+          "action": "created",
+          "description": "Quote created for ₹4,96,000",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T07:12:45.006Z",
+          "action": "converted",
+          "description": "Converted to Sales Order SO-00016",
+          "user": "Admin User",
+          "link": "/sales-orders/1766473965006"
+        }
+      ],
+      "convertedTo": "sales-order"
+    },
+    {
       "id": "1766404092977",
       "quoteNumber": "QT-000018",
       "referenceNumber": "",
@@ -1204,5 +1282,5 @@
       "convertedTo": "invoice"
     }
   ],
-  "nextQuoteNumber": 19
+  "nextQuoteNumber": 20
 }

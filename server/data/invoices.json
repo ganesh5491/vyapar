@@ -1,6 +1,127 @@
 {
   "invoices": [
     {
+      "id": "1766473984410",
+      "invoiceNumber": "INV-00031",
+      "referenceNumber": "",
+      "date": "2025-12-23",
+      "dueDate": "2026-01-22",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Due on Receipt",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "name": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "quantity": 12,
+          "unit": "pcs",
+          "rate": 45000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 540000
+        }
+      ],
+      "subTotal": 540000,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 540000,
+      "amountPaid": 69000,
+      "balanceDue": 540000,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-23T07:13:04.410Z",
+      "updatedAt": "2025-12-23T07:24:20.757Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1766474001596",
+          "date": "2025-12-23T07:13:00.000Z",
+          "amount": 20000,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "pr-1766474498499",
+          "date": "2025-12-23",
+          "amount": 50000,
+          "paymentMode": "Cash",
+          "reference": "211333",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T07:13:04.410Z",
+          "action": "created",
+          "description": "Invoice created for ₹4,95,000",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T07:13:21.596Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹20,000 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T07:15:06.766Z",
+          "action": "refund_recorded",
+          "description": "Refund of ₹1,000 processed",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-23T07:24:20.757Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        }
+      ],
+      "refunds": [
+        {
+          "id": "ref-1766474106766",
+          "paymentId": null,
+          "paymentNumber": null,
+          "amount": 1000,
+          "date": "2025-12-23T07:15:06.766Z",
+          "reason": "Refund processed",
+          "mode": "Cash"
+        }
+      ],
+      "amountRefunded": 1000
+    },
+    {
       "id": "1766470017031",
       "invoiceNumber": "INV-00030",
       "referenceNumber": "",
@@ -10,19 +131,19 @@
       "customerName": "Mr. Amit Verma",
       "billingAddress": {
         "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
-        "city": "Pune",
-        "state": "Maharashtra",
+        "city": "",
+        "state": "",
         "country": "India",
-        "pincode": "411057"
+        "pincode": ""
       },
       "shippingAddress": {
-        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
-        "city": "Pune",
-        "state": "Maharashtra",
+        "street": "",
+        "city": "",
+        "state": "",
         "country": "India",
-        "pincode": "411057"
+        "pincode": ""
       },
-      "salesperson": "Sujay",
+      "salesperson": "1",
       "placeOfSupply": "27 - Maharashtra",
       "paymentTerms": "Net 30",
       "items": [
@@ -41,15 +162,15 @@
           "amount": 238950
         }
       ],
-      "subTotal": 202500,
-      "shippingCharges": 0,
+      "subTotal": 0,
+      "shippingCharges": 100,
       "cgst": 18225,
       "sgst": 18225,
       "igst": 0,
       "adjustment": 0,
-      "total": 238950,
-      "amountPaid": 950,
-      "balanceDue": 238000,
+      "total": 239050,
+      "amountPaid": 78950,
+      "balanceDue": 160100,
       "customerNotes": "",
       "termsAndConditions": "",
       "status": "PARTIALLY_PAID",
@@ -58,13 +179,29 @@
       "sourceNumber": null,
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-23T06:06:57.031Z",
-      "updatedAt": "2025-12-23T06:12:21.783Z",
+      "updatedAt": "2025-12-23T07:38:26.120Z",
       "createdBy": "Admin User",
       "payments": [
         {
           "id": "1766470341783",
           "date": "2025-12-23T06:11:00.000Z",
           "amount": 950,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1766475506104",
+          "date": "2025-12-23T07:37:00.000Z",
+          "amount": 39000,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1766475506120",
+          "date": "2025-12-23T07:37:00.000Z",
+          "amount": 39000,
           "paymentMode": "cash",
           "reference": "",
           "notes": ""
@@ -83,6 +220,41 @@
           "timestamp": "2025-12-23T06:12:21.783Z",
           "action": "payment_recorded",
           "description": "Payment of ₹950 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T07:23:59.635Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-23T07:37:02.618Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-23T07:37:58.355Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "6",
+          "timestamp": "2025-12-23T07:38:26.104Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹39,000 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "7",
+          "timestamp": "2025-12-23T07:38:26.120Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹39,000 recorded",
           "user": "Admin User"
         }
       ]
@@ -226,13 +398,13 @@
       "balanceDue": 0,
       "customerNotes": "",
       "termsAndConditions": "",
-      "status": "PENDING",
+      "status": "VOID",
       "sourceType": null,
       "sourceId": null,
       "sourceNumber": null,
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-22T04:35:40.581Z",
-      "updatedAt": "2025-12-22T04:35:40.581Z",
+      "updatedAt": "2025-12-23T07:14:47.644Z",
       "createdBy": "Admin User",
       "payments": [],
       "activityLogs": [
@@ -241,6 +413,20 @@
           "timestamp": "2025-12-22T04:35:40.581Z",
           "action": "created",
           "description": "Invoice created for ₹0.00",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T07:14:37.552Z",
+          "action": "void",
+          "description": "Status changed to VOID",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T07:14:47.644Z",
+          "action": "void",
+          "description": "Status changed to VOID",
           "user": "Admin User"
         }
       ]
@@ -3096,5 +3282,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 31
+  "nextInvoiceNumber": 32
 }

@@ -1,6 +1,70 @@
 {
   "creditNotes": [
     {
+      "id": "1766474190397",
+      "creditNoteNumber": "CN-00004",
+      "referenceNumber": "",
+      "date": "2025-12-23",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "invoiceId": "",
+      "invoiceNumber": "",
+      "reason": "sales_return",
+      "salesperson": "Sujay",
+      "subject": "Credit Note for Invoice #INV-00031",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "gstin": "",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "name": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "account": "sales",
+          "quantity": 11,
+          "rate": 45000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 495000
+        }
+      ],
+      "subTotal": 495000,
+      "shippingCharges": 1000,
+      "tdsType": "TCS",
+      "tdsAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 496000,
+      "creditsRemaining": 496000,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "OPEN",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-23T07:16:30.397Z",
+      "updatedAt": "2025-12-23T07:16:30.397Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T07:16:30.397Z",
+          "action": "created",
+          "description": "Credit Note created for ₹4,96,000",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1765534233343",
       "creditNoteNumber": "CN-00003",
       "referenceNumber": "23113",
@@ -214,5 +278,5 @@
       ]
     }
   ],
-  "nextCreditNoteNumber": 4
+  "nextCreditNoteNumber": 5
 }

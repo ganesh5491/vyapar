@@ -1,6 +1,81 @@
 {
   "salesOrders": [
     {
+      "id": "1766473965006",
+      "salesOrderNumber": "SO-00016",
+      "referenceNumber": "852",
+      "date": "2025-12-23",
+      "expectedShipmentDate": "",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "paymentTerms": "Due on Receipt",
+      "deliveryMethod": "",
+      "salesperson": "Sujay",
+      "placeOfSupply": "",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "name": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "quantity": 11,
+          "unit": "",
+          "rate": 45000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 495000,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        }
+      ],
+      "subTotal": 495000,
+      "shippingCharges": 1000,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 496000,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "orderStatus": "CONFIRMED",
+      "invoiceStatus": "Not Invoiced",
+      "paymentStatus": "Unpaid",
+      "shipmentStatus": "Pending",
+      "invoices": [],
+      "sourceType": "quote",
+      "sourceId": "1766473951215",
+      "sourceNumber": "QT-000019",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-23T07:12:45.006Z",
+      "updatedAt": "2025-12-23T07:12:45.006Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T07:12:45.006Z",
+          "action": "created",
+          "description": "Sales Order created from Quote QT-000019",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766056302179",
       "salesOrderNumber": "SO-00015",
       "referenceNumber": "1213",
@@ -1572,6 +1647,6 @@
       ]
     }
   ],
-  "nextSalesOrderNumber": 16,
+  "nextSalesOrderNumber": 17,
   "nextInvoiceNumber": 26
 }

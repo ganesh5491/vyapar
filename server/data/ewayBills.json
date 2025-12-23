@@ -276,7 +276,63 @@
       "status": "NOT_GENERATED",
       "createdAt": "2025-12-23T04:03:48.965Z",
       "updatedAt": "2025-12-23T04:03:48.965Z"
+    },
+    {
+      "id": "ewb-1766473847778",
+      "ewayBillNumber": "EWB-000006",
+      "documentType": "invoices",
+      "transactionSubType": "supply",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "customerGstin": "",
+      "documentNumber": "INV-00030",
+      "documentId": "1766470017031",
+      "date": "2025-12-23",
+      "expiryDate": "2026-01-07",
+      "transactionType": "regular",
+      "dispatchFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billFrom": {
+        "street": "Hinjewadi - Wakad road",
+        "city": "Hinjewadi",
+        "state": "Pune",
+        "country": "Maharashtra",
+        "pincode": "India - 411057"
+      },
+      "billTo": {
+        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shipTo": {
+        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "placeOfDelivery": "[DD] - Daman and Diu",
+      "transporter": "transporter-1766464902847",
+      "distance": 500,
+      "modeOfTransportation": "road",
+      "vehicleType": "regular",
+      "vehicleNo": "MH12AB4567",
+      "transporterDocNo": "KA05MN3421",
+      "transporterDocDate": "2025-12-26",
+      "items": [],
+      "total": 238950,
+      "status": "GENERATED",
+      "createdAt": "2025-12-23T07:10:47.777Z",
+      "updatedAt": "2025-12-23T07:10:47.777Z",
+      "generatedAt": "2025-12-23T07:10:47.793Z"
     }
   ],
-  "nextEWayBillNumber": 6
+  "nextEWayBillNumber": 7
 }
