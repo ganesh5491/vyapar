@@ -200,3 +200,12 @@
     - Fix 4: Updated status automatically based on balance due (lines 1766-1770)
     - Result: Balance due now correctly reflects: New Invoice Total - Total Payments Already Recorded
     - Session restart verified - application running with fixes applied
+[x] 92. Fixed item pricing bug in Purchase Orders (Dec 23, 2025):
+    - Issue: Item rates showing incorrectly reduced values (₹45,000.00 displayed as ₹45.00)
+    - Root cause: Item rates stored as strings with commas ("45,000.00") but parseFloat() stopped at comma
+    - parseFloat("45,000.00") returned 45 instead of 45000 due to comma separator
+    - Fix 1: purchase-order-create.tsx (lines 350-351): Added .replace(/,/g, '') before parseFloat()
+    - Fix 2: purchase-order-edit.tsx (lines 413-415): Added .replace(/,/g, '') before parseFloat()
+    - Fix 3: Updated selectItem function in purchase-order-edit.tsx to use finalRate variable (line 418, 429)
+    - Result: Rates now correctly parse as 45000 instead of 45, maintaining accurate pricing
+    - Application restarted and verified running with fixes

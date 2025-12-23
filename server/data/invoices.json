@@ -160,17 +160,31 @@
           "tax": 36450,
           "taxName": "GST18",
           "amount": 238950
+        },
+        {
+          "id": "1766476481558",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 1111,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 11998.8,
+          "taxName": "GST18",
+          "amount": 78658.8
         }
       ],
-      "subTotal": 0,
+      "subTotal": 66660,
       "shippingCharges": 100,
-      "cgst": 18225,
-      "sgst": 18225,
+      "cgst": 24224.4,
+      "sgst": 24224.4,
       "igst": 0,
       "adjustment": 0,
-      "total": 239050,
-      "amountPaid": 78950,
-      "balanceDue": 160100,
+      "total": 317708.8,
+      "amountPaid": 138950,
+      "balanceDue": 178758.8,
       "customerNotes": "",
       "termsAndConditions": "",
       "status": "PARTIALLY_PAID",
@@ -179,7 +193,7 @@
       "sourceNumber": null,
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-23T06:06:57.031Z",
-      "updatedAt": "2025-12-23T07:38:26.120Z",
+      "updatedAt": "2025-12-23T07:55:03.156Z",
       "createdBy": "Admin User",
       "payments": [
         {
@@ -202,6 +216,14 @@
           "id": "1766475506120",
           "date": "2025-12-23T07:37:00.000Z",
           "amount": 39000,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "1766476474997",
+          "date": "2025-12-23T07:52:00.000Z",
+          "amount": 60000,
           "paymentMode": "cash",
           "reference": "",
           "notes": ""
@@ -255,6 +277,20 @@
           "timestamp": "2025-12-23T07:38:26.120Z",
           "action": "payment_recorded",
           "description": "Payment of ₹39,000 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "8",
+          "timestamp": "2025-12-23T07:54:34.997Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹60,000 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "9",
+          "timestamp": "2025-12-23T07:55:03.156Z",
+          "action": "updated",
+          "description": "Invoice has been updated",
           "user": "Admin User"
         }
       ]

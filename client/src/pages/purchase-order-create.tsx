@@ -343,8 +343,9 @@ export default function PurchaseOrderCreate() {
     const item = items.find(i => i.id === itemId);
     if (item) {
       // Parse rate - prioritize purchaseRate, then rate, then purchasePrice, then sellingPrice
-      const purchaseRate = item.purchaseRate !== undefined ? parseFloat(String(item.purchaseRate)) : 0;
-      const rate = item.rate !== undefined ? parseFloat(String(item.rate)) : 0;
+      // Remove commas from string rates before parsing (e.g., "45,000.00" -> 45000)
+      const purchaseRate = item.purchaseRate !== undefined ? parseFloat(String(item.purchaseRate).replace(/,/g, '')) : 0;
+      const rate = item.rate !== undefined ? parseFloat(String(item.rate).replace(/,/g, '')) : 0;
       const finalRate = purchaseRate || item.purchasePrice || rate || item.sellingPrice || 0;
 
       // Get description - prioritize purchaseDescription for purchase orders

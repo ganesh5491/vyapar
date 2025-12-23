@@ -405,10 +405,14 @@ export default function PurchaseOrderEdit() {
   const selectItem = (lineItemId: string, itemId: string) => {
     const item = items.find(i => i.id === itemId);
     if (item) {
-      const rate = item.purchasePrice || item.sellingPrice || 0;
+      // Parse rate - prioritize purchaseRate, then rate, then purchasePrice, then sellingPrice
+      // Remove commas from string rates before parsing (e.g., "45,000.00" -> 45000)
+      const purchaseRate = item.purchaseRate !== undefined ? parseFloat(String(item.purchaseRate).replace(/,/g, '')) : 0;
+      const rate = item.rate !== undefined ? parseFloat(String(item.rate).replace(/,/g, '')) : 0;
+      const finalRate = purchaseRate || item.purchasePrice || rate || item.sellingPrice || 0;
       setLineItems(prev => prev.map(lineItem => {
         if (lineItem.id === lineItemId) {
-          const baseAmount = lineItem.quantity * rate;
+          const baseAmount = lineItem.quantity * finalRate;
           let taxRate = 0;
           if (lineItem.tax && lineItem.tax !== 'none') {
             taxRate = parseInt(lineItem.tax.replace(/\D/g, '')) || 0;
@@ -419,7 +423,7 @@ export default function PurchaseOrderEdit() {
             itemId: item.id,
             itemName: item.name,
             description: item.description || '',
-            rate: rate,
+            rate: finalRate,
             taxAmount: taxAmount,
             amount: baseAmount + taxAmount
           };
