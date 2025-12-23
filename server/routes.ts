@@ -22,6 +22,7 @@ const CREDIT_NOTES_FILE = path.join(DATA_DIR, "creditNotes.json");
 const PAYMENTS_RECEIVED_FILE = path.join(DATA_DIR, "paymentsReceived.json");
 const EWAY_BILLS_FILE = path.join(DATA_DIR, "ewayBills.json");
 const UNITS_FILE = path.join(DATA_DIR, "units.json");
+const TRANSPORTERS_FILE = path.join(DATA_DIR, "transporters.json");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -5091,6 +5092,111 @@ export async function registerRoutes(
       res.json({ success: true, message: "Vendor credit deleted successfully" });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to delete vendor credit" });
+    }
+  });
+
+  // Transporters API Routes
+  function readTransporters() {
+    ensureDataDir();
+    if (!fs.existsSync(TRANSPORTERS_FILE)) {
+      fs.writeFileSync(TRANSPORTERS_FILE, JSON.stringify({ transporters: [] }, null, 2));
+      return [];
+    }
+    const data = JSON.parse(fs.readFileSync(TRANSPORTERS_FILE, "utf-8"));
+    return data.transporters || [];
+  }
+
+  function writeTransporters(transporters: any[]) {
+    ensureDataDir();
+    fs.writeFileSync(TRANSPORTERS_FILE, JSON.stringify({ transporters }, null, 2));
+  }
+
+  app.get("/api/transporters", (req: Request, res: Response) => {
+    try {
+      const transporters = readTransporters();
+      res.json({ success: true, data: transporters });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch transporters" });
+    }
+  });
+
+  app.post("/api/transporters", (req: Request, res: Response) => {
+    try {
+      const { name, transporterId } = req.body;
+      
+      if (!name || !transporterId) {
+        return res.status(400).json({ success: false, message: "Name and transporterId are required" });
+      }
+
+      const transporters = readTransporters();
+      const newTransporter = {
+        id: `transporter-${Date.now()}`,
+        name: name.trim(),
+        transporterId: transporterId.trim(),
+      };
+
+      transporters.push(newTransporter);
+      writeTransporters(transporters);
+
+      res.json({ success: true, data: newTransporter });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to create transporter" });
+    }
+  });
+
+  app.get("/api/transporters/:id", (req: Request, res: Response) => {
+    try {
+      const transporters = readTransporters();
+      const transporter = transporters.find((t: any) => t.id === req.params.id);
+
+      if (!transporter) {
+        return res.status(404).json({ success: false, message: "Transporter not found" });
+      }
+
+      res.json({ success: true, data: transporter });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch transporter" });
+    }
+  });
+
+  app.put("/api/transporters/:id", (req: Request, res: Response) => {
+    try {
+      const transporters = readTransporters();
+      const index = transporters.findIndex((t: any) => t.id === req.params.id);
+
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Transporter not found" });
+      }
+
+      const updatedTransporter = {
+        ...transporters[index],
+        ...req.body,
+      };
+
+      transporters[index] = updatedTransporter;
+      writeTransporters(transporters);
+
+      res.json({ success: true, data: updatedTransporter });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to update transporter" });
+    }
+  });
+
+  app.delete("/api/transporters/:id", (req: Request, res: Response) => {
+    try {
+      const transporters = readTransporters();
+      const index = transporters.findIndex((t: any) => t.id === req.params.id);
+
+      if (index === -1) {
+        return res.status(404).json({ success: false, message: "Transporter not found" });
+      }
+
+      transporters.splice(index, 1);
+      writeTransporters(transporters);
+
+      res.json({ success: true, message: "Transporter deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete transporter" });
     }
   });
 

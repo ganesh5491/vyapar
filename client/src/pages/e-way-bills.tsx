@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePagination } from "@/hooks/use-pagination";
 import { TablePagination } from "@/components/table-pagination";
+import { TransporterSelect } from "@/components/transporter-select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -1558,23 +1559,12 @@ export default function EWayBills() {
                             <div className="space-y-4 pt-4 border-t">
                                 <h3 className="font-semibold text-sm">TRANSPORTATION DETAILS</h3>
 
-                                <div className="space-y-2">
-                                    <Label>Transporter</Label>
-                                    <Select
-                                        value={formData.transporter}
-                                        onValueChange={(value) => setFormData({ ...formData, transporter: value })}
-                                        data-testid="select-transporter"
-                                    >
-                                        <SelectTrigger data-testid="select-trigger-transporter">
-                                            <SelectValue placeholder="Select the transporter's name" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="transporter1">Transporter 1</SelectItem>
-                                            <SelectItem value="transporter2">Transporter 2</SelectItem>
-                                            <SelectItem value="transporter3">Transporter 3</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                <TransporterSelect
+                                    value={formData.transporter}
+                                    onValueChange={(value) => setFormData({ ...formData, transporter: value })}
+                                    placeholder="Select the transporter's name"
+                                    data_testid="select-transporter"
+                                />
 
                                 <div className="space-y-2">
                                     <Label className="text-red-500">Distance (In Km)*</Label>
