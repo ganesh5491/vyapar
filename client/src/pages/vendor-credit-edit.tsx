@@ -232,7 +232,7 @@ export default function VendorCreditEdit() {
           if (product) {
             updated.itemName = product.name;
             updated.description = product.description || '';
-            updated.rate = product.costPrice || product.sellingPrice || product.rate || 0;
+            updated.rate = parseFloat(product.costPrice || product.sellingPrice || product.rate || 0);
             updated.amount = updated.quantity * updated.rate;
           }
         }

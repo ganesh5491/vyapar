@@ -1,6 +1,89 @@
 {
   "bills": [
     {
+      "id": "1766494624617",
+      "billNumber": "14",
+      "orderNumber": "",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "vendorAddress": {
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "country": "India",
+        "gstin": ""
+      },
+      "billDate": "2025-12-23",
+      "dueDate": "2025-12-23",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "",
+      "items": [
+        {
+          "id": "1766494581582",
+          "itemName": "Rice (Copy)",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "input_tax_credits",
+          "quantity": 21,
+          "rate": 50,
+          "tax": "CGST9",
+          "taxAmount": 94.5,
+          "customerDetails": "3",
+          "amount": 1050
+        },
+        {
+          "id": "1766494600561",
+          "itemName": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "account": "prepaid_expenses",
+          "quantity": 1,
+          "rate": 45000,
+          "tax": "IGST18",
+          "taxAmount": 8100,
+          "customerDetails": "6",
+          "amount": 45000
+        }
+      ],
+      "subTotal": 46050,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 8194.5,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 54244.5,
+      "amountPaid": 24244.5,
+      "balanceDue": 0,
+      "notes": "",
+      "attachments": [],
+      "status": "PARTIALLY_PAID",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-23T12:57:04.616Z",
+      "updatedAt": "2025-12-23T12:59:20.998Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T12:57:04.616Z",
+          "action": "created",
+          "description": "Bill created for ₹54,244.5",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T12:58:36.699Z",
+          "action": "payment",
+          "description": "Payment of ₹24,244.5 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766399984974",
       "billNumber": "13",
       "orderNumber": "PO-2025-0008",
@@ -531,7 +614,7 @@
       ]
     }
   ],
-  "nextBillNumber": 14,
+  "nextBillNumber": 15,
   "accounts": [
     {
       "id": "1",

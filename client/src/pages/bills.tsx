@@ -114,6 +114,12 @@ interface Bill {
   pdfTemplate?: string;
   journalEntries?: JournalEntry[];
   createdAt?: string;
+  creditsApplied?: Array<{
+    creditId: string;
+    creditNumber: string;
+    amount: number;
+    appliedDate: string;
+  }>;
 }
 
 function formatCurrency(amount: number): string {
@@ -246,6 +252,17 @@ function BillPDFView({ bill }: { bill: Bill }) {
                 <span>Total</span>
                 <span>{formatCurrency(bill.total)}</span>
               </div>
+              {bill.creditsApplied && bill.creditsApplied.length > 0 && (
+                <div className="border-t pt-2 space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold">Credits Applied:</p>
+                  {bill.creditsApplied.map((credit, index) => (
+                    <div key={index} className="flex justify-between text-sm text-green-600">
+                      <span>Credit {credit.creditNumber}</span>
+                      <span>- {formatCurrency(credit.amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex justify-between bg-blue-50 p-2 rounded font-semibold">
                 <span>Balance Due</span>
                 <span>{formatCurrency(bill.balanceDue)}</span>

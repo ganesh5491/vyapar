@@ -305,8 +305,8 @@ export default function VendorCreditCreate() {
           if (product) {
             updated.itemName = product.name;
             updated.description = product.description || '';
-            updated.rate = product.rate;
-            updated.amount = updated.quantity * product.rate;
+            updated.rate = parseFloat(product.costPrice || product.sellingPrice || product.rate || 0);
+            updated.amount = updated.quantity * updated.rate;
           }
         }
         if (field === 'quantity' || field === 'rate') {
@@ -603,12 +603,32 @@ export default function VendorCreditCreate() {
                           <span className="text-slate-400">⋮⋮</span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="space-y-1">
-                            <div className="font-medium text-slate-900">{item.itemName}</div>
-                            {item.description && (
-                              <div className="text-xs text-slate-500 line-clamp-1">{item.description}</div>
-                            )}
-                          </div>
+                          <Select
+                            value={item.itemId || ""}
+                            onValueChange={(v) => updateItem(item.id, 'itemId', v)}
+                          >
+                            <SelectTrigger data-testid={`select-item-${index}`}>
+                              <SelectValue placeholder="Select an item">
+                                {item.itemName || products.find(p => p.id === item.itemId)?.name || "Select an item"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {productsLoading ? (
+                                <SelectItem value="_loading" disabled>Loading...</SelectItem>
+                              ) : products.length === 0 ? (
+                                <SelectItem value="_empty" disabled>No items found</SelectItem>
+                              ) : (
+                                products.map((product) => (
+                                  <SelectItem key={product.id} value={product.id}>
+                                    {product.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {item.description && (
+                            <div className="text-xs text-slate-500 mt-1 line-clamp-1">{item.description}</div>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <AccountSelectDropdown

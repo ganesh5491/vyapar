@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, MoreHorizontal, Trash2, Edit, FileText, ChevronDown, X, Printer, Receipt, Copy, Ban, BookOpen, RotateCcw } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Trash2, Edit, FileText, ChevronDown, X, Printer, Receipt, Copy, Ban, BookOpen, RotateCcw, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +83,23 @@ interface VendorCredit {
   updatedAt: string;
 }
 
+interface Bill {
+  id: string;
+  billNumber: string;
+  vendorId: string;
+  billDate: string;
+  total: number;
+  amountPaid: number;
+  balanceDue: number;
+  status: string;
+  creditsApplied?: Array<{
+    creditId: string;
+    creditNumber: string;
+    amount: number;
+    appliedDate: string;
+  }>;
+}
+
 interface Vendor {
   id: string;
   displayName: string;
@@ -102,6 +129,11 @@ export default function VendorCredits() {
   const [refundAmount, setRefundAmount] = useState("");
   const [refundReason, setRefundReason] = useState("");
   const [activeTab, setActiveTab] = useState("document");
+  const [applyToBillsOpen, setApplyToBillsOpen] = useState(false);
+  const [vendorBills, setVendorBills] = useState<Bill[]>([]);
+  const [creditsToApply, setCreditsToApply] = useState<{ [billId: string]: number }>({});
+  const [setAppliedOnDate, setSetAppliedOnDate] = useState(true);
+  const [isApplying, setIsApplying] = useState(false);
   const journalTabRef = useRef<HTMLButtonElement>(null);
 
   const { data: vendorCreditsData, isLoading, refetch } = useQuery<{ success: boolean; data: VendorCredit[] }>({
@@ -259,6 +291,100 @@ export default function VendorCredits() {
     setActiveTab("journal");
   };
 
+  const handleApplyToBills = async () => {
+    if (!selectedCredit) return;
+
+    try {
+      // Fetch unpaid bills for the vendor
+      const response = await fetch(`/api/bills?vendorId=${selectedCredit.vendorId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const unpaidBills = data.data.filter((bill: Bill) =>
+          bill.status !== 'PAID' && bill.status !== 'VOID' && bill.balanceDue > 0
+        );
+        setVendorBills(unpaidBills);
+        setCreditsToApply({});
+        setApplyToBillsOpen(true);
+      }
+    } catch (error) {
+      toast({ title: "Failed to fetch bills", variant: "destructive" });
+    }
+  };
+
+  const handleCreditAmountChange = (billId: string, value: string) => {
+    const amount = parseFloat(value) || 0;
+    const bill = vendorBills.find(b => b.id === billId);
+
+    if (!bill || !selectedCredit) return;
+
+    // Validate: don't exceed bill balance or available credit
+    const currentTotal = Object.entries(creditsToApply)
+      .filter(([id]) => id !== billId)
+      .reduce((sum, [, amt]) => sum + amt, 0);
+
+    const availableCredit = selectedCredit.balance - currentTotal;
+    const maxApplicable = Math.min(bill.balanceDue, availableCredit);
+
+    if (amount <= maxApplicable && amount >= 0) {
+      setCreditsToApply(prev => ({
+        ...prev,
+        [billId]: amount
+      }));
+    }
+  };
+
+  const getTotalAmountToCredit = () => {
+    return Object.values(creditsToApply).reduce((sum, amt) => sum + amt, 0);
+  };
+
+  const getRemainingCredits = () => {
+    if (!selectedCredit) return 0;
+    return selectedCredit.balance - getTotalAmountToCredit();
+  };
+
+  const handleSaveApplyCredits = async () => {
+    if (!selectedCredit) return;
+
+    const totalToApply = getTotalAmountToCredit();
+    if (totalToApply === 0) {
+      toast({ title: "No credits to apply", variant: "destructive" });
+      return;
+    }
+
+    setIsApplying(true);
+    try {
+      const appliedDate = setAppliedOnDate ? new Date().toISOString().split('T')[0] : selectedCredit.date;
+
+      const response = await fetch(`/api/vendor-credits/${selectedCredit.id}/apply-to-bills`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creditsToApply,
+          appliedDate
+        })
+      });
+
+      if (response.ok) {
+        toast({ title: "Credits applied successfully" });
+        setApplyToBillsOpen(false);
+        refetch();
+        // Refresh the selected credit
+        const updatedResponse = await fetch(`/api/vendor-credits/${selectedCredit.id}`);
+        if (updatedResponse.ok) {
+          const updatedData = await updatedResponse.json();
+          setSelectedCredit(updatedData.data);
+        }
+      } else {
+        const error = await response.json();
+        toast({ title: error.message || "Failed to apply credits", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Failed to apply credits", variant: "destructive" });
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
   const vendorCredits = vendorCreditsData?.data || [];
 
   const filteredVendorCredits = vendorCredits.filter(credit =>
@@ -294,13 +420,13 @@ export default function VendorCredits() {
   const calculateTaxDetails = (credit: VendorCredit) => {
     let cgst = 0;
     let sgst = 0;
-    
+
     credit.items.forEach(item => {
       if (item.tax && item.tax.includes('gst')) {
         const rate = parseFloat(item.rate.toString());
         const quantity = item.quantity;
         const baseAmount = rate * quantity;
-        
+
         if (item.tax === 'gst_18') {
           cgst += baseAmount * 0.09;
           sgst += baseAmount * 0.09;
@@ -313,24 +439,24 @@ export default function VendorCredits() {
         }
       }
     });
-    
+
     return { cgst, sgst };
   };
 
   const getJournalEntries = (credit: VendorCredit) => {
     const { cgst, sgst } = calculateTaxDetails(credit);
     const costOfGoodsSold = credit.subTotal - (credit.discountAmount || 0);
-    
+
     const entries = [
       { account: "Accounts Payable", debit: credit.amount, credit: 0 },
       { account: "Input SGST", debit: 0, credit: sgst },
       { account: "Input CGST", debit: 0, credit: cgst },
       { account: "Cost of Goods Sold", debit: 0, credit: costOfGoodsSold },
     ];
-    
+
     const totalDebit = entries.reduce((sum, e) => sum + e.debit, 0);
     const totalCredit = entries.reduce((sum, e) => sum + e.credit, 0);
-    
+
     return { entries, totalDebit, totalCredit };
   };
 
@@ -352,11 +478,11 @@ export default function VendorCredits() {
               <DropdownMenuItem>Draft</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <div className="flex items-center gap-2">
-            <Button 
+            <Button
               size="sm"
-              className="gap-1" 
+              className="gap-1"
               onClick={() => setLocation('/vendor-credits/new')}
               data-testid="button-add-vendor-credit"
             >
@@ -404,8 +530,8 @@ export default function VendorCredits() {
             <p className="text-muted-foreground mb-4 max-w-sm text-sm">
               Record credits from vendors for returns or adjustments to apply against future bills.
             </p>
-            <Button 
-              className="gap-2" 
+            <Button
+              className="gap-2"
               onClick={() => setLocation('/vendor-credits/new')}
               data-testid="button-add-first-vendor-credit"
             >
@@ -417,28 +543,26 @@ export default function VendorCredits() {
             {paginatedItems.map((credit) => (
               <div
                 key={credit.id}
-                className={`p-3 border-b cursor-pointer transition-colors ${
-                  selectedCredit?.id === credit.id ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-muted/50'
-                }`}
+                className={`p-3 border-b cursor-pointer transition-colors ${selectedCredit?.id === credit.id ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-muted/50'
+                  }`}
                 onClick={() => setSelectedCredit(credit)}
                 data-testid={`row-vendor-credit-${credit.id}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2">
-                    <Checkbox 
-                      onClick={(e) => e.stopPropagation()} 
+                    <Checkbox
+                      onClick={(e) => e.stopPropagation()}
                       data-testid={`checkbox-vendor-credit-${credit.id}`}
                     />
                     <div>
                       <p className="font-medium text-sm">{credit.vendorName}</p>
                       <p className="text-primary text-xs">{credit.creditNumber} | {formatDate(credit.date)}</p>
-                      <Badge 
-                        variant="outline" 
-                        className={`mt-1 text-xs ${
-                          credit.status === 'OPEN' ? 'text-blue-600 border-blue-200' : 
-                          credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200' : 
-                          'text-yellow-600 border-yellow-200'
-                        }`}
+                      <Badge
+                        variant="outline"
+                        className={`mt-1 text-xs ${credit.status === 'OPEN' ? 'text-blue-600 border-blue-200' :
+                            credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200' :
+                              'text-yellow-600 border-yellow-200'
+                          }`}
                       >
                         {credit.status}
                       </Badge>
@@ -487,13 +611,12 @@ export default function VendorCredits() {
                     <td className="px-4 py-3 text-sm text-muted-foreground">{credit.referenceNumber || credit.orderNumber || '-'}</td>
                     <td className="px-4 py-3 text-sm uppercase">{credit.vendorName}</td>
                     <td className="px-4 py-3 text-sm">
-                      <Badge 
+                      <Badge
                         variant="outline"
-                        className={`${
-                          credit.status === 'OPEN' ? 'text-blue-600 border-blue-200 bg-blue-50' : 
-                          credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200 bg-gray-50' : 
-                          'text-yellow-600 border-yellow-200 bg-yellow-50'
-                        }`}
+                        className={`${credit.status === 'OPEN' ? 'text-blue-600 border-blue-200 bg-blue-50' :
+                            credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200 bg-gray-50' :
+                              'text-yellow-600 border-yellow-200 bg-yellow-50'
+                          }`}
                       >
                         {credit.status}
                       </Badge>
@@ -512,7 +635,7 @@ export default function VendorCredits() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => setLocation(`/vendor-credits/${credit.id}/edit`)}
                             data-testid={`action-edit-${credit.id}`}
                           >
@@ -555,9 +678,9 @@ export default function VendorCredits() {
           <div className="flex items-center justify-between gap-2 p-3 border-b bg-background">
             <h2 className="font-semibold text-lg">{selectedCredit.creditNumber}</h2>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="gap-1"
                 onClick={() => setLocation(`/vendor-credits/${selectedCredit.id}/edit`)}
                 data-testid="button-edit-credit"
@@ -576,7 +699,7 @@ export default function VendorCredits() {
                   <DropdownMenuItem>Download PDF</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="outline" size="sm" data-testid="button-apply-to-bills">
+              <Button variant="outline" size="sm" data-testid="button-apply-to-bills" onClick={handleApplyToBills} disabled={!selectedCredit || selectedCredit.balance <= 0}>
                 Apply to Bills
               </Button>
               <DropdownMenu>
@@ -586,32 +709,32 @@ export default function VendorCredits() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleRefund}
                     className="text-primary font-medium"
                     data-testid="menu-refund"
                   >
                     Refund
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleVoid}
                     data-testid="menu-void"
                   >
                     Void
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleClone}
                     data-testid="menu-clone"
                   >
                     Clone
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleViewJournal}
                     data-testid="menu-view-journal"
                   >
                     View Journal
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="text-destructive"
                     onClick={() => handleDelete(selectedCredit.id)}
                     data-testid="menu-delete"
@@ -620,8 +743,8 @@ export default function VendorCredits() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={() => setSelectedCredit(null)}
                 data-testid="button-close-detail"
@@ -647,7 +770,7 @@ export default function VendorCredits() {
                           {selectedCredit.status}
                         </Badge>
                       </div>
-                      
+
                       <div className="p-6 pt-12">
                         <div className="flex justify-between items-start mb-8">
                           <div>
@@ -807,9 +930,9 @@ export default function VendorCredits() {
                       <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">INR</Badge>
                       <span className="text-sm text-muted-foreground">Amount is displayed in your base currency</span>
                     </div>
-                    
+
                     <h3 className="font-semibold mb-4">Vendor Credits</h3>
-                    
+
                     <div className="border rounded-lg overflow-hidden">
                       <table className="w-full">
                         <thead className="bg-muted/50">
@@ -918,7 +1041,7 @@ export default function VendorCredits() {
           <AlertDialogHeader>
             <AlertDialogTitle>Void Vendor Credit</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to void this vendor credit ({selectedCredit?.creditNumber})? 
+              Are you sure you want to void this vendor credit ({selectedCredit?.creditNumber})?
               This will mark the credit as void and it cannot be applied to any bills.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -930,6 +1053,114 @@ export default function VendorCredits() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Apply to Bills Dialog */}
+      <Dialog open={applyToBillsOpen} onOpenChange={setApplyToBillsOpen}>
+        <DialogContent className="max-w-5xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Apply credits from {selectedCredit?.creditNumber}</DialogTitle>
+            <DialogDescription>
+              Select bills to apply credits and enter the amount to apply for each bill
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-auto">
+            <div className="space-y-4 py-4">
+              {/* Header with toggle and available credits */}
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="set-applied-date">Set Applied on Date</Label>
+                    <Switch
+                      id="set-applied-date"
+                      checked={setAppliedOnDate}
+                      onCheckedChange={setSetAppliedOnDate}
+                    />
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Available Credits:</p>
+                  <p className="text-lg font-semibold text-primary">
+                    {formatCurrency(selectedCredit?.balance || 0)} ({formatDate(selectedCredit?.date || '')})
+                  </p>
+                </div>
+              </div>
+
+              {/* Bills Table */}
+              <div className="border rounded-lg">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-3 text-sm font-medium text-muted-foreground">BILL#</th>
+                        <th className="text-left p-3 text-sm font-medium text-muted-foreground">BILL DATE</th>
+                        <th className="text-right p-3 text-sm font-medium text-muted-foreground">BILL AMOUNT</th>
+                        <th className="text-right p-3 text-sm font-medium text-muted-foreground">BILL BALANCE</th>
+                        <th className="text-center p-3 text-sm font-medium text-muted-foreground">CREDITS APPLIED ON</th>
+                        <th className="text-right p-3 text-sm font-medium text-muted-foreground">CREDITS TO APPLY</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendorBills.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                            No unpaid bills found for this vendor
+                          </td>
+                        </tr>
+                      ) : (
+                        vendorBills.map((bill) => (
+                          <tr key={bill.id} className="border-t hover:bg-muted/30">
+                            <td className="p-3 text-sm font-medium">{bill.billNumber}</td>
+                            <td className="p-3 text-sm">{formatDate(bill.billDate)}</td>
+                            <td className="p-3 text-sm text-right">{formatCurrency(bill.total)}</td>
+                            <td className="p-3 text-sm text-right font-medium">{formatCurrency(bill.balanceDue)}</td>
+                            <td className="p-3 text-sm text-center">
+                              {setAppliedOnDate ? formatDate(new Date().toISOString()) : formatDate(selectedCredit?.date || '')}
+                            </td>
+                            <td className="p-3">
+                              <Input
+                                type="number"
+                                min="0"
+                                max={Math.min(bill.balanceDue, getRemainingCredits() + (creditsToApply[bill.id] || 0))}
+                                step="0.01"
+                                value={creditsToApply[bill.id] || ''}
+                                onChange={(e) => handleCreditAmountChange(bill.id, e.target.value)}
+                                className="text-right"
+                                placeholder="0.00"
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="flex justify-end gap-8 p-4 bg-muted/50 rounded-lg">
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Total Amount to Credit:</p>
+                  <p className="text-lg font-semibold">{formatCurrency(getTotalAmountToCredit())}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Remaining credits:</p>
+                  <p className="text-lg font-semibold text-primary">{formatCurrency(getRemainingCredits())}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApplyToBillsOpen(false)} disabled={isApplying}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveApplyCredits} disabled={isApplying || getTotalAmountToCredit() === 0}>
+              {isApplying ? "Applying..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

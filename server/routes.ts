@@ -5402,6 +5402,113 @@ export async function registerRoutes(
     }
   });
 
+  // Apply vendor credits to bills
+  app.post("/api/vendor-credits/:id/apply-to-bills", (req: Request, res: Response) => {
+    try {
+      const creditId = req.params.id;
+      const { creditsToApply, appliedDate } = req.body;
+
+      // Load vendor credits data
+      const creditsData = readVendorCreditsData();
+      const creditIndex = creditsData.vendorCredits.findIndex((c: any) => c.id === creditId);
+
+      if (creditIndex === -1) {
+        return res.status(404).json({ success: false, message: "Vendor credit not found" });
+      }
+
+      const vendorCredit = creditsData.vendorCredits[creditIndex];
+
+      // Load bills data
+      const billsData = readBillsData();
+
+      // Calculate total credits to apply
+      const totalCreditsToApply = Object.values(creditsToApply).reduce((sum: number, amt: any) => sum + amt, 0);
+
+      // Validate: ensure we don't exceed available credit balance
+      if (totalCreditsToApply > vendorCredit.balance) {
+        return res.status(400).json({
+          success: false,
+          message: "Total credits to apply exceeds available balance"
+        });
+      }
+
+      let updatedBillsCount = 0;
+
+      // Apply credits to each bill
+      for (const [billId, creditAmount] of Object.entries(creditsToApply)) {
+        const amount = creditAmount as number;
+        if (amount <= 0) continue;
+
+        const billIndex = billsData.bills.findIndex((b: any) => b.id === billId);
+        if (billIndex === -1) continue;
+
+        const bill = billsData.bills[billIndex];
+
+        // Validate: don't exceed bill balance
+        if (amount > bill.balanceDue) {
+          return res.status(400).json({
+            success: false,
+            message: `Credit amount exceeds balance due for bill ${bill.billNumber}`
+          });
+        }
+
+        // Initialize creditsApplied array if it doesn't exist
+        if (!bill.creditsApplied) {
+          bill.creditsApplied = [];
+        }
+
+        // Add credit application record to bill
+        bill.creditsApplied.push({
+          creditId: vendorCredit.id,
+          creditNumber: vendorCredit.creditNumber,
+          amount: amount,
+          appliedDate: appliedDate || new Date().toISOString().split('T')[0]
+        });
+
+        // Update bill balance and amount paid
+        bill.balanceDue -= amount;
+        bill.amountPaid += amount;
+
+        // Update bill status based on balance
+        if (bill.balanceDue <= 0) {
+          bill.status = 'PAID';
+          bill.balanceDue = 0;
+        } else if (bill.amountPaid > 0 && bill.balanceDue > 0) {
+          bill.status = 'PARTIALLY_PAID';
+        }
+
+        bill.updatedAt = new Date().toISOString();
+
+        billsData.bills[billIndex] = bill;
+        updatedBillsCount++;
+      }
+
+      // Update vendor credit balance and status
+      vendorCredit.balance -= totalCreditsToApply;
+      if (vendorCredit.balance <= 0) {
+        vendorCredit.status = 'CLOSED';
+        vendorCredit.balance = 0;
+      } else {
+        vendorCredit.status = 'OPEN';
+      }
+      vendorCredit.updatedAt = new Date().toISOString();
+
+      // Save both files
+      creditsData.vendorCredits[creditIndex] = vendorCredit;
+      writeVendorCreditsData(creditsData);
+      writeBillsData(billsData);
+
+      res.json({
+        success: true,
+        data: vendorCredit,
+        message: `Credits applied to ${updatedBillsCount} bill(s)`
+      });
+    } catch (error) {
+      console.error('Error applying credits to bills:', error);
+      res.status(500).json({ success: false, message: "Failed to apply credits to bills" });
+    }
+  });
+
   app.delete("/api/vendor-credits/:id", (req: Request, res: Response) => {
     try {
       const data = readVendorCreditsData();
