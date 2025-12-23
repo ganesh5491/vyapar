@@ -189,3 +189,4 @@
     - Item Details table now displays in create/edit e-Way Bill modes with dynamic item loading
     - Proper error handling for undefined amount values
     - Session restart - verified application running with fixes applied (Dec 23, 2025)
+[x] 90. Session restart - reinstalled cross-env and verified application running (Dec 23, 2025 - current session)
