@@ -23,6 +23,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AccountSelectDropdown } from "@/components/AccountSelectDropdown";
 
 interface Customer {
   id: string;
@@ -39,9 +40,12 @@ interface Item {
   name: string;
   type: string;
   unit: string;
-  sellingPrice: number;
+  usageUnit?: string;
+  sellingPrice?: number;
+  rate?: string | number;
   hsnSac?: string;
   description?: string;
+  salesAccount?: string;
 }
 
 interface Salesperson {
@@ -157,7 +161,7 @@ export default function CreditNoteEdit() {
       if (customersData.success) setCustomers(customersData.data);
       if (itemsData.success) setItems(itemsData.data);
       if (salespersonsData.success) setSalespersons(salespersonsData.data);
-      
+
       if (creditNoteData.success && creditNoteData.data) {
         const cn = creditNoteData.data;
         setCustomerId(cn.customerId || "");
@@ -220,12 +224,18 @@ export default function CreditNoteEdit() {
   const handleItemChange = (lineItemId: string, itemId: string) => {
     const item = items.find(i => i.id === itemId);
     if (item) {
+      // Get the price from rate (string) or sellingPrice (number)
+      const price = item.rate ? parseFloat(String(item.rate)) : (item.sellingPrice || 0);
+      const lineItem = lineItems.find(li => li.id === lineItemId);
+      const quantity = lineItem?.quantity || 1;
+
       updateLineItem(lineItemId, {
         itemId: item.id,
         name: item.name,
         description: item.description || "",
-        rate: item.sellingPrice || 0,
-        amount: (item.sellingPrice || 0) * 1
+        account: item.salesAccount || "sales",
+        rate: price,
+        amount: price * quantity
       });
     }
   };
@@ -238,11 +248,11 @@ export default function CreditNoteEdit() {
         const rate = updated.rate || 0;
         const discount = updated.discount || 0;
         const discountType = updated.discountType || 'percentage';
-        
-        let discountAmount = discountType === 'percentage' 
-          ? (quantity * rate * discount / 100) 
+
+        let discountAmount = discountType === 'percentage'
+          ? (quantity * rate * discount / 100)
           : discount;
-        
+
         updated.amount = quantity * rate - discountAmount;
         return updated;
       }
@@ -443,9 +453,9 @@ export default function CreditNoteEdit() {
                     <SelectItem key={sp.id} value={sp.name}>{sp.name}</SelectItem>
                   ))}
                   <div className="border-t my-1" />
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start text-blue-600" 
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-blue-600"
                     onClick={() => setSalespersonDialogOpen(true)}
                     data-testid="button-add-salesperson"
                   >
@@ -459,9 +469,9 @@ export default function CreditNoteEdit() {
 
         <div>
           <Label className="flex items-center gap-1">Subject <HelpCircle className="h-3 w-3 text-slate-400" /></Label>
-          <Textarea 
-            value={subject} 
-            onChange={(e) => setSubject(e.target.value)} 
+          <Textarea
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
             placeholder="Let your customer know what this Credit Note is for"
             className="resize-none"
             data-testid="input-subject"
@@ -473,7 +483,7 @@ export default function CreditNoteEdit() {
             <h3 className="font-medium">Item Table</h3>
             <Button variant="link" size="sm" className="text-blue-600">Bulk Actions</Button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -494,42 +504,60 @@ export default function CreditNoteEdit() {
                   <tr key={item.id} className="border-b border-slate-200 dark:border-slate-700">
                     <td className="px-4 py-3 text-slate-400">{index + 1}</td>
                     <td className="px-4 py-3">
-                      <Select value={item.itemId} onValueChange={(val) => handleItemChange(item.id, val)}>
-                        <SelectTrigger className="w-48" data-testid={`select-item-${index}`}>
-                          <SelectValue placeholder="Type or click to select an Item." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {items.map(i => (
-                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {/* Show item name directly if itemId is not in items list (e.g., from invoice) */}
+                      {item.name && !items.find(i => i.id === item.itemId) ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-sm">{item.name}</span>
+                          <Select value="" onValueChange={(val) => handleItemChange(item.id, val)}>
+                            <SelectTrigger className="w-48 text-xs" data-testid={`select-item-${index}`}>
+                              <SelectValue placeholder="Change item..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {items.map(i => (
+                                <SelectItem key={i.id} value={i.id}>
+                                  {i.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : (
+                        <Select value={item.itemId} onValueChange={(val) => handleItemChange(item.id, val)}>
+                          <SelectTrigger className="w-48" data-testid={`select-item-${index}`}>
+                            <SelectValue placeholder="Type or click to select an Item." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {items.map(i => (
+                              <SelectItem key={i.id} value={i.id}>
+                                {i.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </td>
                     <td className="px-4 py-3">
-                      <Select value={item.account} onValueChange={(val) => updateLineItem(item.id, { account: val })}>
-                        <SelectTrigger className="w-32" data-testid={`select-account-${index}`}>
-                          <SelectValue placeholder="Select an account" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sales">Sales</SelectItem>
-                          <SelectItem value="service">Service Revenue</SelectItem>
-                          <SelectItem value="other">Other Income</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <AccountSelectDropdown
+                        value={item.account}
+                        onValueChange={(val) => updateLineItem(item.id, { account: val })}
+                        placeholder="Select an account"
+                        triggerClassName="w-40"
+                        testId={`select-account-${index}`}
+                      />
                     </td>
                     <td className="px-4 py-3">
-                      <Input 
-                        type="number" 
-                        value={item.quantity} 
+                      <Input
+                        type="number"
+                        value={item.quantity}
                         onChange={(e) => updateLineItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
                         className="w-20 text-right"
                         data-testid={`input-quantity-${index}`}
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <Input 
-                        type="number" 
-                        value={item.rate} 
+                      <Input
+                        type="number"
+                        value={item.rate}
                         onChange={(e) => updateLineItem(item.id, { rate: parseFloat(e.target.value) || 0 })}
                         className="w-24 text-right"
                         data-testid={`input-rate-${index}`}
@@ -537,9 +565,9 @@ export default function CreditNoteEdit() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <Input 
-                          type="number" 
-                          value={item.discount} 
+                        <Input
+                          type="number"
+                          value={item.discount}
                           onChange={(e) => updateLineItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
                           className="w-16 text-right"
                           data-testid={`input-discount-${index}`}
@@ -548,8 +576,8 @@ export default function CreditNoteEdit() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <Select 
-                        value={item.taxName} 
+                      <Select
+                        value={item.taxName}
                         onValueChange={(val) => {
                           const taxOption = TAX_OPTIONS.find(t => t.value === val);
                           updateLineItem(item.id, { taxName: val, tax: taxOption?.rate || 0 });
@@ -567,9 +595,9 @@ export default function CreditNoteEdit() {
                     </td>
                     <td className="px-4 py-3 text-right font-medium">{item.amount.toFixed(2)}</td>
                     <td className="px-4 py-3">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => removeLineItem(item.id)}
                         className="text-red-500"
                         disabled={lineItems.length === 1}
@@ -597,9 +625,9 @@ export default function CreditNoteEdit() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label>Customer Notes</Label>
-            <Textarea 
-              value={customerNotes} 
-              onChange={(e) => setCustomerNotes(e.target.value)} 
+            <Textarea
+              value={customerNotes}
+              onChange={(e) => setCustomerNotes(e.target.value)}
               placeholder="Will be displayed on the credit note"
               className="resize-none"
               data-testid="input-customer-notes"
@@ -613,9 +641,9 @@ export default function CreditNoteEdit() {
             <div className="flex justify-between items-center gap-2">
               <span className="text-slate-600">Shipping Charges</span>
               <div className="flex items-center gap-1">
-                <Input 
-                  type="number" 
-                  value={shippingCharges} 
+                <Input
+                  type="number"
+                  value={shippingCharges}
                   onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)}
                   className="w-24 text-right"
                   data-testid="input-shipping-charges"
@@ -649,9 +677,9 @@ export default function CreditNoteEdit() {
             <div className="flex justify-between items-center gap-2">
               <span className="text-slate-600">Adjustment</span>
               <div className="flex items-center gap-1">
-                <Input 
-                  type="number" 
-                  value={adjustment} 
+                <Input
+                  type="number"
+                  value={adjustment}
                   onChange={(e) => setAdjustment(parseFloat(e.target.value) || 0)}
                   className="w-24 text-right"
                   data-testid="input-adjustment"
@@ -669,9 +697,9 @@ export default function CreditNoteEdit() {
 
         <div>
           <Label>Terms & Conditions</Label>
-          <Textarea 
-            value={termsAndConditions} 
-            onChange={(e) => setTermsAndConditions(e.target.value)} 
+          <Textarea
+            value={termsAndConditions}
+            onChange={(e) => setTermsAndConditions(e.target.value)}
             placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
             className="resize-none min-h-[100px]"
             data-testid="input-terms"
@@ -704,19 +732,19 @@ export default function CreditNoteEdit() {
           <div className="space-y-4">
             <div>
               <Label>Name *</Label>
-              <Input 
-                value={newSalespersonName} 
-                onChange={(e) => setNewSalespersonName(e.target.value)} 
+              <Input
+                value={newSalespersonName}
+                onChange={(e) => setNewSalespersonName(e.target.value)}
                 placeholder="Enter salesperson name"
                 data-testid="input-new-salesperson-name"
               />
             </div>
             <div>
               <Label>Email</Label>
-              <Input 
+              <Input
                 type="email"
-                value={newSalespersonEmail} 
-                onChange={(e) => setNewSalespersonEmail(e.target.value)} 
+                value={newSalespersonEmail}
+                onChange={(e) => setNewSalespersonEmail(e.target.value)}
                 placeholder="Enter email (optional)"
                 data-testid="input-new-salesperson-email"
               />

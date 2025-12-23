@@ -1,6 +1,93 @@
 {
   "invoices": [
     {
+      "id": "1766470017031",
+      "invoiceNumber": "INV-00030",
+      "referenceNumber": "",
+      "date": "2025-12-23",
+      "dueDate": "2026-01-22",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "billingAddress": {
+        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "salesperson": "Sujay",
+      "placeOfSupply": "27 - Maharashtra",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "0.03628325408413524",
+          "itemId": "0.03628325408413524",
+          "name": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "quantity": 5,
+          "unit": "pcs",
+          "rate": 45000,
+          "discount": 22500,
+          "discountType": "percentage",
+          "tax": 36450,
+          "taxName": "GST18",
+          "amount": 238950
+        }
+      ],
+      "subTotal": 202500,
+      "shippingCharges": 0,
+      "cgst": 18225,
+      "sgst": 18225,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 238950,
+      "amountPaid": 950,
+      "balanceDue": 238000,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-23T06:06:57.031Z",
+      "updatedAt": "2025-12-23T06:12:21.783Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "1766470341783",
+          "date": "2025-12-23T06:11:00.000Z",
+          "amount": 950,
+          "paymentMode": "cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T06:06:57.031Z",
+          "action": "created",
+          "description": "Invoice created for ₹2,38,950",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T06:12:21.783Z",
+          "action": "payment_recorded",
+          "description": "Payment of ₹950 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766404108260",
       "invoiceNumber": "INV-00029",
       "referenceNumber": "",
@@ -3009,5 +3096,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 30
+  "nextInvoiceNumber": 31
 }

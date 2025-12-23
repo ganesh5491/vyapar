@@ -447,7 +447,56 @@
       ],
       "createdAt": "2025-12-22T11:45:56.779Z",
       "updatedAt": "2025-12-22T11:45:56.779Z"
+    },
+    {
+      "id": "13",
+      "name": "Mr. Amit Verma",
+      "displayName": "Mr. Amit Verma",
+      "companyName": "TechNova Global Services Pvt. Ltd.",
+      "email": "finance@technovaglobal.com",
+      "phone": "02267894560",
+      "workPhone": "02267894560",
+      "mobile": "9898765432",
+      "gstTreatment": "Registered Business - Regular",
+      "gstin": "27AABCT6789L1Z2",
+      "receivables": "0.00",
+      "avatar": "TE",
+      "pan": "AABCT6789L",
+      "customerType": "business",
+      "status": "active",
+      "billingAddress": {
+        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "currency": "INR",
+      "paymentTerms": "net_30",
+      "placeOfSupply": "27 - Maharashtra",
+      "taxPreference": "taxable",
+      "exemptionReason": "",
+      "portalStatus": "disabled",
+      "contactPersons": [
+        {
+          "salutation": "mr",
+          "firstName": "Shivam",
+          "lastName": "kale",
+          "email": "shivam@gmail.com",
+          "workPhone": "2356253256",
+          "mobile": "2356253256"
+        }
+      ],
+      "createdAt": "2025-12-23T06:03:01.913Z",
+      "updatedAt": "2025-12-23T06:04:33.349Z"
     }
   ],
-  "nextCustomerId": 13
+  "nextCustomerId": 14
 }

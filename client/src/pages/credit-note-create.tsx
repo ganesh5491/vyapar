@@ -43,9 +43,12 @@ interface Item {
   name: string;
   type: string;
   unit: string;
-  sellingPrice: number;
+  usageUnit?: string;
+  sellingPrice?: number;
+  rate?: string | number;
   hsnSac?: string;
   description?: string;
+  salesAccount?: string;
 }
 
 interface Salesperson {
@@ -198,20 +201,56 @@ export default function CreditNoteCreate() {
 
         // Pre-populate items from invoice
         if (invoice.items && invoice.items.length > 0) {
-          const invoiceItems: LineItem[] = invoice.items.map((item: any, index: number) => ({
-            id: String(index + 1),
-            itemId: item.itemId || "",
-            name: item.name || "",
-            description: item.description || "",
-            account: item.account || "Sales",
-            quantity: item.quantity || 1,
-            rate: item.rate || 0,
-            discount: item.discount || 0,
-            discountType: item.discountType || "percentage",
-            tax: item.tax || 0,
-            taxName: item.taxName || "GST18",
-            amount: (item.quantity || 1) * (item.rate || 0) - (item.discount || 0)
-          }));
+          const invoiceItems: LineItem[] = invoice.items.map((item: any, index: number) => {
+            const quantity = item.quantity || 1;
+            const rate = item.rate || 0;
+            let discount = item.discount || 0;
+            let discountType = item.discountType || "percentage";
+
+            // Use the pre-calculated amount from invoice if available
+            // This avoids issues with inconsistent discount data
+            let amount = item.amount;
+
+            // If no pre-calculated amount, calculate it
+            if (amount === undefined || amount === null) {
+              // If discount > 100 and type is percentage, it's likely stored as amount
+              if (discountType === 'percentage' && discount > 100) {
+                // Convert to actual percentage: discount amount / (qty * rate) * 100
+                const baseAmount = quantity * rate;
+                if (baseAmount > 0) {
+                  discount = (discount / baseAmount) * 100;
+                }
+              }
+
+              let discountAmount = discountType === 'percentage'
+                ? (quantity * rate * discount / 100)
+                : discount;
+              amount = quantity * rate - discountAmount;
+            }
+
+            // Normalize discount for display (if it was stored as amount, convert to percentage)
+            if (discountType === 'percentage' && discount > 100) {
+              const baseAmount = quantity * rate;
+              if (baseAmount > 0) {
+                discount = (item.discount / baseAmount) * 100;
+              }
+            }
+
+            return {
+              id: String(index + 1),
+              itemId: item.itemId || "",
+              name: item.name || "",
+              description: item.description || "",
+              account: item.account || "sales",
+              quantity,
+              rate,
+              discount: Math.round(discount * 100) / 100, // Round to 2 decimal places
+              discountType,
+              tax: item.tax || 0,
+              taxName: item.taxName || "GST18",
+              amount
+            };
+          });
           setLineItems(invoiceItems);
         }
       }
@@ -267,12 +306,18 @@ export default function CreditNoteCreate() {
   const handleItemChange = (lineItemId: string, itemId: string) => {
     const item = items.find(i => i.id === itemId);
     if (item) {
+      // Get the price from rate (string) or sellingPrice (number)
+      const price = item.rate ? parseFloat(String(item.rate)) : (item.sellingPrice || 0);
+      const lineItem = lineItems.find(li => li.id === lineItemId);
+      const quantity = lineItem?.quantity || 1;
+
       updateLineItem(lineItemId, {
         itemId: item.id,
         name: item.name,
         description: item.description || "",
-        rate: item.sellingPrice || 0,
-        amount: (item.sellingPrice || 0) * 1
+        account: item.salesAccount || "sales",
+        rate: price,
+        amount: price * quantity
       });
     }
   };
@@ -527,18 +572,37 @@ export default function CreditNoteCreate() {
                   <tr key={item.id} className="border-b border-slate-200 dark:border-slate-700">
                     <td className="px-4 py-3 text-slate-400">{index + 1}</td>
                     <td className="px-4 py-3">
-                      <Select value={item.itemId} onValueChange={(val) => handleItemChange(item.id, val)}>
-                        <SelectTrigger className="w-48" data-testid={`select-item-${index}`}>
-                          <SelectValue placeholder="Type or click to select an Item." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {items.map(i => (
-                            <SelectItem key={i.id} value={i.id}>
-                              {i.name} - ₹{i.sellingPrice || 0}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {/* Show item name directly if itemId is not in items list (e.g., from invoice) */}
+                      {item.name && !items.find(i => i.id === item.itemId) ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-sm">{item.name}</span>
+                          <Select value="" onValueChange={(val) => handleItemChange(item.id, val)}>
+                            <SelectTrigger className="w-48 text-xs" data-testid={`select-item-${index}`}>
+                              <SelectValue placeholder="Change item..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {items.map(i => (
+                                <SelectItem key={i.id} value={i.id}>
+                                  {i.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : (
+                        <Select value={item.itemId} onValueChange={(val) => handleItemChange(item.id, val)}>
+                          <SelectTrigger className="w-48" data-testid={`select-item-${index}`}>
+                            <SelectValue placeholder="Type or click to select an Item." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {items.map(i => (
+                              <SelectItem key={i.id} value={i.id}>
+                                {i.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <AccountSelectDropdown

@@ -171,7 +171,43 @@
       ],
       "amountInWords": "Indian Rupee Five Hundred Only",
       "createdAt": "2025-12-22T12:21:12.730Z"
+    },
+    {
+      "id": "pr-1766470341794",
+      "paymentNumber": "48",
+      "date": "2025-12-23",
+      "referenceNumber": "",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "customerEmail": "",
+      "invoices": [
+        {
+          "invoiceId": "1766470017031",
+          "invoiceNumber": "INV-00030",
+          "invoiceDate": "2025-12-23",
+          "invoiceAmount": 238950,
+          "amountDue": 238000,
+          "paymentAmount": 950
+        }
+      ],
+      "mode": "cash",
+      "depositTo": "Petty Cash",
+      "amount": 950,
+      "unusedAmount": 0,
+      "bankCharges": 0,
+      "tax": "",
+      "taxAmount": 0,
+      "notes": "Payment for INV-00030",
+      "attachments": [],
+      "sendThankYou": false,
+      "status": "PAID",
+      "paymentType": "invoice_payment",
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "amountInWords": "Indian Rupee Nine Hundred Fifty Only",
+      "journalEntries": [],
+      "createdAt": "2025-12-23T06:12:21.783Z"
     }
   ],
-  "nextPaymentNumber": 48
+  "nextPaymentNumber": 49
 }
