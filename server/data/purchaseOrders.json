@@ -1,6 +1,171 @@
 {
   "purchaseOrders": [
     {
+      "id": "1766487220655",
+      "purchaseOrderNumber": "PO-2025-0013",
+      "referenceNumber": "231231",
+      "date": "2025-12-23",
+      "deliveryDate": "2025-12-11",
+      "vendorId": "3",
+      "vendorName": "Ganesh k",
+      "vendorAddress": {},
+      "deliveryAddress": {
+        "attention": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "countryRegion": "India"
+      },
+      "deliveryAddressType": "organization",
+      "paymentTerms": "Due on Receipt",
+      "shipmentPreference": "",
+      "reverseCharge": false,
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "itemName": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "account": "",
+          "quantity": 1,
+          "rate": 40000,
+          "tax": "gst_18",
+          "taxAmount": 7200,
+          "amount": 47200
+        },
+        {
+          "id": "1766487216114",
+          "itemId": "1765535400204",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "gst_18",
+          "taxAmount": 9,
+          "amount": 59
+        }
+      ],
+      "subTotal": 40050,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 7209,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 47259,
+      "notes": "",
+      "termsAndConditions": "",
+      "attachments": [],
+      "status": "DRAFT",
+      "receiveStatus": "YET TO BE RECEIVED",
+      "billedStatus": "BILLED",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-23T10:53:40.655Z",
+      "updatedAt": "2025-12-23T11:20:29.983Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T10:53:40.655Z",
+          "action": "created",
+          "description": "Purchase Order created for ₹47,259",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T10:53:49.196Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T11:20:29.983Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
+      "id": "1766485937920",
+      "purchaseOrderNumber": "PO-2025-0011",
+      "referenceNumber": "",
+      "date": "2025-12-23",
+      "deliveryDate": "",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "vendorAddress": {},
+      "deliveryAddress": {
+        "attention": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "countryRegion": "India"
+      },
+      "deliveryAddressType": "organization",
+      "paymentTerms": "Due on Receipt",
+      "shipmentPreference": "",
+      "reverseCharge": false,
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "itemName": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "account": "input_cgst",
+          "quantity": 1,
+          "rate": 40000,
+          "tax": "gst12",
+          "taxAmount": 4800,
+          "amount": 44800
+        }
+      ],
+      "subTotal": 40000,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 4800,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 44800,
+      "notes": "",
+      "termsAndConditions": "",
+      "attachments": [],
+      "status": "ISSUED",
+      "receiveStatus": "YET TO BE RECEIVED",
+      "billedStatus": "BILLED",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-23T10:32:17.920Z",
+      "updatedAt": "2025-12-23T10:53:02.131Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T10:32:17.920Z",
+          "action": "created",
+          "description": "Purchase Order created for ₹44,800",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-23T10:53:02.131Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766479300128",
       "purchaseOrderNumber": "PO-2025-0010",
       "referenceNumber": "",
@@ -648,5 +813,5 @@
       "emailCommunications": []
     }
   ],
-  "nextPurchaseOrderNumber": 11
+  "nextPurchaseOrderNumber": 14
 }

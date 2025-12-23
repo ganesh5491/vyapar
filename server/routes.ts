@@ -2329,7 +2329,25 @@ export async function registerRoutes(
   app.get("/api/vendors", (req: Request, res: Response) => {
     try {
       const data = readVendorsData();
-      res.json({ success: true, data: data.vendors });
+      const billsData = readBillsData();
+
+      // Calculate payables for each vendor based on outstanding bills
+      const vendorsWithPayables = data.vendors.map((vendor: any) => {
+        const vendorBills = billsData.bills.filter((bill: any) => bill.vendorId === vendor.id);
+        const outstandingPayables = vendorBills.reduce((total: number, bill: any) => {
+          if (bill.status !== 'PAID' && bill.status !== 'VOID') {
+            return total + (bill.balanceDue || bill.total - (bill.amountPaid || 0));
+          }
+          return total;
+        }, 0);
+
+        return {
+          ...vendor,
+          payables: outstandingPayables
+        };
+      });
+
+      res.json({ success: true, data: vendorsWithPayables });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch vendors" });
     }
@@ -2342,7 +2360,23 @@ export async function registerRoutes(
       if (!vendor) {
         return res.status(404).json({ success: false, message: "Vendor not found" });
       }
-      res.json({ success: true, data: vendor });
+
+      // Calculate payables for this vendor
+      const billsData = readBillsData();
+      const vendorBills = billsData.bills.filter((bill: any) => bill.vendorId === vendor.id);
+      const outstandingPayables = vendorBills.reduce((total: number, bill: any) => {
+        if (bill.status !== 'PAID' && bill.status !== 'VOID') {
+          return total + (bill.balanceDue || bill.total - (bill.amountPaid || 0));
+        }
+        return total;
+      }, 0);
+
+      const vendorWithPayables = {
+        ...vendor,
+        payables: outstandingPayables
+      };
+
+      res.json({ success: true, data: vendorWithPayables });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch vendor" });
     }
@@ -2565,8 +2599,98 @@ export async function registerRoutes(
       if (!vendor) {
         return res.status(404).json({ success: false, message: "Vendor not found" });
       }
-      res.json({ success: true, data: vendor.activities || [] });
+
+      // Generate activities from transactions
+      const activities: any[] = [];
+      const vendorId = req.params.id;
+
+      // Get bills for this vendor
+      try {
+        const billsData = readBillsData();
+        const vendorBills = billsData.bills.filter((bill: any) => bill.vendorId === vendorId);
+        vendorBills.forEach((bill: any) => {
+          activities.push({
+            id: `activity-bill-${bill.id}`,
+            type: 'bill',
+            title: `Bill ${bill.billNumber} Created`,
+            description: `Bill created for ${formatCurrencyServer(bill.total || 0)}`,
+            user: 'System',
+            date: bill.createdAt || bill.date,
+            time: new Date(bill.createdAt || bill.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Get payments made to this vendor
+      try {
+        const paymentsMadeData = readPaymentsMadeData();
+        const vendorPayments = paymentsMadeData.paymentsMade.filter((p: any) => p.vendorId === vendorId);
+        vendorPayments.forEach((payment: any) => {
+          activities.push({
+            id: `activity-payment-${payment.id}`,
+            type: 'payment',
+            title: `Payment ${payment.paymentNumber} Made`,
+            description: `Payment of ${formatCurrencyServer(payment.amount || 0)} made`,
+            user: 'System',
+            date: payment.createdAt || payment.date,
+            time: new Date(payment.createdAt || payment.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Get purchase orders for this vendor
+      try {
+        const purchaseOrdersData = readPurchaseOrdersData();
+        const vendorPOs = purchaseOrdersData.purchaseOrders.filter((po: any) => po.vendorId === vendorId);
+        vendorPOs.forEach((po: any) => {
+          activities.push({
+            id: `activity-po-${po.id}`,
+            type: 'purchase_order',
+            title: `Purchase Order ${po.purchaseOrderNumber} Created`,
+            description: `Purchase order created for ${formatCurrencyServer(po.total || 0)}`,
+            user: 'System',
+            date: po.createdAt || po.date,
+            time: new Date(po.createdAt || po.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Get vendor credits for this vendor
+      try {
+        const vendorCreditsData = readVendorCreditsData();
+        const vendorCreditsList = vendorCreditsData.vendorCredits.filter((vc: any) => vc.vendorId === vendorId);
+        vendorCreditsList.forEach((vc: any) => {
+          activities.push({
+            id: `activity-vc-${vc.id}`,
+            type: 'vendor_credit',
+            title: `Vendor Credit ${vc.vendorCreditNumber} Created`,
+            description: `Vendor credit for ${formatCurrencyServer(vc.total || 0)}`,
+            user: 'System',
+            date: vc.createdAt || vc.date,
+            time: new Date(vc.createdAt || vc.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+          });
+        });
+      } catch (e) { /* ignore */ }
+
+      // Add vendor creation activity
+      if (vendor.createdAt) {
+        activities.push({
+          id: `activity-vendor-created-${vendor.id}`,
+          type: 'vendor',
+          title: 'Vendor Created',
+          description: `Vendor ${vendor.displayName || vendor.name} was created`,
+          user: 'System',
+          date: vendor.createdAt,
+          time: new Date(vendor.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        });
+      }
+
+      // Sort by date (most recent first)
+      activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      res.json({ success: true, data: activities });
     } catch (error) {
+      console.error('Error fetching vendor activities:', error);
       res.status(500).json({ success: false, message: "Failed to fetch activities" });
     }
   });
@@ -3618,18 +3742,14 @@ export async function registerRoutes(
         bills = bills.filter((b: any) => b.vendorId === vendorId);
       }
 
-      // Filter for unpaid bills (balanceDue > 0)
-      // Only return unpaid or partially paid bills
-      bills = bills.filter((b: any) => {
-        const balance = b.balanceDue !== undefined ? b.balanceDue : (b.total || 0);
-        return balance > 0 && b.status !== 'PAID';
-      });
+      // Show all bills regardless of payment status
+      // Removed filter that was hiding PAID bills
 
-      // Sort by bill date (oldest first) for payment allocation
+      // Sort by bill date (newest first) for better UX
       bills.sort((a: any, b: any) => {
         const dateA = new Date(a.billDate || a.date || 0).getTime();
         const dateB = new Date(b.billDate || b.date || 0).getTime();
-        return dateA - dateB;
+        return dateB - dateA;
       });
 
       res.json({ success: true, data: bills });

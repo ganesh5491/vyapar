@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Plus, X, Search, Upload, ChevronDown, HelpCircle } from "lucide-react";
+import { Plus, X, Search, Upload, ChevronDown, HelpCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountSelectDropdown } from "@/components/AccountSelectDropdown";
+import { VendorAddressModal } from "@/components/VendorAddressModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -255,6 +256,10 @@ export default function PurchaseOrderCreate() {
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
 
+  // Address modal states
+  const [billingAddressModalOpen, setBillingAddressModalOpen] = useState(false);
+  const [shippingAddressModalOpen, setShippingAddressModalOpen] = useState(false);
+
   // Get vendorId from URL params
   const urlParams = new URLSearchParams(window.location.search);
   const vendorIdFromUrl = urlParams.get('vendorId');
@@ -349,6 +354,35 @@ export default function PurchaseOrderCreate() {
       customerSearchQuery: customer.displayName
     });
     setCustomerDropdownOpen(false);
+  };
+
+  // Address modal handlers
+  const handleBillingAddressUpdate = (address: any) => {
+    setFormData({
+      ...formData,
+      vendorBillingAddress: {
+        street1: address.street1 || "",
+        street2: address.street2 || "",
+        city: address.city || "",
+        state: address.state || "",
+        pinCode: address.pinCode || "",
+        countryRegion: address.countryRegion || "India"
+      }
+    });
+  };
+
+  const handleShippingAddressUpdate = (address: any) => {
+    setFormData({
+      ...formData,
+      vendorShippingAddress: {
+        street1: address.street1 || "",
+        street2: address.street2 || "",
+        city: address.city || "",
+        state: address.state || "",
+        pinCode: address.pinCode || "",
+        countryRegion: address.countryRegion || "India"
+      }
+    });
   };
 
   const updateLineItem = (id: string, field: keyof LineItem, value: any) => {
@@ -592,66 +626,76 @@ export default function PurchaseOrderCreate() {
 
             {/* Vendor Details Section */}
             {formData.vendorId && (
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
-                <h3 className="font-semibold text-slate-900 text-sm">Vendor Details</h3>
-                
-                {/* Billing Address */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Billing Address</Label>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-auto text-left whitespace-normal"
-                    onClick={() => {
-                      const newAddress = prompt("Enter billing address:", formData.vendorBillingAddress.street1);
-                      if (newAddress) {
-                        setFormData({
-                          ...formData,
-                          vendorBillingAddress: { ...formData.vendorBillingAddress, street1: newAddress }
-                        });
-                      }
-                    }}
-                    data-testid="button-edit-billing-address"
-                  >
-                    <div className="text-left">
-                      <p>{formData.vendorBillingAddress.street1 || "Click to add billing address"}</p>
-                      {formData.vendorBillingAddress.city && (
-                        <p className="text-xs text-slate-500">{formData.vendorBillingAddress.city}, {formData.vendorBillingAddress.state}</p>
-                      )}
-                    </div>
-                  </Button>
+              <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-6">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <h3 className="font-semibold text-slate-900">Vendor Details</h3>
                 </div>
 
-                {/* Shipping Address */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Shipping Address</Label>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-auto text-left whitespace-normal"
-                    onClick={() => {
-                      const newAddress = prompt("Enter shipping address:", formData.vendorShippingAddress.street1);
-                      if (newAddress) {
-                        setFormData({
-                          ...formData,
-                          vendorShippingAddress: { ...formData.vendorShippingAddress, street1: newAddress }
-                        });
-                      }
-                    }}
-                    data-testid="button-edit-shipping-address"
-                  >
-                    <div className="text-left">
-                      <p>{formData.vendorShippingAddress.street1 || "Click to add shipping address"}</p>
-                      {formData.vendorShippingAddress.city && (
-                        <p className="text-xs text-slate-500">{formData.vendorShippingAddress.city}, {formData.vendorShippingAddress.state}</p>
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Billing Address */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium text-slate-700 uppercase tracking-wide">BILLING ADDRESS</Label>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-slate-400 hover:text-slate-600"
+                        onClick={() => setBillingAddressModalOpen(true)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="bg-slate-50 rounded-md p-3 min-h-[80px] text-sm">
+                      {formData.vendorBillingAddress.street1 ? (
+                        <div className="space-y-1">
+                          <p className="font-medium">{selectedVendor?.displayName}</p>
+                          <p>{formData.vendorBillingAddress.street1}</p>
+                          {formData.vendorBillingAddress.street2 && <p>{formData.vendorBillingAddress.street2}</p>}
+                          <p>{formData.vendorBillingAddress.city}</p>
+                          <p>{formData.vendorBillingAddress.state} {formData.vendorBillingAddress.pinCode}</p>
+                          <p>{formData.vendorBillingAddress.countryRegion}</p>
+                        </div>
+                      ) : (
+                        <p className="text-slate-400 italic">Click edit to add billing address</p>
                       )}
                     </div>
-                  </Button>
+                  </div>
+
+                  {/* Shipping Address */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium text-slate-700 uppercase tracking-wide">SHIPPING ADDRESS</Label>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-slate-400 hover:text-slate-600"
+                        onClick={() => setShippingAddressModalOpen(true)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="bg-slate-50 rounded-md p-3 min-h-[80px] text-sm">
+                      {formData.vendorShippingAddress.street1 ? (
+                        <div className="space-y-1">
+                          <p className="font-medium">{selectedVendor?.displayName}</p>
+                          <p>{formData.vendorShippingAddress.street1}</p>
+                          {formData.vendorShippingAddress.street2 && <p>{formData.vendorShippingAddress.street2}</p>}
+                          <p>{formData.vendorShippingAddress.city}</p>
+                          <p>{formData.vendorShippingAddress.state} {formData.vendorShippingAddress.pinCode}</p>
+                          <p>{formData.vendorShippingAddress.countryRegion}</p>
+                        </div>
+                      ) : (
+                        <p className="text-slate-400 italic">Click edit to add shipping address</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* GST Treatment */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">GST Treatment</Label>
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-slate-700 uppercase tracking-wide">GST Treatment</Label>
                   <Select value={formData.gstTreatment} onValueChange={(value) => setFormData({ ...formData, gstTreatment: value })}>
-                    <SelectTrigger className="bg-white" data-testid="select-gst-treatment">
+                    <SelectTrigger className="bg-white border-slate-200" data-testid="select-gst-treatment">
                       <SelectValue placeholder="Select GST Treatment" />
                     </SelectTrigger>
                     <SelectContent>
@@ -662,34 +706,36 @@ export default function PurchaseOrderCreate() {
                   </Select>
                 </div>
 
-                {/* Source of Supply */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Source of Supply<span className="text-red-500">*</span></Label>
-                  <Select value={formData.sourceOfSupply} onValueChange={(value) => setFormData({ ...formData, sourceOfSupply: value })}>
-                    <SelectTrigger className="bg-white" data-testid="select-source-of-supply">
-                      <SelectValue placeholder="Select source state" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDIAN_STATES.map(state => (
-                        <SelectItem key={state} value={state}>{state}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Source of Supply */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-slate-700 uppercase tracking-wide">Source of Supply<span className="text-red-500 ml-1">*</span></Label>
+                    <Select value={formData.sourceOfSupply} onValueChange={(value) => setFormData({ ...formData, sourceOfSupply: value })}>
+                      <SelectTrigger className="bg-white border-slate-200" data-testid="select-source-of-supply">
+                        <SelectValue placeholder="Select source state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map(state => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Destination of Supply */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Destination of Supply<span className="text-red-500">*</span></Label>
-                  <Select value={formData.destinationOfSupply} onValueChange={(value) => setFormData({ ...formData, destinationOfSupply: value })}>
-                    <SelectTrigger className="bg-white" data-testid="select-destination-of-supply">
-                      <SelectValue placeholder="Select destination state" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDIAN_STATES.map(state => (
-                        <SelectItem key={state} value={state}>{state}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* Destination of Supply */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-slate-700 uppercase tracking-wide">Destination of Supply<span className="text-red-500 ml-1">*</span></Label>
+                    <Select value={formData.destinationOfSupply} onValueChange={(value) => setFormData({ ...formData, destinationOfSupply: value })}>
+                      <SelectTrigger className="bg-white border-slate-200" data-testid="select-destination-of-supply">
+                        <SelectValue placeholder="Select destination state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INDIAN_STATES.map(state => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             )}
@@ -1261,6 +1307,23 @@ export default function PurchaseOrderCreate() {
             PDF Template: <span className="text-blue-600 cursor-pointer">Standard Template</span>
           </div>
         </div>
+
+        {/* Address Modals */}
+        <VendorAddressModal
+          open={billingAddressModalOpen}
+          onClose={() => setBillingAddressModalOpen(false)}
+          onSave={handleBillingAddressUpdate}
+          title="Billing Address"
+          initialAddress={formData.vendorBillingAddress}
+        />
+
+        <VendorAddressModal
+          open={shippingAddressModalOpen}
+          onClose={() => setShippingAddressModalOpen(false)}
+          onSave={handleShippingAddressUpdate}
+          title="Shipping Address"
+          initialAddress={formData.vendorShippingAddress}
+        />
       </div>
     </div>
   );

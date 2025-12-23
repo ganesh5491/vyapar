@@ -159,11 +159,11 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 2428.5,
-      "amountPaid": 2428.5,
-      "balanceDue": 0,
+      "amountPaid": 1000,
+      "balanceDue": 1428.5,
       "notes": "",
       "attachments": [],
-      "status": "PAID",
+      "status": "UNPAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-22T09:24:18.615Z",
@@ -412,15 +412,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 1298,
-      "amountPaid": 898,
-      "balanceDue": 400,
+      "amountPaid": 1298,
+      "balanceDue": 0,
       "notes": "",
       "attachments": [],
-      "status": "PARTIALLY_PAID",
+      "status": "PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-22T03:23:25.363Z",
-      "updatedAt": "2025-12-22T04:20:24.592Z",
+      "updatedAt": "2025-12-23T11:02:14.415Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -449,6 +449,13 @@
           "timestamp": "2025-12-22T04:20:24.592Z",
           "action": "payment",
           "description": "Payment of ₹100 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-23T11:02:14.415Z",
+          "action": "payment",
+          "description": "Payment of ₹400 recorded",
           "user": "Admin User"
         }
       ]
@@ -579,15 +586,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 54.5,
-      "amountPaid": 0,
-      "balanceDue": 54.5,
+      "amountPaid": 54.5,
+      "balanceDue": 0,
       "notes": "",
       "attachments": [],
-      "status": "OPEN",
+      "status": "PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-18T10:29:04.518Z",
-      "updatedAt": "2025-12-22T12:04:19.808Z",
+      "updatedAt": "2025-12-23T11:02:45.422Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -602,6 +609,13 @@
           "timestamp": "2025-12-22T12:04:19.808Z",
           "action": "updated",
           "description": "Bill has been updated",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-23T11:02:45.422Z",
+          "action": "payment",
+          "description": "Payment of ₹54.5 recorded",
           "user": "Admin User"
         }
       ]

@@ -1600,7 +1600,6 @@ export default function VendorsPage() {
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Work Phone</th>
                   <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Payables (BCY)</th>
-                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Unused Credits (BCY)</th>
                   <th className="w-10 px-3 py-3"></th>
                 </tr>
               </thead>
@@ -1633,9 +1632,6 @@ export default function VendorsPage() {
                     </td>
                     <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
                       {formatCurrencyLocal(vendor.payables || 0)}
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
-                      {formatCurrencyLocal(vendor.unusedCredits || 0)}
                     </td>
                     <td className="px-3 py-3">
                       <Button

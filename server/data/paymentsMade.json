@@ -720,7 +720,69 @@
       "status": "PAID",
       "createdAt": "2025-12-23T10:08:43.402Z",
       "updatedAt": "2025-12-23T10:08:43.402Z"
+    },
+    {
+      "id": "pm-1766487734421",
+      "paymentNumber": "PM-00030",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 400,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-23",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #6",
+      "billPayments": {
+        "1766373805363": {
+          "billId": "1766373805363",
+          "billNumber": "6",
+          "billAmount": 1298,
+          "amountPaid": 400
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-23T11:02:14.415Z",
+      "updatedAt": "2025-12-23T11:02:14.415Z"
+    },
+    {
+      "id": "pm-1766487765427",
+      "paymentNumber": "PM-00031",
+      "vendorId": "2",
+      "vendorName": "Amazon",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 54.5,
+      "reverseCharge": true,
+      "tds": "",
+      "paymentDate": "2025-12-23",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #4",
+      "billPayments": {
+        "1766053744518": {
+          "billId": "1766053744518",
+          "billNumber": "4",
+          "billAmount": 54.5,
+          "amountPaid": 54.5
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-23T11:02:45.422Z",
+      "updatedAt": "2025-12-23T11:02:45.422Z"
     }
   ],
-  "nextPaymentNumber": 30
+  "nextPaymentNumber": 32
 }

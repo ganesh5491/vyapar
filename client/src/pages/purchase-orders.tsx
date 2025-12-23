@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { 
-  Plus, Search, ChevronDown, MoreHorizontal, Pencil, Trash2, 
+import {
+  Plus, Search, ChevronDown, MoreHorizontal, Pencil, Trash2,
   X, Mail, FileText, Printer, ArrowRight, Filter, Download,
-  ClipboardList, Eye, Check
+  ClipboardList, Eye, Check, Calendar, XCircle, Copy, Archive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/hooks/use-pagination";
@@ -80,6 +80,13 @@ interface PurchaseOrder {
   billedStatus?: string;
   createdAt?: string;
   pdfTemplate?: string;
+}
+
+interface ActionItem {
+  icon: any;
+  label: string;
+  onClick: () => void;
+  className?: string;
 }
 
 function formatCurrency(amount: number): string {
@@ -226,20 +233,82 @@ function PurchaseOrderPDFView({ purchaseOrder }: { purchaseOrder: PurchaseOrder 
   );
 }
 
-function PurchaseOrderDetailPanel({ 
-  purchaseOrder, 
-  onClose, 
-  onEdit, 
+function PurchaseOrderDetailPanel({
+  purchaseOrder,
+  onClose,
+  onEdit,
   onDelete,
-  onConvertToBill
-}: { 
-  purchaseOrder: PurchaseOrder; 
-  onClose: () => void; 
+  onConvertToBill,
+  onMarkAsIssued,
+  onMarkAsReceived,
+  onMarkAsCancelled,
+  onClone,
+  onSetDeliveryDate,
+  onCancelItems
+}: {
+  purchaseOrder: PurchaseOrder;
+  onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onConvertToBill: () => void;
+  onMarkAsIssued: () => void;
+  onMarkAsReceived: () => void;
+  onMarkAsCancelled: () => void;
+  onClone: () => void;
+  onSetDeliveryDate: () => void;
+  onCancelItems: () => void;
 }) {
   const [showPdfView, setShowPdfView] = useState(true);
+
+  function getActionsForStatus(status: string): ActionItem[] {
+    const actions: ActionItem[] = [];
+
+    switch (status?.toUpperCase()) {
+      case 'DRAFT':
+        actions.push(
+          { icon: Check, label: "Mark as Issued", onClick: onMarkAsIssued },
+          { icon: ArrowRight, label: "Convert to Bill", onClick: onConvertToBill },
+          { icon: Copy, label: "Clone", onClick: onClone },
+          { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-600" }
+        );
+        break;
+
+      case 'ISSUED':
+        actions.push(
+          { icon: Calendar, label: "Expected Delivery Date", onClick: onSetDeliveryDate },
+          { icon: XCircle, label: "Cancel Items", onClick: onCancelItems },
+          { icon: XCircle, label: "Mark as Cancelled", onClick: onMarkAsCancelled },
+          { icon: Copy, label: "Clone", onClick: onClone },
+          { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-600" },
+          { icon: Check, label: "Mark as Received", onClick: onMarkAsReceived }
+        );
+        break;
+
+      case 'RECEIVED':
+      case 'CLOSED':
+        actions.push(
+          { icon: Eye, label: "View", onClick: () => { } },
+          { icon: FileText, label: "PDF/Print", onClick: () => { } },
+          { icon: Copy, label: "Clone", onClick: onClone },
+          { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-600" }
+        );
+        break;
+
+      case 'CANCELLED':
+        actions.push(
+          { icon: Copy, label: "Clone", onClick: onClone },
+          { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-600" }
+        );
+        break;
+
+      default:
+        actions.push(
+          { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-600" }
+        );
+    }
+
+    return actions;
+  }
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-slate-200 overflow-hidden">
@@ -287,9 +356,9 @@ function PurchaseOrderDetailPanel({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="h-8 gap-1.5"
           onClick={onConvertToBill}
           data-testid="button-convert-to-bill"
@@ -304,10 +373,16 @@ function PurchaseOrderDetailPanel({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem className="text-red-600" onClick={onDelete}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
+            {getActionsForStatus(purchaseOrder.status).map((action: ActionItem, index: number) => (
+              <DropdownMenuItem
+                key={index}
+                onClick={action.onClick}
+                className={action.className || ""}
+              >
+                <action.icon className="mr-2 h-4 w-4" />
+                {action.label}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -316,8 +391,8 @@ function PurchaseOrderDetailPanel({
         <div className="px-4 py-3 bg-amber-50 border-b border-amber-100 flex items-center gap-2">
           <span className="text-amber-600 text-sm font-medium">WHAT'S NEXT?</span>
           <span className="text-sm text-slate-600">Convert this to a bill to complete your purchase.</span>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="ml-auto bg-blue-600 hover:bg-blue-700"
             onClick={onConvertToBill}
           >
@@ -515,6 +590,69 @@ export default function PurchaseOrders() {
     }
   };
 
+  const handleMarkAsIssued = (poId: string) => {
+    // Update PO status to ISSUED
+    setPurchaseOrders(prev =>
+      prev.map(po =>
+        po.id === poId ? { ...po, status: 'ISSUED' } : po
+      )
+    );
+    toast({ title: "Purchase Order Issued", description: "Status updated successfully" });
+  };
+
+  const handleMarkAsReceived = (poId: string) => {
+    // Update PO status to RECEIVED
+    setPurchaseOrders(prev =>
+      prev.map(po =>
+        po.id === poId ? { ...po, status: 'RECEIVED', receiveStatus: 'RECEIVED' } : po
+      )
+    );
+    toast({ title: "Purchase Order Received", description: "Status updated successfully" });
+  };
+
+  const handleMarkAsCancelled = (poId: string) => {
+    // Update PO status to CANCELLED
+    setPurchaseOrders(prev =>
+      prev.map(po =>
+        po.id === poId ? { ...po, status: 'CANCELLED' } : po
+      )
+    );
+    toast({ title: "Purchase Order Cancelled", description: "Status updated successfully" });
+  };
+
+  const handleClone = (poId: string) => {
+    // Clone the purchase order
+    const poToClone = purchaseOrders.find(po => po.id === poId);
+    if (poToClone) {
+      const clonedPO = {
+        ...poToClone,
+        id: Date.now().toString(),
+        purchaseOrderNumber: `PO-${String(purchaseOrders.length + 1).padStart(5, '0')}`,
+        date: new Date().toISOString().split('T')[0],
+        status: 'DRAFT'
+      };
+      setPurchaseOrders(prev => [clonedPO, ...prev]);
+      toast({ title: "Purchase Order Cloned", description: "Successfully created a copy" });
+    }
+  };
+
+  const handleSetDeliveryDate = (poId: string) => {
+    const newDate = prompt("Enter expected delivery date (YYYY-MM-DD):");
+    if (newDate) {
+      setPurchaseOrders(prev =>
+        prev.map(po =>
+          po.id === poId ? { ...po, deliveryDate: newDate } : po
+        )
+      );
+      toast({ title: "Delivery Date Updated", description: "Expected delivery date set successfully" });
+    }
+  };
+
+  const handleCancelItems = (poId: string) => {
+    // Logic to cancel specific items in the PO
+    toast({ title: "Cancel Items", description: "Item cancellation dialog would open here" });
+  };
+
   const toggleSelectPO = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (selectedPOs.includes(id)) {
@@ -547,17 +685,67 @@ export default function PurchaseOrders() {
     }
   };
 
+  function getActionsForStatus(status: string, poId: string) {
+    const actions = [];
+
+    switch (status?.toUpperCase()) {
+      case 'DRAFT':
+        actions.push(
+          { icon: Check, label: "Mark as Issued", onClick: () => handleMarkAsIssued(poId) },
+          { icon: ArrowRight, label: "Convert to Bill", onClick: () => handleConvertToBill() },
+          { icon: Copy, label: "Clone", onClick: () => handleClone(poId) },
+          { icon: Trash2, label: "Delete", onClick: () => handleDelete(poId), className: "text-red-600" }
+        );
+        break;
+
+      case 'ISSUED':
+        actions.push(
+          { icon: Calendar, label: "Expected Delivery Date", onClick: () => handleSetDeliveryDate(poId) },
+          { icon: XCircle, label: "Cancel Items", onClick: () => handleCancelItems(poId) },
+          { icon: XCircle, label: "Mark as Cancelled", onClick: () => handleMarkAsCancelled(poId) },
+          { icon: Copy, label: "Clone", onClick: () => handleClone(poId) },
+          { icon: Trash2, label: "Delete", onClick: () => handleDelete(poId), className: "text-red-600" },
+          { icon: Check, label: "Mark as Received", onClick: () => handleMarkAsReceived(poId) }
+        );
+        break;
+
+      case 'RECEIVED':
+      case 'CLOSED':
+        actions.push(
+          { icon: Eye, label: "View", onClick: () => handlePOClick(purchaseOrders.find(po => po.id === poId)!) },
+          { icon: FileText, label: "PDF/Print", onClick: () => { } },
+          { icon: Copy, label: "Clone", onClick: () => handleClone(poId) },
+          { icon: Trash2, label: "Delete", onClick: () => handleDelete(poId), className: "text-red-600" }
+        );
+        break;
+
+      case 'CANCELLED':
+        actions.push(
+          { icon: Copy, label: "Clone", onClick: () => handleClone(poId) },
+          { icon: Trash2, label: "Delete", onClick: () => handleDelete(poId), className: "text-red-600" }
+        );
+        break;
+
+      default:
+        actions.push(
+          { icon: Trash2, label: "Delete", onClick: () => handleDelete(poId), className: "text-red-600" }
+        );
+    }
+
+    return actions;
+  }
+
   return (
     <div className="flex h-[calc(100vh-80px)] animate-in fade-in duration-300 w-full">
-      <div className={`flex flex-col overflow-hidden transition-all duration-300 ${selectedPO ? 'w-[350px] min-w-[350px] flex-shrink-0' : 'flex-1 w-full'}`}>
+      <div className={`flex flex-col overflow-hidden transition-all duration-300 ${selectedPO ? 'w-[350px] min-w-[350px] shrink-0' : 'flex-1 w-full'}`}>
         <div className="flex items-center justify-between p-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-slate-900">All Purchase Orders</h1>
             <ChevronDown className="h-4 w-4 text-slate-500" />
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => setLocation("/purchase-orders/new")} 
+            <Button
+              onClick={() => setLocation("/purchase-orders/new")}
               className="bg-blue-600 hover:bg-blue-700 gap-1.5 h-9"
               data-testid="button-new-po"
             >
@@ -611,8 +799,8 @@ export default function PurchaseOrders() {
               <p className="text-slate-500 mb-4 max-w-sm">
                 Create purchase orders to formalize orders with your vendors and track deliveries.
               </p>
-              <Button 
-                onClick={() => setLocation("/purchase-orders/new")} 
+              <Button
+                onClick={() => setLocation("/purchase-orders/new")}
                 className="bg-blue-600 hover:bg-blue-700"
                 data-testid="button-create-first-po"
               >
@@ -622,17 +810,16 @@ export default function PurchaseOrders() {
           ) : selectedPO ? (
             <div className="divide-y divide-slate-100">
               {paginatedItems.map((po) => (
-                <div 
-                  key={po.id} 
-                  className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
-                    selectedPO?.id === po.id ? 'bg-blue-50 border-l-2 border-l-blue-600' : ''
-                  }`}
+                <div
+                  key={po.id}
+                  className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${selectedPO?.id === po.id ? 'bg-blue-50 border-l-2 border-l-blue-600' : ''
+                    }`}
                   onClick={() => handlePOClick(po)}
                   data-testid={`card-po-${po.id}`}
                 >
                   <div className="flex items-start justify-between mb-1">
                     <div className="flex items-center gap-2">
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedPOs.includes(po.id)}
                         onClick={(e) => toggleSelectPO(po.id, e)}
                       />
@@ -662,18 +849,19 @@ export default function PurchaseOrders() {
                   <TableHead className="text-xs font-medium text-slate-500 uppercase">Billed Status</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500 uppercase text-right">Amount</TableHead>
                   <TableHead className="text-xs font-medium text-slate-500 uppercase">Delivery Date</TableHead>
+                  <TableHead className="text-xs font-medium text-slate-500 uppercase w-12">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedItems.map((po) => (
-                  <TableRow 
-                    key={po.id} 
+                  <TableRow
+                    key={po.id}
                     className="cursor-pointer hover:bg-slate-50"
                     onClick={() => handlePOClick(po)}
                     data-testid={`row-po-${po.id}`}
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedPOs.includes(po.id)}
                         onClick={(e) => toggleSelectPO(po.id, e)}
                       />
@@ -688,6 +876,27 @@ export default function PurchaseOrders() {
                     </TableCell>
                     <TableCell className="text-sm text-right font-medium">{formatCurrency(po.total)}</TableCell>
                     <TableCell className="text-sm text-slate-500">{formatDate(po.deliveryDate || '')}</TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {getActionsForStatus(po.status, po.id).map((action, index) => (
+                            <DropdownMenuItem
+                              key={index}
+                              onClick={action.onClick}
+                              className={action.className || ""}
+                            >
+                              <action.icon className="mr-2 h-4 w-4" />
+                              {action.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -707,12 +916,18 @@ export default function PurchaseOrders() {
 
       {selectedPO && (
         <div className="flex-1 min-w-0 border-l border-slate-200 overflow-hidden">
-          <PurchaseOrderDetailPanel 
+          <PurchaseOrderDetailPanel
             purchaseOrder={selectedPO}
             onClose={handleClosePanel}
             onEdit={handleEditPO}
             onDelete={() => handleDelete(selectedPO.id)}
             onConvertToBill={handleConvertToBill}
+            onMarkAsIssued={() => handleMarkAsIssued(selectedPO.id)}
+            onMarkAsReceived={() => handleMarkAsReceived(selectedPO.id)}
+            onMarkAsCancelled={() => handleMarkAsCancelled(selectedPO.id)}
+            onClone={() => handleClone(selectedPO.id)}
+            onSetDeliveryDate={() => handleSetDeliveryDate(selectedPO.id)}
+            onCancelItems={() => handleCancelItems(selectedPO.id)}
           />
         </div>
       )}
