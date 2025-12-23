@@ -174,8 +174,9 @@ interface SalesOrder {
     date: string;
 }
 
-const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const formatCurrency = (amount: any) => {
+    if (!amount || isNaN(Number(amount))) return '₹0.00';
+    return `₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const formatDate = (dateString: string) => {
@@ -961,6 +962,7 @@ export default function EWayBills() {
                 customerName: creditNote.customerName,
                 total: creditNote.total || 0,
             });
+            fetchItemsFromDocument('credit_notes', creditNote.id);
         }
     };
 
@@ -975,6 +977,7 @@ export default function EWayBills() {
                 customerName: invoice.customerName,
                 total: invoice.total || 0,
             });
+            fetchItemsFromDocument('invoices', invoice.id);
         }
     };
 
@@ -989,6 +992,7 @@ export default function EWayBills() {
                 customerName: challan.customerName,
                 total: challan.total || 0,
             });
+            fetchItemsFromDocument('delivery_challans', challan.id);
         }
     };
 
@@ -1003,6 +1007,7 @@ export default function EWayBills() {
                 customerName: salesOrder.customerName,
                 total: salesOrder.total || 0,
             });
+            fetchItemsFromDocument('sales_orders', salesOrder.id);
         }
     };
 

@@ -183,4 +183,9 @@
     - Automatically fetches items from selected documents
     - Pre-populates items when navigating from invoice to e-Way Bill
     - Total amount calculated and displayed based on selected items
-    - Session restart - reinstalled cross-env and verified application running (Dec 23, 2025)
+[x] 89. Fixed formatCurrency and Item Details display (Dec 23, 2025):
+    - Fixed formatCurrency function to handle undefined/null values with proper validation
+    - Updated all document handlers (handleCreditNoteChange, handleInvoiceChange, handleDeliveryChallanChange, handleSalesOrderChange) to fetch items when document is selected
+    - Item Details table now displays in create/edit e-Way Bill modes with dynamic item loading
+    - Proper error handling for undefined amount values
+    - Session restart - verified application running with fixes applied (Dec 23, 2025)
