@@ -307,7 +307,9 @@ export default function CreditNoteCreate() {
     const item = items.find(i => i.id === itemId);
     if (item) {
       // Get the price from rate (string) or sellingPrice (number)
-      const price = item.rate ? parseFloat(String(item.rate)) : (item.sellingPrice || 0);
+      // Remove commas from formatted numbers like "45,000.00" before parsing
+      const rateStr = String(item.rate || '0').replace(/,/g, '');
+      const price = parseFloat(rateStr) || item.sellingPrice || 0;
       const lineItem = lineItems.find(li => li.id === lineItemId);
       const quantity = lineItem?.quantity || 1;
 

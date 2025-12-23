@@ -1037,7 +1037,7 @@ export default function Expenses() {
                         >
                           <span className="truncate">{expenseForm.paidThrough || "Select paid through account"}</span>
                           <ChevronDown className={`ml-2 h-4 w-4 shrink-0 text-slate-400 transition-transform ${paidThroughOpen ? 'rotate-180' : ''}`} />
-                        </Button>ACCOUNT
+                        </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[400px] p-0 shadow-lg border-slate-200" align="start">
                         <Command className="rounded-lg">
