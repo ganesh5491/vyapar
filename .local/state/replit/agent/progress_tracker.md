@@ -139,235 +139,29 @@
     - All data stored and fetched from server/data/vendorCredits.json
 [x] 59. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
 [x] 60. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - latest session)
-[x] 61. Enhanced Bills section with Record Payment and More actions dropdown (Dec 17, 2025):
-    - Added Record Payment button in bill detail panel action bar
-    - Added More (...) dropdown with: Void, Expected Payment Date, Clone, Create Vendor Credits, View Journal, Delete
-    - Created comprehensive Record Payment dialog form with fields:
-      * Payment Made (INR) with amount pre-populated with balance due
-      * Info message banner about partner banks integration
-      * Payment Mode dropdown (Cash, Bank Transfer, Cheque, Credit Card, UPI, NEFT, RTGS, IMPS)
-      * Payment Date (required)
-      * Payment # with auto-increment button
-      * Payment Made on date
-      * Paid Through dropdown (Petty Cash, Undeposited Funds, Bank Account, etc.)
-      * Reference# field
-      * Notes textarea
-      * Attachments upload section
-      * Email notification checkbox
-      * Save as Draft / Save as Paid / Cancel buttons
-    - Dialog title dynamically shows "Payment for {billNumber}" based on selected bill
-    - Record Payment also creates entry in Payments Made section for full tracking
-    - Added Void Bill confirmation dialog
-    - Added Expected Payment Date dialog
-    - Added View Journal dialog showing accounting entries
-    - Clone navigates to new bill form with pre-filled data
-    - Create Vendor Credits navigates to vendor credits form with bill/vendor data
-[x] 62. Fixed "Create Vendor Credits" 404 error in Bills section (Dec 17, 2025):
-    - Fixed navigation URL from `/vendor-credits/create` to `/vendor-credits/new`
-    - Added `/vendor-credits/create` as additional route for flexibility
-    - Updated vendor-credit-create.tsx to handle billId and vendorId query parameters
-    - Pre-populates vendor credit form with bill data:
-      * Vendor name and ID from the bill
-      * All items from the bill (itemName, description, account, quantity, rate, tax, amount)
-      * Subject: "Vendor Credit for Bill #{billNumber}"
-      * Notes: "Created from Bill #{billNumber}"
-      * Reverse charge setting from bill
-    - Added blue info banner showing "Creating vendor credit from Bill #{billNumber}"
-    - Added loading state while fetching bill data
-    - Added "From Bill" badge indicator
+[x] 61. Enhanced Bills section with Record Payment and More actions dropdown (Dec 17, 2025)
+[x] 62. Fixed "Create Vendor Credits" 404 error in Bills section (Dec 17, 2025)
 [x] 63. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
-[x] 64. Fixed item details not fetching in Bill Create and Bill Edit pages (Dec 17, 2025):
-    - Added Product interface and products state to both bill-create.tsx and bill-edit.tsx
-    - Added fetchProducts function to fetch items from /api/items endpoint
-    - Added handleProductSelect function to auto-fill item details when product is selected:
-      * Sets itemName from product name
-      * Sets description from product description
-      * Sets rate from product costPrice or sellingPrice
-      * Auto-calculates amount based on quantity and rate
-    - Replaced plain Input for ITEM DETAILS with Select dropdown
-    - Dropdown shows all available products with name, SKU, and price
-    - Loading state shows "Loading items..." while fetching
-    - Shows "No items available" if no products exist in the database
-    - When selecting an item, the rate is automatically populated from the product's cost price
+[x] 64. Fixed item details not fetching in Bill Create and Bill Edit pages (Dec 17, 2025)
 [x] 65. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
-[x] 66. Fixed Expenses Edit functionality (Dec 17, 2025):
-    - Added isEditMode and editingExpenseId state variables
-    - Added updateExpenseMutation calling PUT /api/expenses/:id
-    - handleEditExpense now opens dialog in edit mode with pre-populated data
-    - Dialog title shows "Edit Expense" when editing
-    - Save button shows "Save Changes (Alt+S)" when editing
-    - Hidden "Save and New" button when in edit mode
-    - Proper reset when dialog closes
-[x] 67. Fixed Purchase Orders layout - removed right-side blank space (Dec 17, 2025):
-    - List panel: fixed width 350px when detail open, flex-1 w-full when closed
-    - Detail panel: flex-1 min-w-0 for fluid layout
-    - Removed fixed w-[600px] that caused layout issues
-[x] 68. Fixed Purchase Order Item Tables with horizontal scroll (Dec 17, 2025):
-    - Added overflow-x-auto to table container for horizontal scrolling
-    - Added min-w-[800px] to ensure consistent table layout
-    - Added min-widths to key columns: Item (200px), Account (140px), Tax (120px)
-    - Applied fixes to both purchase-order-create.tsx and purchase-order-edit.tsx
+[x] 66. Fixed Expenses Edit functionality (Dec 17, 2025)
+[x] 67. Fixed Purchase Orders layout - removed right-side blank space (Dec 17, 2025)
+[x] 68. Fixed Purchase Order Item Tables with horizontal scroll (Dec 17, 2025)
 [x] 69. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
-[x] 70. Updated e-Way Bills filters to default to "All" (Dec 17, 2025):
-    - Changed e-Way Bill Status filter default from "NOT_GENERATED" to "all"
-    - Changed Transaction Type filter default from "invoices" to "all"
-    - Both filters now show all records by default when page loads
-[x] 71. Fixed Invoice More dropdown actions with proper navigation and data fetching (Dec 17, 2025):
-    - Create Credit Note: Updated credit-note-create.tsx to handle fromInvoice parameter
-      * Fetches invoice data and pre-populates customer, address, items
-      * Shows "From Invoice #" badge when creating from invoice
-      * Sets subject to "Credit Note for Invoice #..."
-    - Add e-Way Bill Details: Updated e-way-bills.tsx to handle fromInvoice parameter
-      * Opens create form and pre-populates with invoice data
-      * Sets document type to "Invoices" and transaction sub type to "Supply"
-      * Pre-fills customer info, billing address, shipping address
-      * Shows "From Invoice #" badge indicator
-    - Clone: Already working - navigates to /invoices/new?cloneFrom=id
-    - All dropdown actions now properly navigate and fetch related data
+[x] 70. Updated e-Way Bills filters to default to "All" (Dec 17, 2025)
+[x] 71. Fixed Invoice More dropdown actions with proper navigation and data fetching (Dec 17, 2025)
 [x] 72. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
 [x] 73. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - latest session)
-[x] 74. Fixed Purchase Orders section React error (Dec 17, 2025):
-    - Error: "Objects are not valid as a React child (found: object with keys {nextNumber})"
-    - Root cause: Corrupted data in paymentsMade.json where paymentNumber was saved as object instead of string
-    - Fixed payment record pm-1765964697396: Changed paymentNumber from {"nextNumber":"PM-00003"} to "PM-00003"
-    - Purchase Orders section now loads correctly
-[x] 75. Fixed Bill Create and Edit pages - items not fetching correct values (Dec 17, 2025):
-    - Updated Product interface to include rate, purchaseRate, usageUnit, purchaseDescription, hsnSac fields
-    - Fixed handleProductSelect to use purchaseRate/rate instead of costPrice/sellingPrice
-    - Item dropdown now shows correct price: "Rice (kg) - ₹50" using purchaseRate
-    - When item is selected, rate field populates with correct value from Items section
-    - Total calculations now work correctly with proper item rates
-    - Applied fixes to both bill-create.tsx and bill-edit.tsx
+[x] 74. Fixed Purchase Orders section React error (Dec 17, 2025)
+[x] 75. Fixed Bill Create and Edit pages - items not fetching correct values (Dec 17, 2025)
 [x] 76. Session restart - reinstalled cross-env and verified application running (Dec 17, 2025 - current session)
-[x] 77. Added MSME registration fields to New Vendor form (Dec 17, 2025):
-    - When "This vendor is MSME registered" checkbox is checked, shows additional fields:
-      * MSME/Udyam Registration Type dropdown with options: Micro, Small, Medium
-      * MSME/Udyam Registration Number input field
-    - Added format validation for registration number (UDYAM-XX-00-0000000)
-    - Shows warning message if registration number format is invalid
-    - Fields are cleared when checkbox is unchecked
-    - Both fields are required when MSME is checked (validation on save)
+[x] 77. Added MSME registration fields to New Vendor form (Dec 17, 2025)
 [x] 78. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025)
-[x] 79. Fixed file upload button in vendor-create.tsx and vendor-edit.tsx (Dec 18, 2025):
-    - Added file upload state management with useState<File[]>
-    - Added useRef hook for hidden file input reference
-    - Implemented handleFileUpload function with file validation:
-      * Validates maximum 10 files limit
-      * Validates 10MB per file limit
-      * Shows error toast for invalid files
-    - Added removeFile function to remove uploaded files from list
-    - Implemented file display UI showing:
-      * File name and size (in KB)
-      * File counter (X/10)
-      * Remove button for each file (X icon)
-    - Added hidden file input that opens when upload button is clicked
-    - Supports multiple file selection
-    - Upload button now has onClick handler triggering file input click
-    - Both vendor-create and vendor-edit files updated with full functionality
-[x] 80. Implemented Vendor Attachment Management System (Dec 18, 2025):
-    - Added Paperclip icon to vendor list table (last column before actions)
-    - Icon turns blue when vendor has attachments
-    - Clicking icon opens attachment management dialog
-    - Dialog displays:
-      * All uploaded attachments with names and sizes
-      * "Upload your Files" button to add new documents
-      * Delete button (X icon) for each attachment
-      * File size limit message (10 files max, 10MB each)
-      * Save/Cancel buttons
-    - Frontend state management:
-      * showAttachmentsDialog, selectedVendorForAttachments, newAttachments states
-      * fileInputRef for hidden file input
-      * handleAttachmentUpload validates files
-      * handleDeleteAttachment removes attachment
-      * handleSaveAttachments uploads files via FormData
-    - Added Attachment interface to Vendor model with: id, name, size, type, uploadedAt
-    - Backend API routes for attachment management:
-      * POST /api/vendors/:id/attachments - uploads files and stores metadata in vendor.attachments
-      * DELETE /api/vendors/:id/attachments/:attachmentId - removes attachment from vendor
-    - Attachments are stored as metadata (name, size, type, uploadedAt) in vendor JSON object
-    - All data persisted to server/data/vendors.json
+[x] 79. Fixed file upload button in vendor-create.tsx and vendor-edit.tsx (Dec 18, 2025)
+[x] 80. Implemented Vendor Attachment Management System (Dec 18, 2025)
 [x] 81. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
-[x] 82. Added Expense Account* searchable dropdown field to vendor create/edit forms (Dec 18, 2025):
-    - Added ACCOUNTS constant with comprehensive list of all account types (Cost Of Goods Sold, Labor, Materials, Subcontractor, etc.)
-    - Added searchable Popover dropdown with Command/CommandInput for real-time search
-    - Added "Create New Account" button at bottom of dropdown with Plus icon
-    - Clicking "Create New Account" opens a dialog for entering new account name
-    - New account is automatically selected after creation
-    - Updated label styling to show only asterisk as red (label text remains black)
-    - Applied searchable dropdown pattern to both vendor-create.tsx and vendor-edit.tsx
-    - All account data is saved with the vendor record
-    - Users can search, select, and create new accounts on the fly
+[x] 82. Added Expense Account* searchable dropdown field to vendor create/edit forms (Dec 18, 2025)
 [x] 83. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
-[x] 84. Aligned Edit Item modal with New Item modal - Complete Structural & Visual Alignment (Dec 18, 2025):
-    - Fixed all label styling: Changed from inline red text to slate-700 text with separate red asterisk span
-    - Replaced static account arrays with full ACCOUNT_HIERARCHY and searchable hierarchical account dropdowns
-    - Added full searchable tax rate dropdowns (Intra State and Inter State) with Popover + Command components
-    - Added Unit and TaxRate interfaces matching New Item
-    - Integrated API-based unit fetching from /api/units endpoint
-    - Integrated API-based tax rate fetching from /api/taxRates endpoint
-    - Implemented getTaxRateLabel() and getAccountLabel() helper functions
-    - Fixed RadioGroup to use `value` prop instead of `defaultValue` for edit mode
-    - Added all necessary state variables for tax/account/unit popovers (intraStateTaxOpen, interStateTaxOpen, etc.)
-    - Moved button placement to inside form section (matching New Item exactly)
-    - Updated button styling and ordering: Cancel (outline) on left, Save (blue) on right
-    - Aligned Default Tax Rates section layout and styling with New Item (grid layout, borders, spacing)
-    - Added queryClient import and cache invalidation on successful update
-    - All field styling, spacing, font sizes now match New Item perfectly
-    - Visual hierarchy and component behavior now synchronized between New and Edit modes
-[x] 85. Updated Purchase Order Create and Edit pages with improved UI matching reference image (Dec 18, 2025):
-    - Redesigned as slide-out panel with close (X) button in header
-    - Vendor Name dropdown with searchable Popover/Command and blue search button (data-testid="button-add-vendor")
-    - Delivery Address section with Organization/Customer radio toggle
-    - Order# with auto-increment system, Reference# field, Expected Delivery Date picker
-    - Customer Name dropdown for customer address option
-    - "Add Destination Details" button linking to Inventory section
-    - Items table with scrollable container and min-widths for columns
-    - Add New Row button with plus icon to add more line items
-    - Discount, Adjustment, and TCS Amount fields with proper calculations
-    - Terms & Conditions and Notes textareas with same styling as reference
-    - Attach File button with file management
-    - Save as Draft, Save, and Cancel footer buttons
-    - Applied consistent styling to both create and edit pages
-[x] 86. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - current session)
-[x] 87. Fixed Purchase Order Vendor dropdown showing empty when editing (Dec 18, 2025):
-    - PO edit now fetches vendors from /api/vendors on mount
-    - Sets vendorId from purchase order data for proper dropdown selection
-    - Vendor dropdown now shows correct vendor name when editing
-[x] 88. Fixed PO items table showing item details correctly (Dec 18, 2025):
-    - Added products fetching from /api/items on mount
-    - Item dropdown now shows product name, SKU, and price
-    - When selecting item, auto-populates: itemName, description, rate, hsnSac, account
-    - Amount auto-calculates based on quantity and rate
-    - All item fields populate correctly when editing existing PO
-[x] 89. Session restart - reinstalled cross-env and verified application running (Dec 18, 2025 - latest session)
-[x] 90. Session restart - reinstalled cross-env and verified application running (Dec 19, 2025)
-[x] 91. Session restart - reinstalled cross-env and verified application running (Dec 19, 2025 - current session)
-[x] 92. Session restart - reinstalled cross-env and verified application running (Dec 21, 2025)
-[x] 93. Session restart - reinstalled cross-env and verified application running (Dec 22, 2025)
-[x] 94. Implemented automatic population of bill items for vendor credits (Dec 22, 2025):
-    - Created /api/vendors/:id/bill-items backend endpoint that:
-      * Filters bills by vendorId with balanceDue > 0
-      * Extracts all items from those unpaid bills
-      * Includes bill reference info (billId, billNumber, billDate, balanceDue, billTotal)
-    - Updated POST /api/vendor-credits to reduce bill.balanceDue:
-      * Tracks which bills are referenced in credit items
-      * Reduces each bill's balanceDue by the credit amount
-      * Ensures balanceDue never goes below 0
-    - Updated vendor-credit-create.tsx frontend:
-      * Added useQuery hook to fetch bill items for selected vendor
-      * Added useEffect that watches billItemsData and populates items state
-      * Items automatically populate when vendor is selected
-      * Each item shows: itemName, quantity, rate, tax, amount, billId, billNumber, billDate, balanceDue
-[x] 95. Fixed empty Item Table in Vendor Credits (Dec 22, 2025):
-    - Issue: Items weren't displaying despite API working correctly
-    - Root cause: useQuery hook wasn't being used in a useEffect to populate items
-    - Fixed by:
-      * Adding custom queryFn to useQuery that properly fetches /api/vendors/:id/bill-items
-      * Creating useEffect that watches billItemsData and updates items state
-      * Items now auto-populate correctly when vendor is selected
-      * Removed manual fetch() calls in favor of proper useQuery pattern
-    - Now when vendor is selected:
-      * API returns unpaid bill items automatically
-      * Items table populates with bill item details
-      * User can adjust quantities or remove items
-      * On save, bill.balanceDue is reduced by credit amount
+[x] 84. Aligned Edit Item modal with New Item modal - Complete Structural & Visual Alignment (Dec 18, 2025)
+[x] 85. Updated Purchase Order Create and Edit pages with improved UI matching reference image (Dec 18, 2025)
+[x] 86. Session restart - reinstalled cross-env and verified application running (Dec 23, 2025)
