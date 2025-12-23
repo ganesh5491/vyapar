@@ -155,6 +155,24 @@ interface Invoice {
     date: string;
 }
 
+interface DeliveryChallan {
+    id: string;
+    challanNumber: string;
+    customerId: string;
+    customerName: string;
+    total: number;
+    date: string;
+}
+
+interface SalesOrder {
+    id: string;
+    salesOrderNumber: string;
+    customerId: string;
+    customerName: string;
+    total: number;
+    date: string;
+}
+
 const formatCurrency = (amount: number) => {
     return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
@@ -478,6 +496,8 @@ export default function EWayBills() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [deliveryChallans, setDeliveryChallans] = useState<DeliveryChallan[]>([]);
+    const [salesOrders, setSalesOrders] = useState<SalesOrder[]>([]);
 
     const [formData, setFormData] = useState({
         documentType: 'credit_notes',
@@ -539,6 +559,8 @@ export default function EWayBills() {
         fetchCustomers();
         fetchCreditNotes();
         fetchInvoices();
+        fetchDeliveryChallans();
+        fetchSalesOrders();
 
         // Check for fromInvoice parameter
         const params = new URLSearchParams(window.location.search);
@@ -656,6 +678,30 @@ export default function EWayBills() {
             }
         } catch (error) {
             console.error('Failed to fetch invoices:', error);
+        }
+    };
+
+    const fetchDeliveryChallans = async () => {
+        try {
+            const response = await fetch('/api/delivery-challans');
+            if (response.ok) {
+                const data = await response.json();
+                setDeliveryChallans(data.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch delivery challans:', error);
+        }
+    };
+
+    const fetchSalesOrders = async () => {
+        try {
+            const response = await fetch('/api/sales-orders');
+            if (response.ok) {
+                const data = await response.json();
+                setSalesOrders(data.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch sales orders:', error);
         }
     };
 
@@ -897,6 +943,34 @@ export default function EWayBills() {
                 customerId: invoice.customerId,
                 customerName: invoice.customerName,
                 total: invoice.total || 0,
+            });
+        }
+    };
+
+    const handleDeliveryChallanChange = (challanId: string) => {
+        const challan = deliveryChallans.find(dc => dc.id === challanId);
+        if (challan) {
+            setFormData({
+                ...formData,
+                documentNumber: challan.challanNumber,
+                documentId: challan.id,
+                customerId: challan.customerId,
+                customerName: challan.customerName,
+                total: challan.total || 0,
+            });
+        }
+    };
+
+    const handleSalesOrderChange = (salesOrderId: string) => {
+        const salesOrder = salesOrders.find(so => so.id === salesOrderId);
+        if (salesOrder) {
+            setFormData({
+                ...formData,
+                documentNumber: salesOrder.salesOrderNumber,
+                documentId: salesOrder.id,
+                customerId: salesOrder.customerId,
+                customerName: salesOrder.customerName,
+                total: salesOrder.total || 0,
             });
         }
     };
@@ -1263,6 +1337,110 @@ export default function EWayBills() {
                                             data-testid="select-transaction-type-invoice"
                                         >
                                             <SelectTrigger data-testid="select-trigger-transaction-type-invoice">
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {transactionTypes.map((type) => (
+                                                    <SelectItem key={type.value} value={type.value}>
+                                                        {type.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
+
+                            {formData.documentType === 'delivery_challans' && (
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Delivery Challan#*</Label>
+                                        <Select
+                                            value={formData.documentId}
+                                            onValueChange={handleDeliveryChallanChange}
+                                            data-testid="select-delivery-challan"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-delivery-challan">
+                                                <SelectValue placeholder="Select delivery challan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {deliveryChallans.map((dc) => (
+                                                    <SelectItem key={dc.id} value={dc.id}>
+                                                        {dc.challanNumber} - {formatCurrency(dc.total)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Date</Label>
+                                        <Input
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                            data-testid="input-date-delivery-challan"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Transaction Type*</Label>
+                                        <Select
+                                            value={formData.transactionType}
+                                            onValueChange={(value) => setFormData({ ...formData, transactionType: value })}
+                                            data-testid="select-transaction-type-delivery-challan"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-transaction-type-delivery-challan">
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {transactionTypes.map((type) => (
+                                                    <SelectItem key={type.value} value={type.value}>
+                                                        {type.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
+
+                            {formData.documentType === 'sales_orders' && (
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Sales Order#*</Label>
+                                        <Select
+                                            value={formData.documentId}
+                                            onValueChange={handleSalesOrderChange}
+                                            data-testid="select-sales-order"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-sales-order">
+                                                <SelectValue placeholder="Select sales order" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {salesOrders.map((so) => (
+                                                    <SelectItem key={so.id} value={so.id}>
+                                                        {so.salesOrderNumber} - {formatCurrency(so.total)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Date</Label>
+                                        <Input
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                            data-testid="input-date-sales-order"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Transaction Type*</Label>
+                                        <Select
+                                            value={formData.transactionType}
+                                            onValueChange={(value) => setFormData({ ...formData, transactionType: value })}
+                                            data-testid="select-transaction-type-sales-order"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-transaction-type-sales-order">
                                                 <SelectValue placeholder="Select type" />
                                             </SelectTrigger>
                                             <SelectContent>
