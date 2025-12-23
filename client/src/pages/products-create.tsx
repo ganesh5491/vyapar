@@ -112,11 +112,13 @@ const ACCOUNT_HIERARCHY = [
     accounts: [
       { label: "Advance Tax", value: "advance_tax" },
       { label: "Employee Advance", value: "employee_advance" },
-      { label: "Input Tax Credits", value: "input_tax_credits", children: [
-        { label: "Input CGST", value: "input_cgst" },
-        { label: "Input IGST", value: "input_igst" },
-        { label: "Input SGST", value: "input_sgst" },
-      ]},
+      {
+        label: "Input Tax Credits", value: "input_tax_credits", children: [
+          { label: "Input CGST", value: "input_cgst" },
+          { label: "Input IGST", value: "input_igst" },
+          { label: "Input SGST", value: "input_sgst" },
+        ]
+      },
       { label: "Prepaid Expenses", value: "prepaid_expenses" },
       { label: "Reverse Charge Tax Input but not due", value: "reverse_charge_input" },
       { label: "TDS Receivable", value: "tds_receivable" },
@@ -132,11 +134,13 @@ const ACCOUNT_HIERARCHY = [
     category: "Other Current Liability",
     accounts: [
       { label: "Employee Reimbursements", value: "employee_reimbursements" },
-      { label: "GST Payable", value: "gst_payable", children: [
-        { label: "Output CGST", value: "output_cgst" },
-        { label: "Output IGST", value: "output_igst" },
-        { label: "Output SGST", value: "output_sgst" },
-      ]},
+      {
+        label: "GST Payable", value: "gst_payable", children: [
+          { label: "Output CGST", value: "output_cgst" },
+          { label: "Output IGST", value: "output_igst" },
+          { label: "Output SGST", value: "output_sgst" },
+        ]
+      },
       { label: "Opening Balance Adjustments", value: "opening_balance_adjustments" },
       { label: "Tax Payable", value: "tax_payable" },
       { label: "TDS Payable", value: "tds_payable" },
@@ -197,8 +201,12 @@ const flattenAccounts = () => {
 const ALL_ACCOUNTS = flattenAccounts();
 
 export default function ProductCreate() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Determine return path based on where user came from
+  const returnPath = location.includes('/items') ? '/items' : '/items';
+
   const [unitOpen, setUnitOpen] = useState(false);
   const [showConfigureUnits, setShowConfigureUnits] = useState(false);
   const [salesAccountOpen, setSalesAccountOpen] = useState(false);
@@ -238,10 +246,10 @@ export default function ProductCreate() {
       toast({ title: "Unit created successfully" });
     },
     onError: (error: any) => {
-      toast({ 
-        title: "Failed to create unit", 
+      toast({
+        title: "Failed to create unit",
         description: error.message || "Please try again",
-        variant: "destructive" 
+        variant: "destructive"
       });
     },
   });
@@ -332,7 +340,7 @@ export default function ProductCreate() {
           title: "Item Created",
           description: "The item has been successfully added.",
         });
-        setLocation("/items");
+        setLocation(returnPath);
       } else {
         throw new Error("Failed to create item");
       }
@@ -371,7 +379,7 @@ export default function ProductCreate() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation("/products")}
+            onClick={() => setLocation(returnPath)}
             className="h-8 w-8"
             data-testid="button-close-form"
           >
@@ -1017,7 +1025,7 @@ export default function ProductCreate() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setLocation("/products")}
+                  onClick={() => setLocation(returnPath)}
                   data-testid="button-cancel"
                 >
                   Cancel
@@ -1037,13 +1045,13 @@ export default function ProductCreate() {
           <DialogHeader>
             <DialogTitle>Configure Units</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4 max-h-[400px] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4 pb-2 border-b">
               <Label className="text-red-600">Unit*</Label>
               <Label className="text-slate-600">Unique Quantity Code (UQC)</Label>
             </div>
-            
+
             {units.map((unit) => (
               <div key={unit.id} className="grid grid-cols-2 gap-4 items-center">
                 <Input value={unit.name} disabled className="bg-slate-50" />
@@ -1061,7 +1069,7 @@ export default function ProductCreate() {
                 </div>
               </div>
             ))}
-            
+
             {/* Add New Unit Row */}
             <div className="grid grid-cols-2 gap-4 items-center pt-2 border-t">
               <Input
@@ -1094,8 +1102,8 @@ export default function ProductCreate() {
             <Button variant="outline" onClick={() => setShowConfigureUnits(false)} data-testid="button-cancel-units">
               Cancel
             </Button>
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700" 
+            <Button
+              className="bg-blue-600 hover:bg-blue-700"
               onClick={() => setShowConfigureUnits(false)}
               data-testid="button-save-units"
             >

@@ -20,7 +20,10 @@ import {
     ExternalLink,
     Pencil,
     ChevronDown,
-    Trash2
+    Trash2,
+    Check,
+    ChevronsUpDown,
+    Search
 } from "lucide-react";
 import {
     Select,
@@ -29,6 +32,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -129,6 +146,15 @@ interface CreditNote {
     date: string;
 }
 
+interface Invoice {
+    id: string;
+    invoiceNumber: string;
+    customerId: string;
+    customerName: string;
+    total: number;
+    date: string;
+}
+
 const formatCurrency = (amount: number) => {
     return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
@@ -195,6 +221,47 @@ const ewayBillStatuses = [
     { value: 'GENERATED', label: 'Generated' },
     { value: 'CANCELLED', label: 'Cancelled' },
     { value: 'EXPIRED', label: 'Expired' },
+];
+
+// Indian States with codes for e-Way Bill
+const INDIAN_STATES_WITH_CODES = [
+    { code: "AP", name: "Andhra Pradesh" },
+    { code: "AR", name: "Arunachal Pradesh" },
+    { code: "AS", name: "Assam" },
+    { code: "BR", name: "Bihar" },
+    { code: "CG", name: "Chhattisgarh" },
+    { code: "GA", name: "Goa" },
+    { code: "GJ", name: "Gujarat" },
+    { code: "HR", name: "Haryana" },
+    { code: "HP", name: "Himachal Pradesh" },
+    { code: "JH", name: "Jharkhand" },
+    { code: "KA", name: "Karnataka" },
+    { code: "KL", name: "Kerala" },
+    { code: "MP", name: "Madhya Pradesh" },
+    { code: "MH", name: "Maharashtra" },
+    { code: "MN", name: "Manipur" },
+    { code: "ML", name: "Meghalaya" },
+    { code: "MZ", name: "Mizoram" },
+    { code: "NL", name: "Nagaland" },
+    { code: "OD", name: "Odisha" },
+    { code: "PB", name: "Punjab" },
+    { code: "RJ", name: "Rajasthan" },
+    { code: "SK", name: "Sikkim" },
+    { code: "TN", name: "Tamil Nadu" },
+    { code: "TS", name: "Telangana" },
+    { code: "TR", name: "Tripura" },
+    { code: "UP", name: "Uttar Pradesh" },
+    { code: "UK", name: "Uttarakhand" },
+    { code: "WB", name: "West Bengal" },
+    { code: "AN", name: "Andaman and Nicobar Islands" },
+    { code: "CH", name: "Chandigarh" },
+    { code: "DN", name: "Dadra and Nagar Haveli" },
+    { code: "DD", name: "Daman and Diu" },
+    { code: "DL", name: "Delhi" },
+    { code: "JK", name: "Jammu and Kashmir" },
+    { code: "LA", name: "Ladakh" },
+    { code: "LD", name: "Lakshadweep" },
+    { code: "PY", name: "Puducherry" },
 ];
 
 const transactionPeriods = [
@@ -410,6 +477,7 @@ export default function EWayBills() {
 
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
 
     const [formData, setFormData] = useState({
         documentType: 'credit_notes',
@@ -428,6 +496,7 @@ export default function EWayBills() {
         vehicleNo: '',
         transporterDocNo: '',
         transporterDocDate: '',
+        total: 0,
     });
 
     const [addressData, setAddressData] = useState({
@@ -463,12 +532,14 @@ export default function EWayBills() {
 
     const [fromInvoiceId, setFromInvoiceId] = useState<string | null>(null);
     const [fromInvoiceNumber, setFromInvoiceNumber] = useState<string | null>(null);
+    const [placeOfDeliveryOpen, setPlaceOfDeliveryOpen] = useState(false);
 
     useEffect(() => {
         fetchEWayBills();
         fetchCustomers();
         fetchCreditNotes();
-        
+        fetchInvoices();
+
         // Check for fromInvoice parameter
         const params = new URLSearchParams(window.location.search);
         const invoiceId = params.get('fromInvoice');
@@ -484,10 +555,10 @@ export default function EWayBills() {
             if (response.ok) {
                 const data = await response.json();
                 const invoice = data.data;
-                
+
                 setFromInvoiceNumber(invoice.invoiceNumber);
                 setShowCreateForm(true);
-                
+
                 // Pre-populate form with invoice data
                 setFormData({
                     ...formData,
@@ -499,8 +570,9 @@ export default function EWayBills() {
                     documentId: invoice.id || '',
                     date: new Date().toISOString().split('T')[0],
                     transactionType: 'regular',
+                    total: invoice.total || 0,
                 });
-                
+
                 // Update address data from invoice
                 if (invoice.billingAddress) {
                     setAddressData(prev => ({
@@ -575,6 +647,18 @@ export default function EWayBills() {
         }
     };
 
+    const fetchInvoices = async () => {
+        try {
+            const response = await fetch('/api/invoices');
+            if (response.ok) {
+                const data = await response.json();
+                setInvoices(data.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch invoices:', error);
+        }
+    };
+
     const fetchBillDetail = async (id: string) => {
         try {
             const response = await fetch(`/api/eway-bills/${id}`);
@@ -601,6 +685,7 @@ export default function EWayBills() {
                         vehicleNo: data.data.vehicleNo || '',
                         transporterDocNo: data.data.transporterDocNo || '',
                         transporterDocDate: data.data.transporterDocDate || '',
+                        total: data.data.total || 0,
                     });
 
                     if (data.data.dispatchFrom || data.data.billFrom || data.data.billTo || data.data.shipTo) {
@@ -650,6 +735,7 @@ export default function EWayBills() {
             vehicleNo: '',
             transporterDocNo: '',
             transporterDocDate: '',
+            total: 0,
         });
     };
 
@@ -796,6 +882,21 @@ export default function EWayBills() {
                 documentId: creditNote.id,
                 customerId: creditNote.customerId,
                 customerName: creditNote.customerName,
+                total: creditNote.total || 0,
+            });
+        }
+    };
+
+    const handleInvoiceChange = (invoiceId: string) => {
+        const invoice = invoices.find(inv => inv.id === invoiceId);
+        if (invoice) {
+            setFormData({
+                ...formData,
+                documentNumber: invoice.invoiceNumber,
+                documentId: invoice.id,
+                customerId: invoice.customerId,
+                customerName: invoice.customerName,
+                total: invoice.total || 0,
             });
         }
     };
@@ -1124,6 +1225,58 @@ export default function EWayBills() {
                                 </div>
                             )}
 
+                            {formData.documentType === 'invoices' && (
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Invoice#*</Label>
+                                        <Select
+                                            value={formData.documentId}
+                                            onValueChange={handleInvoiceChange}
+                                            data-testid="select-invoice"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-invoice">
+                                                <SelectValue placeholder="Select invoice" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {invoices.map((inv) => (
+                                                    <SelectItem key={inv.id} value={inv.id}>
+                                                        {inv.invoiceNumber} - {formatCurrency(inv.total)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Date</Label>
+                                        <Input
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                            data-testid="input-date-invoice"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-red-500">Transaction Type*</Label>
+                                        <Select
+                                            value={formData.transactionType}
+                                            onValueChange={(value) => setFormData({ ...formData, transactionType: value })}
+                                            data-testid="select-transaction-type-invoice"
+                                        >
+                                            <SelectTrigger data-testid="select-trigger-transaction-type-invoice">
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {transactionTypes.map((type) => (
+                                                    <SelectItem key={type.value} value={type.value}>
+                                                        {type.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-4">
                                 <h3 className="font-medium text-sm text-muted-foreground">Address Details</h3>
                                 <div className="grid grid-cols-4 gap-4">
@@ -1166,25 +1319,56 @@ export default function EWayBills() {
 
                             <div className="space-y-2">
                                 <Label className="text-red-500">Place of Delivery*</Label>
-                                <Select
-                                    value={formData.placeOfDelivery}
-                                    onValueChange={(value) => setFormData({ ...formData, placeOfDelivery: value })}
-                                    data-testid="select-place-of-delivery"
-                                >
-                                    <SelectTrigger data-testid="select-trigger-place-of-delivery">
-                                        <SelectValue placeholder="Select state" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="[MH] - Maharashtra">[MH] - Maharashtra</SelectItem>
-                                        <SelectItem value="[GJ] - Gujarat">[GJ] - Gujarat</SelectItem>
-                                        <SelectItem value="[KA] - Karnataka">[KA] - Karnataka</SelectItem>
-                                        <SelectItem value="[TN] - Tamil Nadu">[TN] - Tamil Nadu</SelectItem>
-                                        <SelectItem value="[DL] - Delhi">[DL] - Delhi</SelectItem>
-                                        <SelectItem value="[RJ] - Rajasthan">[RJ] - Rajasthan</SelectItem>
-                                        <SelectItem value="[UP] - Uttar Pradesh">[UP] - Uttar Pradesh</SelectItem>
-                                        <SelectItem value="[WB] - West Bengal">[WB] - West Bengal</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Popover open={placeOfDeliveryOpen} onOpenChange={setPlaceOfDeliveryOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={placeOfDeliveryOpen}
+                                            className="w-full justify-between font-normal"
+                                            data-testid="select-trigger-place-of-delivery"
+                                        >
+                                            {formData.placeOfDelivery || "Select state"}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[300px] p-0" align="start">
+                                        <Command>
+                                            <CommandInput placeholder="Search state..." />
+                                            <CommandList>
+                                                <CommandEmpty>No state found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {INDIAN_STATES_WITH_CODES.map((state) => (
+                                                        <CommandItem
+                                                            key={state.code}
+                                                            value={`${state.code} ${state.name}`}
+                                                            onSelect={() => {
+                                                                setFormData({ ...formData, placeOfDelivery: `[${state.code}] - ${state.name}` });
+                                                                setPlaceOfDeliveryOpen(false);
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    formData.placeOfDelivery === `[${state.code}] - ${state.name}` ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                            [{state.code}] - {state.name}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                            {/* Total Amount Display */}
+                            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg border p-4">
+                                <h3 className="font-semibold text-sm text-muted-foreground mb-2">Total Amount</h3>
+                                <p className="text-2xl font-bold text-blue-600" data-testid="text-form-total">
+                                    {formatCurrency(formData.total)}
+                                </p>
                             </div>
 
                             <div className="flex items-center gap-2 text-blue-600 cursor-pointer hover:underline">

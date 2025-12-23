@@ -1,6 +1,108 @@
 {
   "invoices": [
     {
+      "id": "1766404108260",
+      "invoiceNumber": "INV-00029",
+      "referenceNumber": "",
+      "date": "2025-12-22",
+      "dueDate": "2026-01-21",
+      "customerId": "12",
+      "customerName": "Mr. Soham Kale",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "Sujay",
+      "placeOfSupply": "",
+      "paymentTerms": "Net 30",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 16,
+          "unit": "",
+          "rate": 60,
+          "discount": 10,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 864
+        },
+        {
+          "id": "1766404060501",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 1,
+          "unit": "",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 60
+        }
+      ],
+      "subTotal": 924,
+      "shippingCharges": 0,
+      "cgst": 83.16000000000001,
+      "sgst": 83.16000000000001,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1090.32,
+      "amountPaid": 590,
+      "balanceDue": 500.31999999999994,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "PARTIALLY_PAID",
+      "sourceType": "quote",
+      "sourceId": "1766404092977",
+      "sourceNumber": "QT-000018",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-22T11:48:28.260Z",
+      "updatedAt": "2025-12-22T12:21:12.730Z",
+      "createdBy": "Admin User",
+      "payments": [
+        {
+          "id": "pr-1766406045478",
+          "date": "2025-12-22",
+          "amount": 90,
+          "paymentMode": "Cash",
+          "reference": "",
+          "notes": ""
+        },
+        {
+          "id": "pr-1766406072730",
+          "date": "2025-12-22",
+          "amount": 500,
+          "paymentMode": "Cash",
+          "reference": "",
+          "notes": ""
+        }
+      ],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-22T11:48:28.260Z",
+          "action": "created",
+          "description": "Invoice created from Quote QT-000018",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766378140581",
       "invoiceNumber": "INV-00027",
       "referenceNumber": "",
@@ -2907,5 +3009,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 29
+  "nextInvoiceNumber": 30
 }

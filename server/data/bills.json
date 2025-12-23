@@ -48,15 +48,15 @@
       "adjustment": 0,
       "adjustmentDescription": "",
       "total": 2456.5,
-      "amountPaid": 1456.5,
-      "balanceDue": 1000,
+      "amountPaid": 1656.5,
+      "balanceDue": 800,
       "notes": "",
       "attachments": [],
       "status": "PARTIALLY_PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-22T10:39:44.974Z",
-      "updatedAt": "2025-12-22T11:39:19.763Z",
+      "updatedAt": "2025-12-22T11:39:57.711Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -79,6 +79,13 @@
           "action": "payment",
           "description": "Payment of ₹1,000.5 recorded",
           "user": "Admin User"
+        },
+        {
+          "id": "1766403597712",
+          "timestamp": "2025-12-22T11:39:57.711Z",
+          "action": "payment",
+          "description": "Payment of ₹200 recorded via PM-00025",
+          "user": "System"
         }
       ]
     },
@@ -525,7 +532,7 @@
           "id": "1766053725870",
           "itemName": "Rice",
           "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
-          "account": "Office Supplies",
+          "account": "employee_advance",
           "quantity": 1,
           "rate": 50,
           "tax": "CGST9",
@@ -552,7 +559,7 @@
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-18T10:29:04.518Z",
-      "updatedAt": "2025-12-18T10:29:04.518Z",
+      "updatedAt": "2025-12-22T12:04:19.808Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -560,6 +567,13 @@
           "timestamp": "2025-12-18T10:29:04.518Z",
           "action": "created",
           "description": "Bill created for ₹54.5",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-22T12:04:19.808Z",
+          "action": "updated",
+          "description": "Bill has been updated",
           "user": "Admin User"
         }
       ]

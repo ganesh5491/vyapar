@@ -1,6 +1,98 @@
 {
   "quotes": [
     {
+      "id": "1766404092977",
+      "quoteNumber": "QT-000018",
+      "referenceNumber": "",
+      "date": "2025-12-22",
+      "expiryDate": "",
+      "customerId": "12",
+      "customerName": "Mr. Soham Kale",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "Sujay",
+      "projectName": "",
+      "subject": "",
+      "placeOfSupply": "",
+      "pdfTemplate": "Standard Template",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 16,
+          "unit": "",
+          "rate": 60,
+          "discount": 10,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 864
+        },
+        {
+          "id": "1766404060501",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 1,
+          "unit": "",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 18,
+          "taxName": "GST18",
+          "amount": 60
+        }
+      ],
+      "subTotal": 924,
+      "shippingCharges": 0,
+      "tdsType": "",
+      "tdsAmount": 0,
+      "cgst": 83.16000000000001,
+      "sgst": 83.16000000000001,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 1090.32,
+      "customerNotes": "Looking forward for your business.",
+      "termsAndConditions": "",
+      "status": "CONVERTED",
+      "emailRecipients": [],
+      "createdAt": "2025-12-22T11:48:12.977Z",
+      "updatedAt": "2025-12-22T11:48:28.260Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-22T11:48:12.977Z",
+          "action": "created",
+          "description": "Quote created for ₹1,090.32",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-22T11:48:28.260Z",
+          "action": "converted",
+          "description": "Converted to Invoice INV-00029",
+          "user": "Admin User",
+          "link": "/invoices/1766404108260"
+        }
+      ],
+      "convertedTo": "invoice"
+    },
+    {
       "id": "1766053982422",
       "quoteNumber": "QT-000017",
       "referenceNumber": "",
@@ -841,84 +933,6 @@
       "convertedTo": "invoice"
     },
     {
-      "id": "1765280697873",
-      "quoteNumber": "QT-000005",
-      "referenceNumber": "",
-      "date": "2025-12-09",
-      "expiryDate": "",
-      "customerId": "3",
-      "customerName": "Uraja Foods",
-      "billingAddress": {
-        "street": "",
-        "city": "",
-        "state": "",
-        "country": "India",
-        "pincode": ""
-      },
-      "shippingAddress": {
-        "street": "",
-        "city": "",
-        "state": "",
-        "country": "India",
-        "pincode": ""
-      },
-      "salesperson": "",
-      "projectName": "",
-      "subject": "",
-      "placeOfSupply": "",
-      "pdfTemplate": "Standard Template",
-      "items": [
-        {
-          "id": "1",
-          "itemId": "2",
-          "name": "Cloud Server",
-          "description": "",
-          "quantity": 1,
-          "unit": "",
-          "rate": 0,
-          "discount": 0,
-          "discountType": "percentage",
-          "tax": 0,
-          "taxName": "none",
-          "amount": 0
-        }
-      ],
-      "subTotal": 0,
-      "shippingCharges": 0,
-      "tdsType": "",
-      "tdsAmount": 0,
-      "cgst": 0,
-      "sgst": 0,
-      "igst": 0,
-      "adjustment": 0,
-      "total": 0,
-      "customerNotes": "Looking forward for your business.",
-      "termsAndConditions": "",
-      "status": "CONVERTED",
-      "emailRecipients": [],
-      "createdAt": "2025-12-09T11:44:57.873Z",
-      "updatedAt": "2025-12-15T05:40:00.188Z",
-      "createdBy": "Admin User",
-      "activityLogs": [
-        {
-          "id": "1",
-          "timestamp": "2025-12-09T11:44:57.873Z",
-          "action": "created",
-          "description": "Quote created for ₹0",
-          "user": "Admin User"
-        },
-        {
-          "id": "2",
-          "timestamp": "2025-12-15T05:40:00.188Z",
-          "action": "converted",
-          "description": "Converted to Invoice INV-00016",
-          "user": "Admin User",
-          "link": "/invoices/1765777200188"
-        }
-      ],
-      "convertedTo": "invoice"
-    },
-    {
       "id": "1",
       "quoteNumber": "QT-000004",
       "referenceNumber": "",
@@ -1127,60 +1141,6 @@
       "convertedTo": "sales-order"
     },
     {
-      "id": "3",
-      "quoteNumber": "QT-000002",
-      "referenceNumber": "",
-      "date": "2025-10-08",
-      "expiryDate": "2025-11-08",
-      "customerId": "3",
-      "customerName": "Uraja Foods",
-      "billingAddress": {
-        "street": "",
-        "city": "",
-        "state": "",
-        "country": "India",
-        "pincode": ""
-      },
-      "shippingAddress": {
-        "street": "",
-        "city": "",
-        "state": "",
-        "country": "India",
-        "pincode": ""
-      },
-      "salesperson": "",
-      "projectName": "",
-      "subject": "",
-      "placeOfSupply": "",
-      "pdfTemplate": "Standard Template",
-      "items": [],
-      "subTotal": 16284,
-      "shippingCharges": 0,
-      "tdsType": "",
-      "tdsAmount": 0,
-      "cgst": 0,
-      "sgst": 0,
-      "igst": 0,
-      "adjustment": 0,
-      "total": 16284,
-      "customerNotes": "",
-      "termsAndConditions": "",
-      "status": "DRAFT",
-      "emailRecipients": [],
-      "createdAt": "2025-10-08T09:00:00.000Z",
-      "updatedAt": "2025-10-08T09:00:00.000Z",
-      "createdBy": "Rohan Bhosale",
-      "activityLogs": [
-        {
-          "id": "1",
-          "timestamp": "2025-10-08T09:00:00.000Z",
-          "action": "created",
-          "description": "Quote created for ₹16,284.00",
-          "user": "Rohan Bhosale"
-        }
-      ]
-    },
-    {
       "id": "4",
       "quoteNumber": "QT-000001",
       "referenceNumber": "",
@@ -1244,5 +1204,5 @@
       "convertedTo": "invoice"
     }
   ],
-  "nextQuoteNumber": 18
+  "nextQuoteNumber": 19
 }

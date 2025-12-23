@@ -398,7 +398,56 @@
       ],
       "createdAt": "2025-12-19T05:46:30.666Z",
       "updatedAt": "2025-12-19T05:48:54.118Z"
+    },
+    {
+      "id": "12",
+      "name": "Mr. Soham Kale",
+      "displayName": "Mr. Soham Kale",
+      "companyName": "Wipro",
+      "email": "soham@gmail.com",
+      "phone": "9272940350",
+      "workPhone": "9272940350",
+      "mobile": "8459271486",
+      "gstTreatment": "Registered Business - Regular",
+      "gstin": "27AAGCA4900Q1ZQ",
+      "receivables": "0.00",
+      "avatar": "MR",
+      "pan": "AAGCA4900Q",
+      "customerType": "business",
+      "status": "active",
+      "billingAddress": {
+        "street": "bhumkar chowk, pune, Wakad",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "shippingAddress": {
+        "street": "bhumkar chowk, pune, Wakad",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "country": "India",
+        "pincode": "411057"
+      },
+      "currency": "INR",
+      "paymentTerms": "due_on_receipt",
+      "placeOfSupply": "27 - Maharashtra",
+      "taxPreference": "taxable",
+      "exemptionReason": "",
+      "portalStatus": "disabled",
+      "contactPersons": [
+        {
+          "salutation": "mr",
+          "firstName": "Shivam",
+          "lastName": "kale",
+          "email": "shivam@gmail.com",
+          "workPhone": "2356253256",
+          "mobile": "2356253256"
+        }
+      ],
+      "createdAt": "2025-12-22T11:45:56.779Z",
+      "updatedAt": "2025-12-22T11:45:56.779Z"
     }
   ],
-  "nextCustomerId": 12
+  "nextCustomerId": 13
 }

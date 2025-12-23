@@ -75,7 +75,103 @@
       "amountInWords": "Indian Rupee Fifty Only",
       "journalEntries": [],
       "createdAt": "2025-12-22T04:35:33.111Z"
+    },
+    {
+      "id": "pr-1766406045478",
+      "paymentNumber": "",
+      "customerId": "12",
+      "customerName": "Mr. Soham Kale",
+      "customerEmail": "soham@gmail.com",
+      "amount": 90,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-22",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 0,
+      "invoices": [
+        {
+          "invoiceId": "1766404108260",
+          "invoiceNumber": "INV-00029",
+          "invoiceDate": "2025-12-22",
+          "invoiceAmount": 1090.32,
+          "balanceDue": 1090.32,
+          "paymentAmount": 90,
+          "paymentReceivedDate": "2025-12-22"
+        }
+      ],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 90,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 90
+        }
+      ],
+      "amountInWords": "Indian Rupee Ninety Only",
+      "createdAt": "2025-12-22T12:20:45.478Z"
+    },
+    {
+      "id": "pr-1766406072730",
+      "paymentNumber": "",
+      "customerId": "12",
+      "customerName": "Mr. Soham Kale",
+      "customerEmail": "soham@gmail.com",
+      "amount": 500,
+      "bankCharges": 0,
+      "tax": "",
+      "date": "2025-12-22",
+      "mode": "Cash",
+      "depositTo": "Petty Cash",
+      "referenceNumber": "",
+      "taxDeducted": "no",
+      "notes": "",
+      "sendThankYou": true,
+      "placeOfSupply": "27 - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentType": "invoice_payment",
+      "status": "PAID",
+      "unusedAmount": 0,
+      "invoices": [
+        {
+          "invoiceId": "1766404108260",
+          "invoiceNumber": "INV-00029",
+          "invoiceDate": "2025-12-22",
+          "invoiceAmount": 1090.32,
+          "balanceDue": 1000.3199999999999,
+          "paymentAmount": 500,
+          "paymentReceivedDate": "2025-12-22"
+        }
+      ],
+      "attachments": [],
+      "journalEntries": [
+        {
+          "account": "Petty Cash",
+          "debit": 500,
+          "credit": 0
+        },
+        {
+          "account": "Unearned Revenue",
+          "debit": 0,
+          "credit": 500
+        }
+      ],
+      "amountInWords": "Indian Rupee Five Hundred Only",
+      "createdAt": "2025-12-22T12:21:12.730Z"
     }
   ],
-  "nextPaymentNumber": 46
+  "nextPaymentNumber": 48
 }

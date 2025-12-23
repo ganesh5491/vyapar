@@ -106,11 +106,11 @@
       "tdsTcsAmount": 0,
       "adjustment": 0,
       "amount": 2456.5,
-      "balance": 2456.5,
+      "balance": 2000,
       "notes": "Created from Bill #13",
       "status": "OPEN",
       "createdAt": "2025-12-22T11:14:31.399Z",
-      "updatedAt": "2025-12-22T11:14:31.399Z"
+      "updatedAt": "2025-12-22T11:41:01.737Z"
     }
   ],
   "nextCreditNumber": 11
