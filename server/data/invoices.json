@@ -1,6 +1,95 @@
 {
   "invoices": [
     {
+      "id": "1766482754934",
+      "invoiceNumber": "INV-00037",
+      "referenceNumber": "",
+      "date": "2025-12-23",
+      "dueDate": "2025-12-23",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Due on Receipt",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "name": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "quantity": 1,
+          "unit": "",
+          "rate": 45000,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 45000,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        },
+        {
+          "id": "1766479637328",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "quantity": 2,
+          "unit": "",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 5,
+          "taxName": "GST5",
+          "amount": 120,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        }
+      ],
+      "subTotal": 0,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 0,
+      "amountPaid": 0,
+      "balanceDue": 0,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "PENDING",
+      "sourceType": null,
+      "sourceId": null,
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-23T09:39:14.934Z",
+      "updatedAt": "2025-12-23T09:39:14.934Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-23T09:39:14.934Z",
+          "action": "created",
+          "description": "Invoice created for ₹0.00",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766479790455",
       "invoiceNumber": "INV-00036",
       "referenceNumber": "",
@@ -3780,5 +3869,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 37
+  "nextInvoiceNumber": 38
 }

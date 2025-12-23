@@ -133,6 +133,55 @@ const TAX_OPTIONS = [
   { value: "igst28", label: "IGST 28%" }
 ];
 
+const INDIAN_STATES = [
+  "AN - Andaman and Nicobar Islands",
+  "AP - Andhra Pradesh",
+  "AR - Arunachal Pradesh",
+  "AS - Assam",
+  "BR - Bihar",
+  "CH - Chandigarh",
+  "CT - Chhattisgarh",
+  "DD - Daman and Diu",
+  "DL - Delhi",
+  "GA - Goa",
+  "GJ - Gujarat",
+  "HP - Himachal Pradesh",
+  "HR - Haryana",
+  "JH - Jharkhand",
+  "JK - Jammu and Kashmir",
+  "KA - Karnataka",
+  "KL - Kerala",
+  "LA - Ladakh",
+  "LD - Lakshadweep",
+  "MH - Maharashtra",
+  "ML - Meghalaya",
+  "MN - Manipur",
+  "MP - Madhya Pradesh",
+  "MZ - Mizoram",
+  "NL - Nagaland",
+  "OR - Odisha",
+  "PB - Punjab",
+  "PY - Puducherry",
+  "RJ - Rajasthan",
+  "SK - Sikkim",
+  "TN - Tamil Nadu",
+  "TR - Tripura",
+  "TS - Telangana",
+  "UK - Uttarakhand",
+  "UP - Uttar Pradesh",
+  "WB - West Bengal"
+];
+
+const GST_TREATMENTS = [
+  "Registered Business - Regular",
+  "Registered Business - Composition",
+  "Unregistered Business",
+  "Consumer",
+  "Overseas",
+  "Special Economic Zone",
+  "Deemed Export"
+];
+
 // Account dropdown is now handled by AccountSelectDropdown component
 
 export default function PurchaseOrderCreate() {
@@ -148,6 +197,11 @@ export default function PurchaseOrderCreate() {
   const [formData, setFormData] = useState({
     vendorId: "",
     vendorName: "",
+    gstTreatment: "",
+    sourceOfSupply: "",
+    destinationOfSupply: "",
+    vendorBillingAddress: { street1: "", street2: "", city: "", state: "", pinCode: "", countryRegion: "India" },
+    vendorShippingAddress: { street1: "", street2: "", city: "", state: "", pinCode: "", countryRegion: "India" },
     deliveryAddressType: "organization",
     deliveryAddress: {
       attention: "",
@@ -266,7 +320,10 @@ export default function PurchaseOrderCreate() {
       setFormData({
         ...formData,
         vendorId: vendor.id,
-        vendorName: vendor.displayName
+        vendorName: vendor.displayName,
+        gstTreatment: (vendor as any).gstTreatment || "",
+        vendorBillingAddress: vendor.billingAddress || { street1: "", street2: "", city: "", state: "", pinCode: "", countryRegion: "India" },
+        vendorShippingAddress: (vendor as any).shippingAddress || { street1: "", street2: "", city: "", state: "", pinCode: "", countryRegion: "India" }
       });
       setVendorDropdownOpen(false);
     }
@@ -532,6 +589,110 @@ export default function PurchaseOrderCreate() {
                 </Button>
               </div>
             </div>
+
+            {/* Vendor Details Section */}
+            {formData.vendorId && (
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-slate-900 text-sm">Vendor Details</h3>
+                
+                {/* Billing Address */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Billing Address</Label>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start h-auto text-left whitespace-normal"
+                    onClick={() => {
+                      const newAddress = prompt("Enter billing address:", formData.vendorBillingAddress.street1);
+                      if (newAddress) {
+                        setFormData({
+                          ...formData,
+                          vendorBillingAddress: { ...formData.vendorBillingAddress, street1: newAddress }
+                        });
+                      }
+                    }}
+                    data-testid="button-edit-billing-address"
+                  >
+                    <div className="text-left">
+                      <p>{formData.vendorBillingAddress.street1 || "Click to add billing address"}</p>
+                      {formData.vendorBillingAddress.city && (
+                        <p className="text-xs text-slate-500">{formData.vendorBillingAddress.city}, {formData.vendorBillingAddress.state}</p>
+                      )}
+                    </div>
+                  </Button>
+                </div>
+
+                {/* Shipping Address */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Shipping Address</Label>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start h-auto text-left whitespace-normal"
+                    onClick={() => {
+                      const newAddress = prompt("Enter shipping address:", formData.vendorShippingAddress.street1);
+                      if (newAddress) {
+                        setFormData({
+                          ...formData,
+                          vendorShippingAddress: { ...formData.vendorShippingAddress, street1: newAddress }
+                        });
+                      }
+                    }}
+                    data-testid="button-edit-shipping-address"
+                  >
+                    <div className="text-left">
+                      <p>{formData.vendorShippingAddress.street1 || "Click to add shipping address"}</p>
+                      {formData.vendorShippingAddress.city && (
+                        <p className="text-xs text-slate-500">{formData.vendorShippingAddress.city}, {formData.vendorShippingAddress.state}</p>
+                      )}
+                    </div>
+                  </Button>
+                </div>
+
+                {/* GST Treatment */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">GST Treatment</Label>
+                  <Select value={formData.gstTreatment} onValueChange={(value) => setFormData({ ...formData, gstTreatment: value })}>
+                    <SelectTrigger className="bg-white" data-testid="select-gst-treatment">
+                      <SelectValue placeholder="Select GST Treatment" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GST_TREATMENTS.map(treatment => (
+                        <SelectItem key={treatment} value={treatment}>{treatment}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Source of Supply */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Source of Supply<span className="text-red-500">*</span></Label>
+                  <Select value={formData.sourceOfSupply} onValueChange={(value) => setFormData({ ...formData, sourceOfSupply: value })}>
+                    <SelectTrigger className="bg-white" data-testid="select-source-of-supply">
+                      <SelectValue placeholder="Select source state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDIAN_STATES.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Destination of Supply */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Destination of Supply<span className="text-red-500">*</span></Label>
+                  <Select value={formData.destinationOfSupply} onValueChange={(value) => setFormData({ ...formData, destinationOfSupply: value })}>
+                    <SelectTrigger className="bg-white" data-testid="select-destination-of-supply">
+                      <SelectValue placeholder="Select destination state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDIAN_STATES.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
 
             {/* Delivery Address Section */}
             <div className="grid grid-cols-[140px_1fr] gap-4 items-start">

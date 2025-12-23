@@ -180,12 +180,12 @@
     - Columns: #, Item & Description, HSN Code, Quantity, Taxable Amount, CGST, SGST, Cess
     - Expandable/collapsible table with ChevronDown animation
     - Summary showing Taxable Amount and TOTAL calculations
-    - Automatically fetches items from selected documents
+    - Automatically fetches items when document is selected
     - Pre-populates items when navigating from invoice to e-Way Bill
     - Total amount calculated and displayed based on selected items
 [x] 89. Fixed formatCurrency and Item Details display (Dec 23, 2025):
     - Fixed formatCurrency function to handle undefined/null values with proper validation
-    - Updated all document handlers (handleCreditNoteChange, handleInvoiceChange, handleDeliveryChallanChange, handleSalesOrderChange) to fetch items when document is selected
+    - Updated all document handlers to fetch items when document is selected
     - Item Details table now displays in create/edit e-Way Bill modes with dynamic item loading
     - Proper error handling for undefined amount values
     - Session restart - verified application running with fixes applied (Dec 23, 2025)
@@ -233,3 +233,17 @@
     - Fix: Removed "Unused Credits (BCY)" data cell from customer rows (lines 1379-1380)
     - Result: Customers list now shows only: Name, Company Name, Email, Work Phone, Place of Supply, Receivables (BCY)
     - Note: Receivables calculation should be updated to compute from actual invoices and payments for accurate display
+[x] 97. Enhanced Vendor Selection UI in Purchase Module (Dec 23, 2025):
+    - Added vendor details section that appears after vendor selection in Purchase Order Create and Edit pages
+    - Implemented editable Billing Address button with prompt-based editing
+    - Implemented editable Shipping Address button with prompt-based editing
+    - Added GST Treatment dropdown (Registered Business - Regular, Composition, Unregistered, Consumer, Overseas, Special Economic Zone, Deemed Export)
+    - Added Source of Supply searchable dropdown with all 36 Indian states and UTs
+    - Added Destination of Supply searchable dropdown with all 36 Indian states and UTs
+    - Updated handleVendorChange to auto-populate vendor details from vendor master data
+    - Both Source and Destination fields marked as mandatory (*) for GST compliance
+    - Added INDIAN_STATES and GST_TREATMENTS constants to both purchase-order-create.tsx and purchase-order-edit.tsx
+    - Updated formData state to include vendorBillingAddress and vendorShippingAddress fields
+    - Vendor details section only displays when a vendor is selected (conditional rendering)
+    - All fields properly synchronized when editing existing purchase orders
+    - Application verified running with complete vendor details UI functionality
