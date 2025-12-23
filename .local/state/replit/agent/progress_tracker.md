@@ -165,3 +165,22 @@
 [x] 84. Aligned Edit Item modal with New Item modal - Complete Structural & Visual Alignment (Dec 18, 2025)
 [x] 85. Updated Purchase Order Create and Edit pages with improved UI matching reference image (Dec 18, 2025)
 [x] 86. Session restart - reinstalled cross-env and verified application running (Dec 23, 2025)
+[x] 87. Implemented dynamic Transporter dropdown with creation modal (Dec 23, 2025):
+    - Created TransporterSelect reusable component in client/src/components/transporter-select.tsx
+    - Component includes modal form for creating new transporters with Name and ID fields
+    - Added validation with error handling for required fields
+    - Transporters automatically added to dropdown list immediately after creation
+    - Auto-selects newly created transporter
+    - Backend API routes: GET, POST, PUT, DELETE /api/transporters
+    - Data persisted to server/data/transporters.json
+    - Updated e-way-bills.tsx to use TransporterSelect component
+[x] 88. Implemented Item Details collapsible table for e-Way Bills (Dec 23, 2025):
+    - Created collapsible Item Details section in e-Way Bill form
+    - Table displays items from selected invoice/credit note/sales order/delivery challan
+    - Columns: #, Item & Description, HSN Code, Quantity, Taxable Amount, CGST, SGST, Cess
+    - Expandable/collapsible table with ChevronDown animation
+    - Summary showing Taxable Amount and TOTAL calculations
+    - Automatically fetches items from selected documents
+    - Pre-populates items when navigating from invoice to e-Way Bill
+    - Total amount calculated and displayed based on selected items
+    - Session restart - reinstalled cross-env and verified application running (Dec 23, 2025)

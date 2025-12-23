@@ -554,6 +554,8 @@ export default function EWayBills() {
     const [fromInvoiceId, setFromInvoiceId] = useState<string | null>(null);
     const [fromInvoiceNumber, setFromInvoiceNumber] = useState<string | null>(null);
     const [placeOfDeliveryOpen, setPlaceOfDeliveryOpen] = useState(false);
+    const [itemDetailsOpen, setItemDetailsOpen] = useState(true);
+    const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
     useEffect(() => {
         fetchEWayBills();
@@ -706,6 +708,29 @@ export default function EWayBills() {
         }
     };
 
+    const fetchItemsFromDocument = async (docType: string, docId: string) => {
+        try {
+            let url = '';
+            if (docType === 'invoices') url = `/api/invoices/${docId}`;
+            else if (docType === 'credit_notes') url = `/api/credit-notes/${docId}`;
+            else if (docType === 'sales_orders') url = `/api/sales-orders/${docId}`;
+            else if (docType === 'delivery_challans') url = `/api/delivery-challans/${docId}`;
+
+            if (url) {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    const doc = data.data;
+                    if (doc && doc.items) {
+                        setSelectedItems(doc.items);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch items from document:', error);
+        }
+    };
+
     const fetchBillDetail = async (id: string) => {
         try {
             const response = await fetch(`/api/eway-bills/${id}`);
@@ -742,6 +767,11 @@ export default function EWayBills() {
                             billTo: data.data.billTo || addressData.billTo,
                             shipTo: data.data.shipTo || addressData.shipTo,
                         });
+                    }
+
+                    // Fetch items from the document
+                    if (data.data.documentId) {
+                        fetchItemsFromDocument(data.data.documentType, data.data.documentId);
                     }
                 }
             }
@@ -1542,18 +1572,107 @@ export default function EWayBills() {
                                 </Popover>
                             </div>
 
+                            {/* Item Details Section */}
+                            {selectedItems.length > 0 && (
+                                <div className="border rounded-lg p-4 space-y-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setItemDetailsOpen(!itemDetailsOpen)}
+                                        className="flex items-center gap-2 text-blue-600 hover:underline"
+                                        data-testid="button-toggle-item-details"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        <span className="text-sm font-medium">Item Details</span>
+                                        <ChevronDown
+                                            className={`w-4 h-4 transition-transform ${
+                                                itemDetailsOpen ? "rotate-180" : ""
+                                            }`}
+                                        />
+                                    </button>
+
+                                    {itemDetailsOpen && (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="border-b">
+                                                        <th className="text-left py-2 px-3 font-semibold">#</th>
+                                                        <th className="text-left py-2 px-3 font-semibold">Item & Description</th>
+                                                        <th className="text-left py-2 px-3 font-semibold">HSN Code</th>
+                                                        <th className="text-left py-2 px-3 font-semibold">Quantity</th>
+                                                        <th className="text-right py-2 px-3 font-semibold">Taxable Amount</th>
+                                                        <th className="text-right py-2 px-3 font-semibold">CGST</th>
+                                                        <th className="text-right py-2 px-3 font-semibold">SGST</th>
+                                                        <th className="text-right py-2 px-3 font-semibold">Cess</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {selectedItems.map((item, index) => {
+                                                        const taxableAmount = (item.amount || item.total) || 0;
+                                                        const cgst = item.cgst || 0;
+                                                        const sgst = item.sgst || 0;
+                                                        const cess = item.cess || 0;
+
+                                                        return (
+                                                            <tr key={index} className="border-b hover:bg-slate-50 dark:hover:bg-slate-800">
+                                                                <td className="py-3 px-3">{index + 1}</td>
+                                                                <td className="py-3 px-3">
+                                                                    <div>
+                                                                        <p className="font-medium">{item.itemName || item.name || '-'}</p>
+                                                                        {item.description && (
+                                                                            <p className="text-xs text-muted-foreground">{item.description}</p>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-3 px-3 text-muted-foreground">{item.hsnSac || item.hsn || '-'}</td>
+                                                                <td className="py-3 px-3">
+                                                                    {item.quantity} {item.unit || item.usageUnit || ''}
+                                                                </td>
+                                                                <td className="py-3 px-3 text-right font-medium">
+                                                                    {formatCurrency(taxableAmount)}
+                                                                </td>
+                                                                <td className="py-3 px-3 text-right text-muted-foreground">
+                                                                    {cgst ? `₹${cgst.toFixed(2)}` : '₹0.00'} {item.cgstPercent ? `(${item.cgstPercent}%)` : ''}
+                                                                </td>
+                                                                <td className="py-3 px-3 text-right text-muted-foreground">
+                                                                    {sgst ? `₹${sgst.toFixed(2)}` : '₹0.00'} {item.sgstPercent ? `(${item.sgstPercent}%)` : ''}
+                                                                </td>
+                                                                <td className="py-3 px-3 text-right text-muted-foreground">
+                                                                    {cess ? `₹${cess.toFixed(2)}` : '₹0.00'}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+
+                                            {/* Summary Row */}
+                                            <div className="mt-4 space-y-2 text-sm">
+                                                <div className="flex justify-end items-center gap-8">
+                                                    <span className="font-medium">Taxable Amount</span>
+                                                    <span className="font-semibold min-w-[120px] text-right">
+                                                        {formatCurrency(
+                                                            selectedItems.reduce((sum, item) => sum + (item.amount || item.total || 0), 0)
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-end items-center gap-8 text-base font-bold border-t pt-2">
+                                                    <span>TOTAL</span>
+                                                    <span className="min-w-[120px] text-right text-blue-600">
+                                                        {formatCurrency(formData.total)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Total Amount Display */}
                             <div className="bg-slate-50 dark:bg-slate-800 rounded-lg border p-4">
                                 <h3 className="font-semibold text-sm text-muted-foreground mb-2">Total Amount</h3>
                                 <p className="text-2xl font-bold text-blue-600" data-testid="text-form-total">
                                     {formatCurrency(formData.total)}
                                 </p>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-blue-600 cursor-pointer hover:underline">
-                                <FileText className="w-4 h-4" />
-                                <span className="text-sm" data-testid="link-item-details">Item Details</span>
-                                <ExternalLink className="w-3 h-3" />
                             </div>
 
                             <div className="space-y-4 pt-4 border-t">
