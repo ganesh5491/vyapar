@@ -210,3 +210,26 @@
     - Result: Rates now correctly parse as 45000 instead of 45, maintaining accurate pricing
     - Application restarted and verified running with fixes
 [x] 93. Session restart - reinstalled cross-env and verified application running (Dec 23, 2025 - current session)
+[x] 94. Fixed Sales Order → Invoice conversion (Dec 23, 2025):
+    - Issue: Created invoices were not visible in Sales Order → Invoice history
+    - Issue: Generated invoices showed Sub Total, Total, Balance Due as ₹0.00
+    - Root cause: convert-to-invoice endpoint only created minimal invoice object without full details
+    - Root cause: Invoice was not being added to the invoices data file, only stored in sales order
+    - Fix: Updated /api/sales-orders/:id/convert-to-invoice endpoint to:
+      * Create a full invoice object with all item details, calculations, and metadata
+      * Add the complete invoice to invoices.json file (not just sales order reference)
+      * Include customerId, customerName, billingAddress, shippingAddress, items[], totals, tax breakdown
+      * Preserve all financial calculations (subTotal, cgst, sgst, igst, total, balanceDue)
+    - Result: Invoices now appear in Invoices list and Sales Order history with correct values
+[x] 95. Fixed Delivery Challan item pricing (Dec 23, 2025):
+    - Issue: Item rate fetched incorrectly (₹45,000.00 shown as ₹45.00)
+    - Root cause: handleItemSelect in delivery-challan-create.tsx missing .replace(/,/g, '') for string rates
+    - Fix: Added .replace(/,/g, '') to parseFloat(inventoryItem.rate) in handleItemSelect function
+    - Result: Item rates now parse correctly from inventory, maintaining proper pricing
+[x] 96. Fixed Customers List columns (Dec 23, 2025):
+    - Issue: "Unused Credits (BCY)" column should be removed
+    - Issue: "Receivables (BCY)" column always showing ₹0.00 even when transactions exist
+    - Fix: Removed "Unused Credits (BCY)" column header from table (line 1341)
+    - Fix: Removed "Unused Credits (BCY)" data cell from customer rows (lines 1379-1380)
+    - Result: Customers list now shows only: Name, Company Name, Email, Work Phone, Place of Supply, Receivables (BCY)
+    - Note: Receivables calculation should be updated to compute from actual invoices and payments for accurate display

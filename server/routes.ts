@@ -1540,28 +1540,77 @@ export async function registerRoutes(
 
   app.post("/api/sales-orders/:id/convert-to-invoice", (req: Request, res: Response) => {
     try {
-      const data = readSalesOrdersData();
-      const orderIndex = data.salesOrders.findIndex((o: any) => o.id === req.params.id);
+      const salesOrderData = readSalesOrdersData();
+      const invoiceData = readInvoicesData();
+      const orderIndex = salesOrderData.salesOrders.findIndex((o: any) => o.id === req.params.id);
 
       if (orderIndex === -1) {
         return res.status(404).json({ success: false, message: 'Sales order not found' });
       }
 
       const now = new Date().toISOString();
-      const existingOrder = data.salesOrders[orderIndex];
-      const invoiceNumber = generateInvoiceNumber(data.nextInvoiceNumber);
+      const existingOrder = salesOrderData.salesOrders[orderIndex];
+      const invoiceNumber = generateInvoiceNumber(invoiceData.nextInvoiceNumber);
 
+      // Create full invoice in invoices data file
       const newInvoice = {
         id: invoiceNumber,
         invoiceNumber: invoiceNumber,
+        customerId: existingOrder.customerId,
+        customerName: existingOrder.customerName,
         date: new Date().toISOString().split('T')[0],
         dueDate: new Date().toISOString().split('T')[0],
         status: 'DRAFT',
-        amount: existingOrder.total,
-        balanceDue: existingOrder.total
+        billingAddress: existingOrder.billingAddress || {},
+        shippingAddress: existingOrder.shippingAddress || {},
+        items: existingOrder.items.map((item: any) => ({
+          id: item.id,
+          itemId: item.itemId,
+          name: item.name,
+          description: item.description,
+          hsnSac: item.hsnSac,
+          quantity: item.quantity,
+          unit: item.unit,
+          rate: item.rate,
+          discount: item.discount,
+          discountType: item.discountType,
+          tax: item.tax,
+          taxName: item.taxName,
+          amount: item.amount
+        })),
+        subTotal: existingOrder.subTotal || 0,
+        cgst: existingOrder.cgst || 0,
+        sgst: existingOrder.sgst || 0,
+        igst: existingOrder.igst || 0,
+        shippingCharges: existingOrder.shippingCharges || 0,
+        adjustment: existingOrder.adjustment || 0,
+        total: existingOrder.total,
+        balanceDue: existingOrder.total,
+        amountPaid: 0,
+        payments: [],
+        customerNotes: existingOrder.customerNotes || '',
+        termsAndConditions: existingOrder.termsAndConditions || '',
+        paymentTerms: existingOrder.paymentTerms || 'Due on Receipt',
+        referenceNumber: req.body.referenceNumber || '',
+        createdAt: now,
+        updatedAt: now
       };
 
-      existingOrder.invoices.push(newInvoice);
+      // Add invoice to invoices file
+      invoiceData.invoices.push(newInvoice);
+      invoiceData.nextInvoiceNumber += 1;
+      writeInvoicesData(invoiceData);
+
+      // Update sales order
+      existingOrder.invoices.push({
+        id: invoiceNumber,
+        invoiceNumber: invoiceNumber,
+        date: newInvoice.date,
+        dueDate: newInvoice.dueDate,
+        status: 'DRAFT',
+        amount: existingOrder.total,
+        balanceDue: existingOrder.total
+      });
       existingOrder.invoiceStatus = 'Invoiced';
       existingOrder.orderStatus = 'CLOSED';
       existingOrder.updatedAt = now;
@@ -1580,9 +1629,8 @@ export async function registerRoutes(
         user: req.body.createdBy || 'Admin User'
       });
 
-      data.salesOrders[orderIndex] = existingOrder;
-      data.nextInvoiceNumber += 1;
-      writeSalesOrdersData(data);
+      salesOrderData.salesOrders[orderIndex] = existingOrder;
+      writeSalesOrdersData(salesOrderData);
 
       res.json({ success: true, data: { salesOrder: existingOrder, invoice: newInvoice } });
     } catch (error) {

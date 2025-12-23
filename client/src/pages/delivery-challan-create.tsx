@@ -184,7 +184,7 @@ export default function DeliveryChallanCreate() {
     if (inventoryItem) {
       // Parse rate - use rate field (for selling), handle string or number
       const itemRate = typeof inventoryItem.rate === 'string'
-        ? parseFloat(inventoryItem.rate) || 0
+        ? parseFloat(inventoryItem.rate.replace(/,/g, '')) || 0
         : (inventoryItem.rate || inventoryItem.sellingPrice || 0);
 
       // Parse GST rate from intraStateTax field (e.g., "gst18" -> 18)

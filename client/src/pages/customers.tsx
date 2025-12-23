@@ -1338,7 +1338,6 @@ export default function CustomersPage() {
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Work Phone</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Place of Supply</th>
                   <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Receivables (BCY)</th>
-                  <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Unused Credits (BCY)</th>
                   <th className="w-10 px-3 py-3"></th>
                 </tr>
               </thead>
@@ -1375,9 +1374,6 @@ export default function CustomersPage() {
                     </td>
                     <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
                       {formatCurrency(customer.outstandingReceivables || 0)}
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-600 dark:text-slate-400">
-                      {formatCurrency(customer.unusedCredits || 0)}
                     </td>
                     <td className="px-3 py-3">
                       <DropdownMenu>
