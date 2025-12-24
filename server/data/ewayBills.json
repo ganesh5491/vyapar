@@ -5,13 +5,13 @@
       "ewayBillNumber": "EWB-000001",
       "documentType": "invoices",
       "transactionSubType": "sales_return",
-      "customerId": "2",
-      "customerName": "Ashtvinayak Education Society",
+      "customerId": "13",
+      "customerName": "Mr. Amit Verma",
       "customerGstin": "",
-      "documentNumber": "",
-      "documentId": "",
+      "documentNumber": "INV-00037",
+      "documentId": "1766482754934",
       "date": "2025-12-12",
-      "expiryDate": "2025-12-27",
+      "expiryDate": "2026-01-08",
       "transactionType": "regular",
       "dispatchFrom": {
         "street": "Hinjewadi - Wakad road",
@@ -53,8 +53,8 @@
       "total": 0,
       "status": "GENERATED",
       "createdAt": "2025-12-12T09:47:39.886Z",
-      "updatedAt": "2025-12-12T09:47:39.886Z",
-      "generatedAt": "2025-12-12T09:47:40.151Z"
+      "updatedAt": "2025-12-24T04:26:47.942Z",
+      "generatedAt": "2025-12-24T04:26:47.949Z"
     },
     {
       "id": "ewb-1765966143929",
@@ -178,7 +178,7 @@
       "documentNumber": "INV-00029",
       "documentId": "1766404108260",
       "date": "2025-12-22",
-      "expiryDate": "2026-01-06",
+      "expiryDate": "2026-01-08",
       "transactionType": "regular",
       "dispatchFrom": {
         "street": "Hinjewadi - Wakad road",
@@ -218,9 +218,10 @@
       "transporterDocDate": "",
       "items": [],
       "total": 0,
-      "status": "NOT_GENERATED",
+      "status": "GENERATED",
       "createdAt": "2025-12-22T11:52:05.439Z",
-      "updatedAt": "2025-12-22T11:52:05.439Z"
+      "updatedAt": "2025-12-24T04:26:58.066Z",
+      "generatedAt": "2025-12-24T04:26:58.073Z"
     },
     {
       "id": "ewb-1766462628965",

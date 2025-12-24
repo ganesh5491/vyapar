@@ -2331,19 +2331,22 @@ export async function registerRoutes(
       const data = readVendorsData();
       const billsData = readBillsData();
 
-      // Calculate payables for each vendor based on outstanding bills
+      // Calculate payables for each vendor based on opening balance and outstanding bills
       const vendorsWithPayables = data.vendors.map((vendor: any) => {
         const vendorBills = billsData.bills.filter((bill: any) => bill.vendorId === vendor.id);
-        const outstandingPayables = vendorBills.reduce((total: number, bill: any) => {
+        const outstandingBills = vendorBills.reduce((total: number, bill: any) => {
           if (bill.status !== 'PAID' && bill.status !== 'VOID') {
             return total + (bill.balanceDue || bill.total - (bill.amountPaid || 0));
           }
           return total;
         }, 0);
 
+        // Include opening balance in payables calculation
+        const totalPayables = (vendor.openingBalance || 0) + outstandingBills;
+
         return {
           ...vendor,
-          payables: outstandingPayables
+          payables: totalPayables
         };
       });
 
@@ -2361,19 +2364,22 @@ export async function registerRoutes(
         return res.status(404).json({ success: false, message: "Vendor not found" });
       }
 
-      // Calculate payables for this vendor
+      // Calculate payables for this vendor based on opening balance and outstanding bills
       const billsData = readBillsData();
       const vendorBills = billsData.bills.filter((bill: any) => bill.vendorId === vendor.id);
-      const outstandingPayables = vendorBills.reduce((total: number, bill: any) => {
+      const outstandingBills = vendorBills.reduce((total: number, bill: any) => {
         if (bill.status !== 'PAID' && bill.status !== 'VOID') {
           return total + (bill.balanceDue || bill.total - (bill.amountPaid || 0));
         }
         return total;
       }, 0);
 
+      // Include opening balance in payables calculation
+      const totalPayables = (vendor.openingBalance || 0) + outstandingBills;
+
       const vendorWithPayables = {
         ...vendor,
-        payables: outstandingPayables
+        payables: totalPayables
       };
 
       res.json({ success: true, data: vendorWithPayables });

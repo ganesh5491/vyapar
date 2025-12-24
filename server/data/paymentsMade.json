@@ -813,7 +813,272 @@
       "status": "PAID",
       "createdAt": "2025-12-23T12:58:36.699Z",
       "updatedAt": "2025-12-23T12:58:36.699Z"
+    },
+    {
+      "id": "pm-1766546357104",
+      "paymentNumber": "PM-00033",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "[AP] - Andhra Pradesh",
+      "destinationOfSupply": "[AP] - Andhra Pradesh",
+      "descriptionOfSupply": "",
+      "paymentAmount": 500000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "32111",
+      "notes": "",
+      "billPayments": {
+        "1766545240520": {
+          "billId": "1766545240520",
+          "billNumber": "15",
+          "billAmount": 42052.5,
+          "amountPaid": 42052.5
+        },
+        "1766494624617": {
+          "billId": "1766494624617",
+          "billNumber": "14",
+          "billAmount": 54244.5,
+          "amountPaid": 54244.5
+        },
+        "1766373805363": {
+          "billId": "1766373805363",
+          "billNumber": "6",
+          "billAmount": 1298,
+          "amountPaid": 1298
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-24T03:19:17.104Z",
+      "updatedAt": "2025-12-24T03:19:17.104Z"
+    },
+    {
+      "id": "pm-1766546397472",
+      "paymentNumber": "PM-00034",
+      "vendorId": "6",
+      "vendorName": "Sharma Traders Pvt Ltd",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[MH] - Maharashtra",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentAmount": 100000,
+      "reverseCharge": true,
+      "tds": "commission_brokerage_2",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {},
+      "paymentType": "vendor_advance",
+      "status": "PAID",
+      "createdAt": "2025-12-24T03:19:57.472Z",
+      "updatedAt": "2025-12-24T03:19:57.472Z"
+    },
+    {
+      "id": "pm-1766547087814",
+      "paymentNumber": "PM-00035",
+      "vendorId": "3",
+      "vendorName": "Ganesh k",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 2000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #16",
+      "billPayments": {
+        "1766545255466": {
+          "billId": "1766545255466",
+          "billNumber": "16",
+          "billAmount": 6388,
+          "amountPaid": 2000
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-24T03:31:27.811Z",
+      "updatedAt": "2025-12-24T03:31:27.811Z"
+    },
+    {
+      "id": "pm-1766547134900",
+      "paymentNumber": "PM-00036",
+      "vendorId": "3",
+      "vendorName": "Ganesh k",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #16",
+      "billPayments": {
+        "1766545255466": {
+          "billId": "1766545255466",
+          "billNumber": "16",
+          "billAmount": 6388,
+          "amountPaid": 1000
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-24T03:32:14.896Z",
+      "updatedAt": "2025-12-24T03:32:14.896Z"
+    },
+    {
+      "id": "pm-1766548327229",
+      "paymentNumber": "PM-00037",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 6238.8,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #17",
+      "billPayments": {
+        "1766545297758": {
+          "billId": "1766545297758",
+          "billNumber": "17",
+          "billAmount": 56238.8,
+          "amountPaid": 6238.8
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-24T03:52:07.222Z",
+      "updatedAt": "2025-12-24T03:52:07.222Z"
+    },
+    {
+      "id": "pm-1766548367326",
+      "paymentNumber": "PM-00038",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 7541,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #18",
+      "billPayments": {
+        "1766546511524": {
+          "billId": "1766546511524",
+          "billNumber": "18",
+          "billAmount": 40100,
+          "amountPaid": 7541
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-24T03:52:47.323Z",
+      "updatedAt": "2025-12-24T03:52:47.323Z"
+    },
+    {
+      "id": "pm-1766548388575",
+      "paymentNumber": "PM-00039",
+      "vendorId": "1",
+      "vendorName": "Nilraj Bhilare",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 10000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #18",
+      "billPayments": {
+        "1766546511524": {
+          "billId": "1766546511524",
+          "billNumber": "18",
+          "billAmount": 40100,
+          "amountPaid": 10000
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-24T03:53:08.573Z",
+      "updatedAt": "2025-12-24T03:53:08.573Z"
+    },
+    {
+      "id": "pm-1766549088909",
+      "paymentNumber": "PM-00040",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "gstTreatment": "Registered Business - Composition",
+      "sourceOfSupply": "[NL] - Nagaland",
+      "destinationOfSupply": "[NL] - Nagaland",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-24",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "1766374500345": {
+          "billId": "1766374500345",
+          "billNumber": "7",
+          "billAmount": 118,
+          "amountPaid": 118
+        },
+        "1766137256492": {
+          "billId": "1766137256492",
+          "billNumber": "5",
+          "billAmount": 539.901,
+          "amountPaid": 539.901
+        },
+        "1766053744518": {
+          "billId": "1766053744518",
+          "billNumber": "4",
+          "billAmount": 54.5,
+          "amountPaid": 54.5
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-24T04:04:48.909Z",
+      "updatedAt": "2025-12-24T04:04:48.909Z"
     }
   ],
-  "nextPaymentNumber": 33
+  "nextPaymentNumber": 41
 }

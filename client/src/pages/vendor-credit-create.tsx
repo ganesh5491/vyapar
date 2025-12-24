@@ -100,6 +100,16 @@ export default function VendorCreditCreate() {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
+  // Helper function to parse rate values that might contain commas
+  const parseRateValue = (value: string | number | undefined): number => {
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+    // Remove commas and parse as float
+    const stringValue = String(value).replace(/,/g, '');
+    const parsed = parseFloat(stringValue);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
   // Get query params from URL using wouter's useSearch for proper reactivity
   const urlParams = new URLSearchParams(searchString);
   const billId = urlParams.get('billId');
@@ -305,7 +315,7 @@ export default function VendorCreditCreate() {
           if (product) {
             updated.itemName = product.name;
             updated.description = product.description || '';
-            updated.rate = parseFloat(product.costPrice || product.sellingPrice || product.rate || 0);
+            updated.rate = product.costPrice || product.sellingPrice || parseRateValue(product.rate) || 0;
             updated.amount = updated.quantity * updated.rate;
           }
         }

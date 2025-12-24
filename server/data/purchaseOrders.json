@@ -235,10 +235,10 @@
       "attachments": [],
       "status": "ISSUED",
       "receiveStatus": "YET TO BE RECEIVED",
-      "billedStatus": "YET TO BE BILLED",
+      "billedStatus": "BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-23T08:41:40.128Z",
-      "updatedAt": "2025-12-23T08:41:40.128Z",
+      "updatedAt": "2025-12-24T03:21:30.762Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -246,6 +246,20 @@
           "timestamp": "2025-12-23T08:41:40.128Z",
           "action": "created",
           "description": "Purchase Order created for ₹42,052.5",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-24T03:00:33.668Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-24T03:21:30.762Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
           "user": "Admin User"
         }
       ]
@@ -474,7 +488,7 @@
       "billedStatus": "BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-22T05:23:08.800Z",
-      "updatedAt": "2025-12-23T11:57:20.159Z",
+      "updatedAt": "2025-12-24T03:00:49.663Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -487,6 +501,13 @@
         {
           "id": "2",
           "timestamp": "2025-12-23T11:57:20.159Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-24T03:00:49.663Z",
           "action": "converted_to_bill",
           "description": "Purchase Order converted to Bill",
           "user": "Admin User"
@@ -790,7 +811,7 @@
       "billedStatus": "BILLED",
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-18T09:57:40.049Z",
-      "updatedAt": "2025-12-19T09:35:28.467Z",
+      "updatedAt": "2025-12-24T03:01:02.445Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -810,6 +831,13 @@
         {
           "id": "3",
           "timestamp": "2025-12-19T09:35:28.467Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-24T03:01:02.445Z",
           "action": "converted_to_bill",
           "description": "Purchase Order converted to Bill",
           "user": "Admin User"

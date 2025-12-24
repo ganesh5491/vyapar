@@ -200,6 +200,16 @@ export default function BillCreate() {
     }
   };
 
+  // Helper function to parse rate values that might contain commas
+  const parseRateValue = (value: string | number | undefined): number => {
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+    // Remove commas and parse as float
+    const stringValue = String(value).replace(/,/g, '');
+    const parsed = parseFloat(stringValue);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
   const getCustomerDisplayName = (customerId: string) => {
     if (!customerId || customerId === 'none') return 'None';
     const customer = customers.find(c => c.id === customerId);
@@ -437,7 +447,7 @@ export default function BillCreate() {
         const updatedItems = prev.items.map(item => {
           if (item.id === itemId) {
             // For bills (purchases), use purchaseRate first, then rate, then costPrice/sellingPrice
-            const rate = Number(product.purchaseRate) || Number(product.rate) || product.costPrice || product.sellingPrice || 0;
+            const rate = parseRateValue(product.purchaseRate) || parseRateValue(product.rate) || product.costPrice || product.sellingPrice || 0;
             const amount = item.quantity * rate;
             return {
               ...item,
@@ -747,10 +757,10 @@ export default function BillCreate() {
                                 <SelectItem value="none" disabled>No items available</SelectItem>
                               ) : (
                                 products.map(product => {
-                                  const displayPrice = Number(product.purchaseRate) || Number(product.rate) || product.costPrice || product.sellingPrice || 0;
+                                  const displayPrice = parseRateValue(product.purchaseRate) || parseRateValue(product.rate) || product.costPrice || product.sellingPrice || 0;
                                   return (
                                     <SelectItem key={product.id} value={product.name}>
-                                      {product.name} {product.usageUnit ? `(${product.usageUnit})` : ''} - ₹{displayPrice}
+                                      {product.name} {product.usageUnit ? `(${product.usageUnit})` : ''} - ₹{displayPrice.toLocaleString('en-IN')}
                                     </SelectItem>
                                   );
                                 })
