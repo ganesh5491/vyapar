@@ -26,7 +26,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
@@ -171,7 +171,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="p-3 border-t border-slate-100 bg-slate-50/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer border border-transparent hover:border-slate-200 flex-1">
+          <div
+            onClick={() => setLocation("/settings")}
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer border border-transparent hover:border-slate-200 flex-1"
+            data-testid="button-settings"
+          >
             <Avatar className="h-8 w-8 border border-slate-200">
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback className="bg-indigo-100 text-indigo-700">AD</AvatarFallback>

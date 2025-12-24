@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
-import { Trash2, Upload } from "lucide-react";
+import { Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useBranding } from "@/hooks/use-branding";
 import { queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 const SUPPORTED_FORMATS = ["jpg", "jpeg", "png", "gif", "bmp"];
 const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
@@ -12,6 +13,7 @@ const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
 export default function Settings() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [, setLocation] = useLocation();
   const { data: branding, isLoading } = useBranding();
   const [isUploading, setIsUploading] = useState(false);
 
@@ -147,13 +149,16 @@ export default function Settings() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 mb-20">
-      <div>
-        <input
-          type="search"
-          placeholder="Search settings (/)"
-          className="absolute top-4 right-6 px-4 py-2 border border-slate-200 rounded-md text-sm w-64"
-        />
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setLocation("/")}
+          data-testid="button-close-settings"
+        >
+          <X className="h-5 w-5" />
+        </Button>
       </div>
 
       {/* Branding Section */}
@@ -264,6 +269,25 @@ export default function Settings() {
         className="hidden"
         data-testid="input-file-logo"
       />
+
+      {/* Sticky Footer */}
+      <div className="fixed bottom-0 left-0 md:left-64 right-0 bg-white border-t border-slate-200 p-4 flex items-center gap-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 min-w-[120px]"
+          disabled={isUploading}
+          data-testid="button-save-settings"
+        >
+          Save Changes
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setLocation("/")}
+          disabled={isUploading}
+          data-testid="button-cancel-settings"
+        >
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 }
