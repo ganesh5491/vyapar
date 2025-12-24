@@ -3758,6 +3758,44 @@ export async function registerRoutes(
         return dateB - dateA;
       });
 
+      // Fetch payments made that are linked to bills
+      try {
+        const paymentsMadeData = readPaymentsMadeData();
+        console.log(`[Bills GET] Processing ${bills.length} bills with ${paymentsMadeData.paymentsMade.length} total payments`);
+        
+        bills = bills.map((bill: any) => {
+          const linkedPayments = paymentsMadeData.paymentsMade
+            .filter((pm: any) => pm.billPayments && pm.billPayments[bill.id])
+            .map((pm: any) => {
+              const billPayment = pm.billPayments[bill.id];
+              const amount = typeof billPayment === 'number' ? billPayment : (billPayment?.amountPaid || 0);
+              return {
+                paymentId: pm.id,
+                paymentNumber: pm.paymentNumber,
+                amount: amount,
+                date: pm.paymentDate || pm.date,
+                mode: pm.paymentMode || pm.mode
+              };
+            });
+          
+          if (linkedPayments.length > 0) {
+            console.log(`[Bill ${bill.billNumber}] Found ${linkedPayments.length} payments`);
+          }
+          
+          return {
+            ...bill,
+            paymentsMadeApplied: linkedPayments
+          };
+        });
+      } catch (error) {
+        console.error('[Bills GET] Error fetching payments made:', error);
+        // If there's an error reading payments made, continue without them
+        bills = bills.map((bill: any) => ({
+          ...bill,
+          paymentsMadeApplied: []
+        }));
+      }
+
       res.json({ success: true, data: bills });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch bills" });
@@ -3771,6 +3809,34 @@ export async function registerRoutes(
       if (!bill) {
         return res.status(404).json({ success: false, message: "Bill not found" });
       }
+
+      // Fetch payments made that are linked to this bill
+      try {
+        const paymentsMadeData = readPaymentsMadeData();
+        const linkedPayments = paymentsMadeData.paymentsMade
+          .filter((pm: any) => pm.billPayments && pm.billPayments[bill.id])
+          .map((pm: any) => {
+            const billPayment = pm.billPayments[bill.id];
+            const amount = typeof billPayment === 'number' ? billPayment : (billPayment?.amountPaid || 0);
+            return {
+              paymentId: pm.id,
+              paymentNumber: pm.paymentNumber,
+              amount: amount,
+              date: pm.paymentDate || pm.date,
+              mode: pm.paymentMode || pm.mode
+            };
+          });
+        
+        console.log(`[Bill ${bill.id}] Found ${linkedPayments.length} payments made:`, linkedPayments);
+        
+        // Add paymentsMadeApplied to the bill response
+        bill.paymentsMadeApplied = linkedPayments;
+      } catch (error) {
+        console.error('[Bill GET] Error fetching payments made:', error);
+        // If there's an error reading payments made, just continue without them
+        bill.paymentsMadeApplied = [];
+      }
+
       res.json({ success: true, data: bill });
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to fetch bill" });
@@ -3858,12 +3924,62 @@ export async function registerRoutes(
       const now = new Date().toISOString();
       const existingBill = data.bills[billIndex];
 
-      const updatedBill = {
-        ...existingBill,
-        ...req.body,
+      // CRITICAL: Preserve payment and credit tracking
+      // These fields must NEVER be lost when editing a bill
+      const preservedFields = {
         id: existingBill.id,
         billNumber: existingBill.billNumber,
         createdAt: existingBill.createdAt,
+        // Preserve all payment tracking
+        paymentsRecorded: existingBill.paymentsRecorded || [],
+        creditsApplied: existingBill.creditsApplied || [],
+      };
+
+      // Calculate total payments from payments made (via payment records)
+      const paymentsMadeData = readPaymentsMadeData();
+      const relatedPayments = paymentsMadeData.paymentsMade.filter((pm: any) => {
+        return pm.billPayments && pm.billPayments[existingBill.id];
+      });
+      
+      const totalPaymentsMade = relatedPayments.reduce((sum: number, pm: any) => {
+        const billPayment = pm.billPayments[existingBill.id];
+        const amount = typeof billPayment === 'number' ? billPayment : (billPayment?.amountPaid || 0);
+        return sum + amount;
+      }, 0);
+
+      // Calculate total credits applied
+      const totalCreditsApplied = (existingBill.creditsApplied || []).reduce(
+        (sum: number, credit: any) => sum + (credit.amount || 0),
+        0
+      );
+
+      // NEW BILL TOTAL from request
+      const newTotal = req.body.total || existingBill.total;
+
+      // CRITICAL CALCULATION: Balance Due = Bill Total - (Payments Made + Credits Applied)
+      const totalAdjustments = totalPaymentsMade + totalCreditsApplied;
+      const newBalanceDue = Math.max(0, newTotal - totalAdjustments);
+      const newAmountPaid = totalAdjustments;
+
+      // Determine status based on balance
+      let newStatus = 'OPEN';
+      if (newBalanceDue === 0 && newTotal > 0) {
+        newStatus = 'PAID';
+      } else if (newAmountPaid > 0 && newBalanceDue > 0) {
+        newStatus = 'PARTIALLY_PAID';
+      } else if (req.body.status === 'VOID') {
+        newStatus = 'VOID';
+      }
+
+      const updatedBill = {
+        ...existingBill,
+        ...req.body,
+        ...preservedFields,
+        // Override with recalculated values
+        total: newTotal,
+        amountPaid: newAmountPaid,
+        balanceDue: newBalanceDue,
+        status: newStatus,
         updatedAt: now,
         activityLogs: [
           ...(existingBill.activityLogs || []),
@@ -3871,7 +3987,7 @@ export async function registerRoutes(
             id: String((existingBill.activityLogs?.length || 0) + 1),
             timestamp: now,
             action: 'updated',
-            description: 'Bill has been updated',
+            description: `Bill updated. New total: ₹${newTotal.toFixed(2)}, Balance due: ₹${newBalanceDue.toFixed(2)}`,
             user: req.body.updatedBy || 'Admin User'
           }
         ]
@@ -3882,6 +3998,7 @@ export async function registerRoutes(
 
       res.json({ success: true, data: updatedBill });
     } catch (error) {
+      console.error('Bill update error:', error);
       res.status(500).json({ success: false, message: 'Failed to update bill' });
     }
   });
@@ -3941,8 +4058,26 @@ export async function registerRoutes(
       const bill = data.bills[billIndex];
       const paymentAmount = req.body.amount || 0;
 
-      bill.amountPaid = (bill.amountPaid || 0) + paymentAmount;
-      bill.balanceDue = bill.total - bill.amountPaid;
+      // Initialize paymentsRecorded array if not exists
+      if (!bill.paymentsRecorded) {
+        bill.paymentsRecorded = [];
+      }
+
+      // Track this payment
+      bill.paymentsRecorded.push({
+        paymentId: req.body.paymentId || `direct-${Date.now()}`,
+        paymentNumber: req.body.paymentNumber || null,
+        amount: paymentAmount,
+        date: req.body.paymentDate || now.split('T')[0],
+        mode: req.body.paymentMode || 'Manual'
+      });
+
+      // Recalculate totals
+      const totalPayments = bill.paymentsRecorded.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+      const totalCredits = (bill.creditsApplied || []).reduce((sum: number, c: any) => sum + (c.amount || 0), 0);
+      
+      bill.amountPaid = totalPayments + totalCredits;
+      bill.balanceDue = Math.max(0, bill.total - bill.amountPaid);
       bill.status = bill.balanceDue <= 0 ? 'PAID' : 'PARTIALLY_PAID';
       bill.updatedAt = now;
       bill.activityLogs = bill.activityLogs || [];
@@ -5139,6 +5274,16 @@ export async function registerRoutes(
         return res.status(404).json({ success: false, message: "Payment not found" });
       }
 
+      const paymentToDelete = data.paymentsMade[index];
+
+      // CRITICAL: Prevent deletion of payments linked to bills
+      if (paymentToDelete.billPayments && Object.keys(paymentToDelete.billPayments).length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot delete payment that is linked to bills. Please remove bill allocations first or void the payment instead."
+        });
+      }
+
       const deletedPayment = data.paymentsMade[index];
       const now = new Date().toISOString();
 
@@ -5408,7 +5553,7 @@ export async function registerRoutes(
     }
   });
 
-  // Apply vendor credits to bills
+  // Apply vendor credits to bills - ENHANCED WITH ZOHO BOOKS BEHAVIOR
   app.post("/api/vendor-credits/:id/apply-to-bills", (req: Request, res: Response) => {
     try {
       const creditId = req.params.id;
@@ -5431,14 +5576,16 @@ export async function registerRoutes(
       const totalCreditsToApply = Object.values(creditsToApply).reduce((sum: number, amt: any) => sum + amt, 0);
 
       // Validate: ensure we don't exceed available credit balance
-      if (totalCreditsToApply > vendorCredit.balance) {
+      const availableBalance = vendorCredit.balance || vendorCredit.amount;
+      if (totalCreditsToApply > availableBalance) {
         return res.status(400).json({
           success: false,
-          message: "Total credits to apply exceeds available balance"
+          message: `Total credits to apply (₹${totalCreditsToApply}) exceeds available balance (₹${availableBalance})`
         });
       }
 
       let updatedBillsCount = 0;
+      const now = new Date().toISOString();
 
       // Apply credits to each bill
       for (const [billId, creditAmount] of Object.entries(creditsToApply)) {
@@ -5450,11 +5597,27 @@ export async function registerRoutes(
 
         const bill = billsData.bills[billIndex];
 
-        // Validate: don't exceed bill balance
+        // Validate: Must be same vendor
+        if (bill.vendorId !== vendorCredit.vendorId) {
+          return res.status(400).json({
+            success: false,
+            message: `Cannot apply credit to bill ${bill.billNumber} - different vendor`
+          });
+        }
+
+        // Validate: Bill must have balance due
+        if (bill.balanceDue <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Bill ${bill.billNumber} has no balance due`
+          });
+        }
+
+        // Validate: Credit amount cannot exceed bill balance or available credit
         if (amount > bill.balanceDue) {
           return res.status(400).json({
             success: false,
-            message: `Credit amount exceeds balance due for bill ${bill.billNumber}`
+            message: `Credit amount (₹${amount}) exceeds balance due (₹${bill.balanceDue}) for bill ${bill.billNumber}`
           });
         }
 
@@ -5468,36 +5631,55 @@ export async function registerRoutes(
           creditId: vendorCredit.id,
           creditNumber: vendorCredit.creditNumber,
           amount: amount,
-          appliedDate: appliedDate || new Date().toISOString().split('T')[0]
+          appliedDate: appliedDate || now.split('T')[0]
         });
 
-        // Update bill balance and amount paid
-        bill.balanceDue -= amount;
-        bill.amountPaid += amount;
+        // CRITICAL CALCULATION: Recalculate totals from all sources
+        const totalPayments = (bill.paymentsRecorded || []).reduce(
+          (sum: number, p: any) => sum + (p.amount || 0), 0
+        );
+        const totalCredits = bill.creditsApplied.reduce(
+          (sum: number, c: any) => sum + (c.amount || 0), 0
+        );
+        
+        bill.amountPaid = totalPayments + totalCredits;
+        bill.balanceDue = Math.max(0, bill.total - bill.amountPaid);
 
         // Update bill status based on balance
-        if (bill.balanceDue <= 0) {
+        if (bill.balanceDue === 0) {
           bill.status = 'PAID';
-          bill.balanceDue = 0;
         } else if (bill.amountPaid > 0 && bill.balanceDue > 0) {
           bill.status = 'PARTIALLY_PAID';
         }
 
-        bill.updatedAt = new Date().toISOString();
+        bill.updatedAt = now;
+        
+        // Add activity log
+        bill.activityLogs = bill.activityLogs || [];
+        bill.activityLogs.push({
+          id: String(bill.activityLogs.length + 1),
+          timestamp: now,
+          action: 'credit_applied',
+          description: `Vendor Credit ${vendorCredit.creditNumber} applied: ₹${amount.toFixed(2)}`,
+          user: 'Admin User'
+        });
 
         billsData.bills[billIndex] = bill;
         updatedBillsCount++;
       }
 
       // Update vendor credit balance and status
-      vendorCredit.balance -= totalCreditsToApply;
+      vendorCredit.balance = (vendorCredit.balance || vendorCredit.amount) - totalCreditsToApply;
+      
+      // CRITICAL: Status logic
       if (vendorCredit.balance <= 0) {
         vendorCredit.status = 'CLOSED';
         vendorCredit.balance = 0;
       } else {
         vendorCredit.status = 'OPEN';
       }
-      vendorCredit.updatedAt = new Date().toISOString();
+      
+      vendorCredit.updatedAt = now;
 
       // Save both files
       creditsData.vendorCredits[creditIndex] = vendorCredit;
@@ -5507,7 +5689,7 @@ export async function registerRoutes(
       res.json({
         success: true,
         data: vendorCredit,
-        message: `Credits applied to ${updatedBillsCount} bill(s)`
+        message: `Credits applied to ${updatedBillsCount} bill(s). Remaining balance: ₹${vendorCredit.balance.toFixed(2)}`
       });
     } catch (error) {
       console.error('Error applying credits to bills:', error);
@@ -5522,6 +5704,31 @@ export async function registerRoutes(
 
       if (index === -1) {
         return res.status(404).json({ success: false, message: "Vendor credit not found" });
+      }
+
+      const vendorCredit = data.vendorCredits[index];
+
+      // CRITICAL: Prevent deletion of vendor credits that have been applied
+      const hasBeenApplied = (vendorCredit.balance !== undefined && vendorCredit.balance < vendorCredit.amount) ||
+                            vendorCredit.status === 'CLOSED';
+
+      if (hasBeenApplied) {
+        // Check if any bills have this credit applied
+        try {
+          const billsData = readBillsData();
+          const billsWithCredit = billsData.bills.filter((bill: any) => {
+            return bill.creditsApplied?.some((credit: any) => credit.creditId === vendorCredit.id);
+          });
+
+          if (billsWithCredit.length > 0) {
+            return res.status(400).json({
+              success: false,
+              message: `Cannot delete vendor credit that has been applied to ${billsWithCredit.length} bill(s). Please remove credit allocations first or void the credit instead.`
+            });
+          }
+        } catch (billError) {
+          console.error("Error checking bills:", billError);
+        }
       }
 
       data.vendorCredits.splice(index, 1);

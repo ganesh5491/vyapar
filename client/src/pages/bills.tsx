@@ -120,6 +120,20 @@ interface Bill {
     amount: number;
     appliedDate: string;
   }>;
+  paymentsRecorded?: Array<{
+    paymentId: string;
+    paymentNumber?: string;
+    amount: number;
+    date: string;
+    mode?: string;
+  }>;
+  paymentsMadeApplied?: Array<{
+    paymentId: string;
+    paymentNumber?: string;
+    amount: number;
+    date: string;
+    mode?: string;
+  }>;
 }
 
 function formatCurrency(amount: number): string {
@@ -263,6 +277,28 @@ function BillPDFView({ bill }: { bill: Bill }) {
                   ))}
                 </div>
               )}
+              {bill.paymentsMadeApplied && bill.paymentsMadeApplied.length > 0 && (
+                <div className="border-t pt-2 space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold">Payment Made:</p>
+                  {bill.paymentsMadeApplied.map((payment, index) => (
+                    <div key={index} className="flex justify-between text-sm text-blue-600">
+                      <span>Payment {payment.paymentNumber || payment.paymentId}</span>
+                      <span>- {formatCurrency(payment.amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {bill.paymentsRecorded && bill.paymentsRecorded.length > 0 && (
+                <div className="border-t pt-2 space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold">Record Payment:</p>
+                  {bill.paymentsRecorded.map((payment, index) => (
+                    <div key={index} className="flex justify-between text-sm text-purple-600">
+                      <span>Payment {payment.paymentNumber || payment.paymentId}</span>
+                      <span>- {formatCurrency(payment.amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex justify-between bg-blue-50 p-2 rounded font-semibold">
                 <span>Balance Due</span>
                 <span>{formatCurrency(bill.balanceDue)}</span>
@@ -373,6 +409,43 @@ function BillDetailView({ bill }: { bill: Bill }) {
           <div className="flex justify-between font-bold border-t pt-2">
             <span>Total</span>
             <span>{formatCurrency(bill.total)}</span>
+          </div>
+          {bill.creditsApplied && bill.creditsApplied.length > 0 && (
+            <div className="border-t pt-2 space-y-1">
+              <p className="text-xs text-slate-500 font-semibold">Credits Applied:</p>
+              {bill.creditsApplied.map((credit, index) => (
+                <div key={index} className="flex justify-between text-sm text-green-600">
+                  <span>Credit {credit.creditNumber}</span>
+                  <span>- {formatCurrency(credit.amount)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {bill.paymentsMadeApplied && bill.paymentsMadeApplied.length > 0 && (
+            <div className="border-t pt-2 space-y-1">
+              <p className="text-xs text-slate-500 font-semibold">Payment Made:</p>
+              {bill.paymentsMadeApplied.map((payment, index) => (
+                <div key={index} className="flex justify-between text-sm text-blue-600">
+                  <span>Payment {payment.paymentNumber || payment.paymentId}</span>
+                  <span>- {formatCurrency(payment.amount)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {bill.paymentsRecorded && bill.paymentsRecorded.length > 0 && (
+            <div className="border-t pt-2 space-y-1">
+              <p className="text-xs text-slate-500 font-semibold">Record Payment:</p>
+              {bill.paymentsRecorded.map((payment, index) => (
+                <div key={index} className="flex justify-between text-sm text-purple-600">
+                  <span>Payment {payment.paymentNumber || payment.paymentId}</span>
+                  <span>- {formatCurrency(payment.amount)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex justify-between bg-blue-50 p-2 rounded font-semibold">
+            <span>Balance Due</span>
+            <span>{formatCurrency(bill.balanceDue)}</span>
           </div>
         </div>
       </div>
@@ -1059,7 +1132,9 @@ export default function Bills() {
     bill.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const { currentPage, totalPages, totalItems, itemsPerPage, paginatedItems, goToPage } = usePagination(filteredBills, 10);
+  const paginationResult = usePagination<Bill>(filteredBills, 10);
+  const { currentPage, totalPages, totalItems, itemsPerPage, goToPage } = paginationResult;
+  const paginatedItems: Bill[] = paginationResult.paginatedItems;
 
   const getStatusBadge = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -1307,7 +1382,7 @@ export default function Bills() {
       </div>
 
       {selectedBill && (
-        <div className="w-full max-w-[600px] lg:w-[600px] flex-shrink-0 border-l border-slate-200">
+        <div className="w-full max-w-[600px] lg:w-[600px] shrink-0 border-l border-slate-200">
           <BillDetailPanel
             bill={selectedBill}
             onClose={handleClosePanel}

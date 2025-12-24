@@ -1,6 +1,83 @@
 {
   "bills": [
     {
+      "id": "1766552713435",
+      "billNumber": "19",
+      "orderNumber": "PO-2025-0003",
+      "vendorId": "2",
+      "vendorName": "Ganesh kale",
+      "vendorAddress": {},
+      "billDate": "2025-12-24",
+      "dueDate": "2025-12-24",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0003",
+      "items": [
+        {
+          "id": "item-1766552711258-0",
+          "itemName": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "account": "Inventory Asset",
+          "quantity": 1,
+          "rate": 60,
+          "tax": "gst5",
+          "taxAmount": 3,
+          "customerDetails": "none",
+          "amount": 60
+        }
+      ],
+      "subTotal": 60,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 3,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 63,
+      "amountPaid": 63,
+      "balanceDue": 0,
+      "notes": "",
+      "attachments": [],
+      "status": "PAID",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-24T05:05:13.435Z",
+      "updatedAt": "2025-12-24T05:05:46.502Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-24T05:05:13.435Z",
+          "action": "created",
+          "description": "Bill created for ₹63",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-24T05:05:27.730Z",
+          "action": "payment",
+          "description": "Payment of ₹13 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "3",
+          "timestamp": "2025-12-24T05:05:39.723Z",
+          "action": "payment",
+          "description": "Payment of ₹40 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-24T05:05:46.502Z",
+          "action": "payment",
+          "description": "Payment of ₹10 recorded",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766546511524",
       "billNumber": "18",
       "orderNumber": "PO-2025-0010",
@@ -42,15 +119,15 @@
           "itemName": "Rice (Copy)",
           "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
           "account": "employee_advance",
-          "quantity": 1,
+          "quantity": 11,
           "rate": 50,
           "tax": "none",
           "taxAmount": 0,
           "customerDetails": "none",
-          "amount": 50
+          "amount": 550
         }
       ],
-      "subTotal": 40100,
+      "subTotal": 40600,
       "discountType": "percent",
       "discountValue": 0,
       "discountAmount": 0,
@@ -59,16 +136,16 @@
       "taxAmount": 0,
       "adjustment": 0,
       "adjustmentDescription": "",
-      "total": 40100,
-      "amountPaid": 40100,
-      "balanceDue": 0,
+      "total": 40600,
+      "amountPaid": 23059,
+      "balanceDue": 17541,
       "notes": "",
       "attachments": [],
-      "status": "PAID",
+      "status": "PARTIALLY_PAID",
       "pdfTemplate": "Standard Template",
       "journalEntries": [],
       "createdAt": "2025-12-24T03:21:51.524Z",
-      "updatedAt": "2025-12-24T03:53:08.573Z",
+      "updatedAt": "2025-12-24T06:17:10.461Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -91,6 +168,20 @@
           "action": "payment",
           "description": "Payment of ₹10,000 recorded",
           "user": "Admin User"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-24T06:16:59.130Z",
+          "action": "updated",
+          "description": "Bill updated. New total: ₹40600.00, Balance due: ₹500.00",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-24T06:17:10.461Z",
+          "action": "payment",
+          "description": "Payment of ₹500 recorded",
+          "user": "Admin User"
         }
       ],
       "creditsApplied": [
@@ -99,6 +190,15 @@
           "creditNumber": "VC-00012",
           "amount": 22559,
           "appliedDate": "2025-12-24"
+        }
+      ],
+      "paymentsRecorded": [
+        {
+          "paymentId": "direct-1766557030461",
+          "paymentNumber": "PM-00059",
+          "amount": 500,
+          "date": "2025-12-24",
+          "mode": "Cash"
         }
       ]
     },
@@ -723,7 +823,7 @@
       ]
     }
   ],
-  "nextBillNumber": 19,
+  "nextBillNumber": 21,
   "accounts": [
     {
       "id": "1",
