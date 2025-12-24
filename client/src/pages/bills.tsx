@@ -136,6 +136,19 @@ interface Bill {
   }>;
 }
 
+function getPaymentStatus(bill: Bill): string {
+  if (bill.balanceDue === 0 && bill.total > 0) {
+    return 'PAID';
+  } else if (bill.balanceDue > 0 && bill.balanceDue < bill.total) {
+    return 'PARTIALLY PAID';
+  } else if (bill.status === 'VOID') {
+    return 'VOID';
+  } else if (bill.status === 'OVERDUE') {
+    return 'OVERDUE';
+  }
+  return bill.status || 'OPEN';
+}
+
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -151,12 +164,19 @@ function formatDate(dateString: string): string {
 }
 
 function BillPDFView({ bill, branding }: { bill: Bill; branding?: any }) {
+  const paymentStatus = getPaymentStatus(bill);
+
   return (
     <div className="bg-white border border-slate-200 shadow-sm max-w-3xl mx-auto">
       <div className="relative">
         <div className="absolute top-4 left-4">
-          <Badge className="bg-green-500 text-white border-0 px-3 py-1 text-xs font-semibold rotate-[-5deg]">
-            Paid
+          <Badge className={`border-0 px-3 py-1 text-xs font-semibold rotate-[-5deg] ${paymentStatus === 'PAID' ? 'bg-green-500 text-white' :
+              paymentStatus === 'PARTIALLY PAID' ? 'bg-amber-500 text-white' :
+                paymentStatus === 'VOID' ? 'bg-slate-500 text-white' :
+                  paymentStatus === 'OVERDUE' ? 'bg-red-500 text-white' :
+                    'bg-blue-500 text-white'
+            }`}>
+            {paymentStatus}
           </Badge>
         </div>
 
@@ -300,6 +320,8 @@ function BillPDFView({ bill, branding }: { bill: Bill; branding?: any }) {
 }
 
 function BillDetailView({ bill }: { bill: Bill }) {
+  const paymentStatus = getPaymentStatus(bill);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-start justify-between">
@@ -307,12 +329,14 @@ function BillDetailView({ bill }: { bill: Bill }) {
           <h2 className="text-2xl font-bold mb-1">BILL</h2>
           <p className="text-slate-600">Bill# <span className="font-semibold">{bill.billNumber}</span></p>
           <Badge
-            className={`mt-2 ${bill.status === 'PAID' ? 'bg-green-500 text-white' :
-              bill.status === 'OVERDUE' ? 'bg-red-500 text-white' :
-                'bg-amber-500 text-white'
+            className={`mt-2 ${paymentStatus === 'PAID' ? 'bg-green-500 text-white' :
+                paymentStatus === 'PARTIALLY PAID' ? 'bg-amber-500 text-white' :
+                  paymentStatus === 'OVERDUE' ? 'bg-red-500 text-white' :
+                    paymentStatus === 'VOID' ? 'bg-slate-500 text-white' :
+                      'bg-blue-500 text-white'
               }`}
           >
-            {bill.status}
+            {paymentStatus}
           </Badge>
         </div>
         <div className="text-right">
@@ -542,7 +566,7 @@ function BillDetailPanel({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        {bill.status !== 'PAID' && bill.status !== 'VOID' && (
+        {bill.balanceDue > 0 && bill.status !== 'VOID' && (
           <Button variant="ghost" size="sm" className="h-8 gap-1.5" onClick={onRecordPayment} data-testid="button-record-payment">
             <CreditCard className="h-3.5 w-3.5" />
             Record Payment

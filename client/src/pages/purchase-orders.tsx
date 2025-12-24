@@ -227,7 +227,8 @@ function PurchaseOrderDetailPanel({
   onMarkAsCancelled,
   onClone,
   onSetDeliveryDate,
-  onCancelItems
+  onCancelItems,
+  branding
 }: {
   purchaseOrder: PurchaseOrder;
   onClose: () => void;
@@ -240,6 +241,7 @@ function PurchaseOrderDetailPanel({
   onClone: () => void;
   onSetDeliveryDate: () => void;
   onCancelItems: () => void;
+  branding?: any;
 }) {
   const [showPdfView, setShowPdfView] = useState(true);
 
@@ -997,6 +999,7 @@ export default function PurchaseOrders() {
             onClone={() => handleClone(selectedPO.id)}
             onSetDeliveryDate={() => handleSetDeliveryDate(selectedPO.id)}
             onCancelItems={() => handleCancelItems(selectedPO.id)}
+            branding={branding}
           />
         </div>
       )}

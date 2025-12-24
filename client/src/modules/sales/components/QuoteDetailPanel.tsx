@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { jsPDF } from "jspdf";
 import { X, Edit, MoreHorizontal, ChevronDown, Send, Share2, FileText, RefreshCw, ExternalLink, Printer, Copy, Trash2 } from "lucide-react";
@@ -142,9 +142,9 @@ const formatDate = (dateString: string) => {
 
 const formatDateTime = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleString('en-IN', { 
-    day: '2-digit', 
-    month: '2-digit', 
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
@@ -276,7 +276,7 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
 
   const handleDownloadPDF = async () => {
     const doc = new jsPDF();
-    
+
     // Add logo if available
     if (branding?.logo?.url) {
       try {
@@ -291,24 +291,24 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
         console.error("Failed to add logo:", error);
       }
     }
-    
+
     completePDF();
 
     function completePDF() {
       doc.setFontSize(24);
       doc.setFont("helvetica", "bold");
       doc.text("QUOTE", 190, 30, { align: "right" });
-      
+
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
       doc.text(`# ${quote.quoteNumber}`, 190, 38, { align: "right" });
       doc.text(`Total`, 190, 48, { align: "right" });
       doc.setFont("helvetica", "bold");
       doc.text(formatCurrency(quote.total), 190, 56, { align: "right" });
-      
+
       // Start content lower if logo is present
       const startY = branding?.logo?.url ? 65 : 30;
-    
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.text("QUOTE TO", 20, startY + 40);
@@ -319,23 +319,23 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
       billAddress.forEach((line, i) => {
         doc.text(line, 20, startY + 54 + (i * 5));
       });
-      
+
       doc.text(`Quote Date: ${formatDate(quote.date)}`, 120, startY + 48);
       doc.text(`Expiry Date: ${formatDate(quote.expiryDate)}`, 120, startY + 54);
-      
+
       doc.setDrawColor(200);
       doc.setLineWidth(0.5);
       doc.line(20, startY + 70, 190, startY + 70);
-      
+
       doc.setFont("helvetica", "bold");
       doc.text("#", 20, startY + 78);
       doc.text("Item", 30, startY + 78);
       doc.text("Qty", 100, startY + 78);
       doc.text("Rate", 130, startY + 78);
       doc.text("Amount", 190, startY + 78, { align: "right" });
-      
+
       doc.line(20, startY + 82, 190, startY + 82);
-      
+
       let yPos = startY + 90;
       doc.setFont("helvetica", "normal");
       quote.items.forEach((item, index) => {
@@ -346,15 +346,15 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
         doc.text(formatCurrency(item.amount || 0), 190, yPos, { align: "right" });
         yPos += 8;
       });
-      
+
       yPos += 10;
       doc.line(120, yPos, 190, yPos);
       yPos += 8;
-      
+
       doc.text("Sub Total", 120, yPos);
       doc.text(formatCurrency(quote.subTotal), 190, yPos, { align: "right" });
       yPos += 8;
-      
+
       if (quote.cgst > 0) {
         doc.text("CGST", 120, yPos);
         doc.text(formatCurrency(quote.cgst), 190, yPos, { align: "right" });
@@ -365,17 +365,17 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
         doc.text(formatCurrency(quote.sgst), 190, yPos, { align: "right" });
         yPos += 8;
       }
-      
+
       doc.setFont("helvetica", "bold");
       doc.text("Total", 120, yPos);
       doc.text(formatCurrency(quote.total), 190, yPos, { align: "right" });
-      
+
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
       doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 280, { align: "center" });
-      
+
       doc.save(`${quote.quoteNumber}.pdf`);
-      
+
       toast({
         title: "PDF Downloaded",
         description: `${quote.quoteNumber}.pdf has been downloaded successfully.`,
@@ -554,14 +554,14 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-700">
           <TabsList className="h-auto p-0 bg-transparent">
-            <TabsTrigger 
-              value="details" 
+            <TabsTrigger
+              value="details"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
             >
               Quote Details
             </TabsTrigger>
-            <TabsTrigger 
-              value="activity" 
+            <TabsTrigger
+              value="activity"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
             >
               Activity Logs

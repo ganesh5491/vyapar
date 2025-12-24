@@ -1,6 +1,70 @@
 {
   "bills": [
     {
+      "id": "1766563756864",
+      "billNumber": "21",
+      "orderNumber": "",
+      "vendorId": "3",
+      "vendorName": "Ganesh k",
+      "vendorAddress": {
+        "street1": "Bhumkar chown ",
+        "street2": "pune",
+        "city": "pune",
+        "state": "[UK] - Uttarakhand",
+        "pinCode": "",
+        "country": "India",
+        "gstin": ""
+      },
+      "billDate": "2025-12-24",
+      "dueDate": "2025-12-24",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "",
+      "items": [
+        {
+          "id": "1766563748461",
+          "itemName": "Rice",
+          "description": "Premium quality rice sourced from local farms. Ideal for daily cooking, delivers consistent taste and texture.\n",
+          "account": "",
+          "quantity": 1,
+          "rate": 50,
+          "tax": "",
+          "taxAmount": 0,
+          "customerDetails": "none",
+          "amount": 50
+        }
+      ],
+      "subTotal": 50,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 0,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 50,
+      "amountPaid": 0,
+      "balanceDue": 50,
+      "notes": "",
+      "attachments": [],
+      "status": "DRAFT",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-24T08:09:16.864Z",
+      "updatedAt": "2025-12-24T08:09:16.864Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-24T08:09:16.864Z",
+          "action": "created",
+          "description": "Bill created for ₹50",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766552713435",
       "billNumber": "19",
       "orderNumber": "PO-2025-0003",
@@ -823,7 +887,7 @@
       ]
     }
   ],
-  "nextBillNumber": 21,
+  "nextBillNumber": 22,
   "accounts": [
     {
       "id": "1",
