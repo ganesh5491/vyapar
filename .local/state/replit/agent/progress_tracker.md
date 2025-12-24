@@ -248,3 +248,26 @@
     - All fields properly synchronized when editing existing purchase orders
     - Application verified running with complete vendor details UI functionality
 [x] 98. Session restart - reinstalled cross-env and verified application running (Dec 24, 2025)
+[x] 99. Implemented Settings Page with Organization Logo Branding (Dec 24, 2025):
+    - Created Branding section in Settings page with Organization Logo subsection
+    - Added logo preview (placeholder if not uploaded) with helper text showing constraints
+    - Displayed preferred image dimensions: 240 × 240 px @ 72 DPI
+    - Displayed supported formats: JPG, JPEG, PNG, GIF, BMP
+    - Displayed maximum file size: 1 MB
+    - Implemented logo upload/update functionality with file validation (type, size)
+    - Implemented logo removal with confirmation dialog
+    - Created API routes for branding:
+      * GET /api/branding - Fetch organization branding settings
+      * POST /api/branding/logo - Upload/update logo with base64 encoding
+      * DELETE /api/branding/logo - Remove logo with file cleanup
+      * GET /uploads/logos/* - Serve uploaded logo files with proper MIME types
+    - Created organizationBranding.json data file for persistent storage
+    - Created use-branding hook for fetching branding settings in components
+    - Added logo-utils.ts utility functions for PDF integration:
+      * getOrganizationLogo() - Fetch logo URL from settings
+      * getOrganizationLogoAsBase64() - Convert logo to base64 for PDF embedding
+      * addLogotoPDF() - Add logo to jsPDF documents with positioning options
+    - All file uploads persisted in server/uploads/logos directory
+    - Logo immediately available in PDFs after upload (single source of truth)
+    - Settings page fully functional with responsive layout
+    - Application verified running with all features working

@@ -5845,5 +5845,128 @@ export async function registerRoutes(
     }
   });
 
+  // Organization Branding Routes
+  const BRANDING_FILE = path.join(DATA_DIR, "organizationBranding.json");
+
+  function readBranding() {
+    ensureDataDir();
+    if (!fs.existsSync(BRANDING_FILE)) {
+      const defaultBranding = { id: "default", logo: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      fs.writeFileSync(BRANDING_FILE, JSON.stringify(defaultBranding, null, 2));
+      return defaultBranding;
+    }
+    const data = JSON.parse(fs.readFileSync(BRANDING_FILE, "utf-8"));
+    return data;
+  }
+
+  function writeBranding(branding: any) {
+    ensureDataDir();
+    fs.writeFileSync(BRANDING_FILE, JSON.stringify(branding, null, 2));
+  }
+
+  app.get("/api/branding", (req: Request, res: Response) => {
+    try {
+      const branding = readBranding();
+      res.json({ success: true, data: branding });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to fetch branding settings" });
+    }
+  });
+
+  app.post("/api/branding/logo", (req: Request, res: Response) => {
+    try {
+      const { logoBase64, fileName, fileSize } = req.body;
+
+      if (!logoBase64 || !fileName) {
+        return res.status(400).json({ success: false, message: "Logo data and filename are required" });
+      }
+
+      const maxSize = 1024 * 1024; // 1MB
+      if (fileSize > maxSize) {
+        return res.status(400).json({ success: false, message: "File size exceeds 1MB limit" });
+      }
+
+      const supportedFormats = ["jpg", "jpeg", "png", "gif", "bmp"];
+      const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
+      if (!supportedFormats.includes(fileExt)) {
+        return res.status(400).json({ success: false, message: "Unsupported file format" });
+      }
+
+      const uploadsDir = path.join(import.meta.dirname, "uploads", "logos");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const timestamp = Date.now();
+      const newFileName = `logo-${timestamp}.${fileExt}`;
+      const filePath = path.join(uploadsDir, newFileName);
+
+      const buffer = Buffer.from(logoBase64, "base64");
+      fs.writeFileSync(filePath, buffer);
+
+      const branding = readBranding();
+      branding.logo = {
+        url: `/uploads/logos/${newFileName}`,
+        fileName: fileName,
+        uploadedAt: new Date().toISOString(),
+        fileSize: fileSize
+      };
+      branding.updatedAt = new Date().toISOString();
+      writeBranding(branding);
+
+      res.json({ success: true, data: branding });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to upload logo" });
+    }
+  });
+
+  app.delete("/api/branding/logo", (req: Request, res: Response) => {
+    try {
+      const branding = readBranding();
+
+      if (branding.logo && branding.logo.url) {
+        const filePath = path.join(import.meta.dirname, branding.logo.url.replace("/uploads/logos/", "uploads/logos/"));
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      branding.logo = null;
+      branding.updatedAt = new Date().toISOString();
+      writeBranding(branding);
+
+      res.json({ success: true, data: branding });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete logo" });
+    }
+  });
+
+  // Serve uploaded logos as static files
+  app.use("/uploads/logos", (req: Request, res: Response) => {
+    try {
+      const fileName = req.path.replace("/", "");
+      const filePath = path.join(import.meta.dirname, "uploads", "logos", fileName);
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ success: false, message: "File not found" });
+      }
+
+      const fileBuffer = fs.readFileSync(filePath);
+      const ext = (fileName.split(".").pop() || "").toLowerCase();
+      const mimeTypes: any = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        gif: "image/gif",
+        bmp: "image/bmp"
+      };
+
+      res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
+      res.send(fileBuffer);
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to serve file" });
+    }
+  });
+
   return httpServer;
 }
