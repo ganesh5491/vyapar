@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { jsPDF } from "jspdf";
+import { addLogotoPDF } from "@/lib/logo-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -270,8 +271,11 @@ export default function Invoices() {
         }
     };
 
-    const handleDownloadPDF = (invoice: InvoiceDetail) => {
+    const handleDownloadPDF = async (invoice: InvoiceDetail) => {
         const doc = new jsPDF();
+
+        // Add organization logo
+        await addLogotoPDF(doc, { maxWidth: 40, maxHeight: 40, x: 14, y: 12 });
 
         doc.setFontSize(24);
         doc.setFont("helvetica", "bold");
@@ -567,9 +571,9 @@ export default function Invoices() {
         }
     };
 
-    const handlePrint = () => {
+    const handlePrint = async () => {
         if (selectedInvoice) {
-            handleDownloadPDF(selectedInvoice);
+            await handleDownloadPDF(selectedInvoice);
         }
     };
 
@@ -784,7 +788,7 @@ export default function Invoices() {
                             {selectedInvoice.invoiceNumber}
                         </h2>
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadPDF(selectedInvoice)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadPDF(selectedInvoice)} data-testid="button-download-pdf">
                                 <Download className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8">

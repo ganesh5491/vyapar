@@ -109,3 +109,14 @@
     - Files are persisted at server/uploads/logos/ with proper MIME types
     - Application restarted and verified running with working logo upload/display
 [x] 102. Session restart - reinstalled cross-env and verified application running (Dec 24, 2025 - current session)
+[x] 103. Integrated Organization Logo into Invoice PDF (Dec 24, 2025):
+    - Issue: Organization logo uploaded in settings was not appearing in the generated PDF
+    - Solution: Integrated the logo utility function into the invoice PDF generation
+    - Changes made:
+      1. Imported addLogotoPDF utility function in invoices.tsx
+      2. Made handleDownloadPDF async to support logo fetching
+      3. Added logo to PDF with proper positioning (40x40mm at top-left)
+      4. Added data-testid to download button for testing
+    - Result: When users download invoice PDFs, the organization logo now displays in the top-left corner
+    - Application verified running successfully with logo integration
+[x] 104. Session restart - reinstalled cross-env and verified application running (Dec 24, 2025 - final verification)
