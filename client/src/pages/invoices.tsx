@@ -217,10 +217,24 @@ export default function Invoices() {
     const [refundAmount, setRefundAmount] = useState("");
     const [refundMode, setRefundMode] = useState("Cash");
     const [refundReason, setRefundReason] = useState("");
+    const [branding, setBranding] = useState<any>(null);
 
     useEffect(() => {
         fetchInvoices();
+        fetchBranding();
     }, []);
+
+    const fetchBranding = async () => {
+        try {
+            const response = await fetch("/api/branding");
+            const data = await response.json();
+            if (data.success) {
+                setBranding(data.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch branding:", error);
+        }
+    };
 
     const fetchInvoices = async () => {
         try {
@@ -949,10 +963,13 @@ export default function Invoices() {
                                     <div className="bg-white rounded-lg border border-slate-200 p-6">
                                         <div className="flex items-start justify-between mb-6">
                                             <div>
-                                                <h3 className="text-lg font-bold text-slate-900">Your Company</h3>
-                                                <p className="text-sm text-slate-500">123 Business Street</p>
-                                                <p className="text-sm text-slate-500">City, State 12345</p>
-                                                <p className="text-sm text-slate-500">India</p>
+                                                {branding?.logo?.url ? (
+                                                    <img src={branding.logo.url} alt="Company Logo" className="h-16 w-auto" data-testid="img-invoice-logo" />
+                                                ) : (
+                                                    <div className="h-16 w-16 bg-slate-200 rounded flex items-center justify-center">
+                                                        <span className="text-xs text-slate-500">No Logo</span>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="text-right">
                                                 <Badge className={getStatusColor(selectedInvoice.status)}>
