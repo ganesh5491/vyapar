@@ -5942,17 +5942,21 @@ export async function registerRoutes(
   });
 
   // Serve uploaded logos as static files
-  app.use("/uploads/logos", (req: Request, res: Response) => {
+  const uploadsDir = path.join(import.meta.dirname, "uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  
+  app.use("/uploads", (req: Request, res: Response, next) => {
     try {
-      const fileName = req.path.replace("/", "");
-      const filePath = path.join(import.meta.dirname, "uploads", "logos", fileName);
-
+      const filePath = path.join(uploadsDir, req.path.slice(1));
+      
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ success: false, message: "File not found" });
       }
 
       const fileBuffer = fs.readFileSync(filePath);
-      const ext = (fileName.split(".").pop() || "").toLowerCase();
+      const ext = (filePath.split(".").pop() || "").toLowerCase();
       const mimeTypes: any = {
         jpg: "image/jpeg",
         jpeg: "image/jpeg",
@@ -5962,6 +5966,7 @@ export async function registerRoutes(
       };
 
       res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.send(fileBuffer);
     } catch (error) {
       res.status(500).json({ success: false, message: "Failed to serve file" });
