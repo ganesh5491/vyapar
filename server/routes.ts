@@ -5851,7 +5851,7 @@ export async function registerRoutes(
   function readBranding() {
     ensureDataDir();
     if (!fs.existsSync(BRANDING_FILE)) {
-      const defaultBranding = { id: "default", logo: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      const defaultBranding = { id: "default", logo: null, signature: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
       fs.writeFileSync(BRANDING_FILE, JSON.stringify(defaultBranding, null, 2));
       return defaultBranding;
     }
@@ -5941,6 +5941,74 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/branding/signature", (req: Request, res: Response) => {
+    try {
+      const { signatureBase64, fileName, fileSize } = req.body;
+
+      if (!signatureBase64 || !fileName) {
+        return res.status(400).json({ success: false, message: "Signature data and filename are required" });
+      }
+
+      const maxSize = 1024 * 1024; // 1MB
+      if (fileSize > maxSize) {
+        return res.status(400).json({ success: false, message: "File size exceeds 1MB limit" });
+      }
+
+      const supportedFormats = ["jpg", "jpeg", "png", "gif", "bmp"];
+      const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
+      if (!supportedFormats.includes(fileExt)) {
+        return res.status(400).json({ success: false, message: "Unsupported file format" });
+      }
+
+      const uploadsDir = path.join(import.meta.dirname, "uploads", "signatures");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const timestamp = Date.now();
+      const newFileName = `signature-${timestamp}.${fileExt}`;
+      const filePath = path.join(uploadsDir, newFileName);
+
+      const buffer = Buffer.from(signatureBase64, "base64");
+      fs.writeFileSync(filePath, buffer);
+
+      const branding = readBranding();
+      branding.signature = {
+        url: `/uploads/signatures/${newFileName}`,
+        fileName: fileName,
+        uploadedAt: new Date().toISOString(),
+        fileSize: fileSize
+      };
+      branding.updatedAt = new Date().toISOString();
+      writeBranding(branding);
+
+      res.json({ success: true, data: branding });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to upload signature" });
+    }
+  });
+
+  app.delete("/api/branding/signature", (req: Request, res: Response) => {
+    try {
+      const branding = readBranding();
+
+      if (branding.signature && branding.signature.url) {
+        const filePath = path.join(import.meta.dirname, branding.signature.url.replace("/uploads/signatures/", "uploads/signatures/"));
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      branding.signature = null;
+      branding.updatedAt = new Date().toISOString();
+      writeBranding(branding);
+
+      res.json({ success: true, data: branding });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to delete signature" });
+    }
+  });
+
   // Serve uploaded logos as static files
   const uploadsDir = path.join(import.meta.dirname, "uploads");
   if (!fs.existsSync(uploadsDir)) {
@@ -5964,6 +6032,9 @@ export async function registerRoutes(
         gif: "image/gif",
         bmp: "image/bmp"
       };
+      
+      // Support both logos and signatures
+      const pathLower = filePath.toLowerCase();
 
       res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");

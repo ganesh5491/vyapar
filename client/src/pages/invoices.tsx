@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { jsPDF } from "jspdf";
-import { addLogotoPDF } from "@/lib/logo-utils";
+import { addLogotoPDF, addSignaturetoPDF } from "@/lib/logo-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -288,8 +288,9 @@ export default function Invoices() {
     const handleDownloadPDF = async (invoice: InvoiceDetail) => {
         const doc = new jsPDF();
 
-        // Add organization logo
+        // Add organization logo and signature
         await addLogotoPDF(doc, { maxWidth: 40, maxHeight: 40, x: 14, y: 12 });
+        await addSignaturetoPDF(doc, { maxWidth: 40, maxHeight: 20, x: 14, y: 250 });
 
         doc.setFontSize(24);
         doc.setFont("helvetica", "bold");

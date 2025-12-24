@@ -7,9 +7,17 @@ export interface BrandingLogo {
   fileSize: number;
 }
 
+export interface BrandingSignature {
+  url: string;
+  fileName: string;
+  uploadedAt: string;
+  fileSize: number;
+}
+
 export interface OrganizationBranding {
   id: string;
   logo: BrandingLogo | null;
+  signature: BrandingSignature | null;
   createdAt: string;
   updatedAt: string;
 }

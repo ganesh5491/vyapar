@@ -103,3 +103,7 @@
 [x] 103. Added logo to invoice PDF generation (Dec 24, 2025)
 [x] 104. Updated invoice detail view - removed "Your Company" text and address, displaying logo from settings instead (Dec 24, 2025)
 [x] 105. Session restart - reinstalled cross-env and verified application running (Dec 24, 2025 - current session)
+[x] 106. Added Signature Upload field to Settings page with full upload/delete functionality (Dec 24, 2025)
+[x] 107. Added signature API routes to server (POST and DELETE) (Dec 24, 2025)
+[x] 108. Updated branding type definitions to include signature field (Dec 24, 2025)
+[x] 109. Integrated signature into invoice PDF generation (Dec 24, 2025 - COMPLETE)
