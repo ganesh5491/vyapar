@@ -106,4 +106,5 @@
 [x] 106. Added Signature Upload field to Settings page with full upload/delete functionality (Dec 24, 2025)
 [x] 107. Added signature API routes to server (POST and DELETE) (Dec 24, 2025)
 [x] 108. Updated branding type definitions to include signature field (Dec 24, 2025)
-[x] 109. Integrated signature into invoice PDF generation (Dec 24, 2025 - COMPLETE)
+[x] 109. Integrated signature into invoice PDF generation (Dec 24, 2025)
+[x] 110. Applied signature from settings to vendor-credits.tsx "Authorized Signature" section (Dec 24, 2025 - COMPLETE)

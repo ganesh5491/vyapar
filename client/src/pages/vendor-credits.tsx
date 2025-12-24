@@ -39,6 +39,7 @@ import {
 import { usePagination } from "@/hooks/use-pagination";
 import { TablePagination } from "@/components/table-pagination";
 import { useToast } from "@/hooks/use-toast";
+import { useBranding } from "@/hooks/use-branding";
 
 interface VendorCreditItem {
   id: string;
@@ -115,6 +116,27 @@ interface Vendor {
   };
   gstin?: string;
   sourceOfSupply?: string;
+}
+
+function SignatureLine() {
+  const { data: brandingData } = useBranding();
+  
+  if (brandingData?.signature?.url) {
+    return (
+      <div className="flex flex-col gap-2">
+        <img 
+          src={brandingData.signature.url} 
+          alt="Authorized Signature"
+          style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
+        />
+        <p className="text-xs text-muted-foreground">Authorized Signature</p>
+      </div>
+    );
+  }
+
+  return (
+    <p className="text-sm text-muted-foreground">Authorized Signature ____________________</p>
+  );
 }
 
 export default function VendorCredits() {
@@ -915,7 +937,7 @@ export default function VendorCredits() {
                         </div>
 
                         <div className="mt-12 border-t pt-4">
-                          <p className="text-sm text-muted-foreground">Authorized Signature ____________________</p>
+                          <SignatureLine />
                         </div>
                       </div>
                     </div>
