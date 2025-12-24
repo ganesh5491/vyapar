@@ -103,17 +103,7 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function PurchaseOrderPDFView({ purchaseOrder }: { purchaseOrder: PurchaseOrder }) {
-  const companyInfo = {
-    name: "SKILLTONIT",
-    address: "Hinjawadi - Wakad road",
-    city: "Hinjawadi",
-    state: "Pune Maharashtra 411057",
-    country: "India",
-    gstin: "27A7C7A5145K1Z1",
-    website: "www.skilltonit.com"
-  };
-
+function PurchaseOrderPDFView({ purchaseOrder, branding }: { purchaseOrder: PurchaseOrder; branding?: any }) {
   return (
     <div className="bg-white border border-slate-200 shadow-sm w-full">
       <div className="flex w-full">
@@ -121,20 +111,13 @@ function PurchaseOrderPDFView({ purchaseOrder }: { purchaseOrder: PurchaseOrder 
         <div className="flex-1 p-4 min-w-0">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center">
+              {branding?.logo?.url ? (
+                <img src={branding.logo.url} alt="Company Logo" className="h-12 w-auto mb-2" data-testid="img-po-logo" />
+              ) : (
+                <div className="h-10 w-10 bg-blue-600 rounded flex items-center justify-center mb-2">
                   <span className="text-white font-bold text-lg">S</span>
                 </div>
-                <span className="text-xl font-bold text-blue-600">{companyInfo.name}</span>
-              </div>
-              <div className="text-sm text-slate-600 space-y-0.5">
-                <p>{companyInfo.address}</p>
-                <p>{companyInfo.city}</p>
-                <p>{companyInfo.state}</p>
-                <p>{companyInfo.country}</p>
-                <p>GSTIN: {companyInfo.gstin}</p>
-                <p className="text-blue-600">{companyInfo.website}</p>
-              </div>
+              )}
             </div>
             <div className="text-right">
               <h2 className="text-2xl font-bold text-blue-600 mb-2">Purchase Order</h2>
@@ -421,7 +404,7 @@ function PurchaseOrderDetailPanel({
       <div className="flex-1 overflow-auto p-2">
         {showPdfView ? (
           <div className="w-full">
-            <PurchaseOrderPDFView purchaseOrder={purchaseOrder} />
+            <PurchaseOrderPDFView purchaseOrder={purchaseOrder} branding={branding} />
           </div>
         ) : (
           <div className="space-y-6">
@@ -502,10 +485,24 @@ export default function PurchaseOrders() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [poToDelete, setPoToDelete] = useState<string | null>(null);
   const [selectedPOs, setSelectedPOs] = useState<string[]>([]);
+  const [branding, setBranding] = useState<any>(null);
 
   useEffect(() => {
     fetchPurchaseOrders();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (data.success) {
+        setBranding(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branding:", error);
+    }
+  };
 
   const fetchPurchaseOrders = async () => {
     try {

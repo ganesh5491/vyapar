@@ -150,18 +150,7 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function BillPDFView({ bill }: { bill: Bill }) {
-  const companyInfo = {
-    name: "SKILLTONIT",
-    address: "Hinjawadi - Wakad road",
-    city: "Hinjawadi",
-    state: "Pune Maharashtra 411057",
-    country: "India",
-    gstin: "27AZCPA5145K1ZH",
-    email: "Sales.SkilltonIT@skilltonit.com",
-    website: "www.skilltonit.com"
-  };
-
+function BillPDFView({ bill, branding }: { bill: Bill; branding?: any }) {
   return (
     <div className="bg-white border border-slate-200 shadow-sm max-w-3xl mx-auto">
       <div className="relative">
@@ -174,21 +163,16 @@ function BillPDFView({ bill }: { bill: Bill }) {
         <div className="p-8">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">S</span>
+              {branding?.logo?.url ? (
+                <img src={branding.logo.url} alt="Company Logo" className="h-12 w-auto mb-3" data-testid="img-bill-logo" />
+              ) : (
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">S</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-600">Company Name</span>
                 </div>
-                <span className="text-lg font-bold text-green-600">{companyInfo.name}</span>
-              </div>
-              <div className="text-sm text-slate-600 space-y-0.5">
-                <p>{companyInfo.address}</p>
-                <p>{companyInfo.city}</p>
-                <p>{companyInfo.state}</p>
-                <p>{companyInfo.country}</p>
-                <p>GSTIN {companyInfo.gstin}</p>
-                <p className="text-blue-600">{companyInfo.email}</p>
-                <p className="text-blue-600">{companyInfo.website}</p>
-              </div>
+              )}
             </div>
             <div className="text-right">
               <h2 className="text-3xl font-bold text-slate-800 mb-1">BILL</h2>
@@ -489,6 +473,7 @@ function BillDetailView({ bill }: { bill: Bill }) {
 
 function BillDetailPanel({
   bill,
+  branding,
   onClose,
   onEdit,
   onDelete,
@@ -501,6 +486,7 @@ function BillDetailPanel({
   onExpectedPaymentDate
 }: {
   bill: Bill;
+  branding?: any;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -609,7 +595,7 @@ function BillDetailPanel({
 
       <div className="flex-1 overflow-auto p-4">
         {showPdfView ? (
-          <BillPDFView bill={bill} />
+          <BillPDFView bill={bill} branding={branding} />
         ) : (
           <BillDetailView bill={bill} />
         )}
@@ -951,10 +937,24 @@ export default function Bills() {
   const [expectedPaymentDateDialogOpen, setExpectedPaymentDateDialogOpen] = useState(false);
   const [expectedPaymentDate, setExpectedPaymentDate] = useState("");
   const [journalDialogOpen, setJournalDialogOpen] = useState(false);
+  const [branding, setBranding] = useState<any>(null);
 
   useEffect(() => {
     fetchBills();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (data.success) {
+        setBranding(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branding:", error);
+    }
+  };
 
   const fetchBills = async () => {
     try {
@@ -1385,6 +1385,7 @@ export default function Bills() {
         <div className="w-full max-w-[600px] lg:w-[600px] shrink-0 border-l border-slate-200">
           <BillDetailPanel
             bill={selectedBill}
+            branding={branding}
             onClose={handleClosePanel}
             onEdit={handleEditBill}
             onDelete={() => handleDelete(selectedBill.id)}

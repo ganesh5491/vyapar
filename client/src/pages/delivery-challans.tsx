@@ -188,10 +188,24 @@ export default function DeliveryChallans() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [challanToDelete, setChallanToDelete] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("whats-next");
+    const [branding, setBranding] = useState<any>(null);
 
     useEffect(() => {
         fetchChallans();
+        fetchBranding();
     }, []);
+
+    const fetchBranding = async () => {
+        try {
+            const response = await fetch("/api/branding");
+            const data = await response.json();
+            if (data.success) {
+                setBranding(data.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch branding:", error);
+        }
+    };
 
     const fetchChallans = async () => {
         try {
@@ -741,13 +755,13 @@ export default function DeliveryChallans() {
                                     )}
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="text-xl font-bold text-primary mb-2">Your Company Name</h3>
-                                            <div className="text-sm text-muted-foreground space-y-0.5">
-                                                <p>Your Address Line 1</p>
-                                                <p>City, State, PIN</p>
-                                                <p>India</p>
-                                                <p className="mt-2">GSTIN: YOUR_GSTIN_NUMBER</p>
-                                            </div>
+                                            {branding?.logo?.url ? (
+                                                <img src={branding.logo.url} alt="Company Logo" className="h-16 w-auto mb-4" data-testid="img-challan-logo" />
+                                            ) : (
+                                                <div className="h-16 w-16 bg-slate-200 rounded flex items-center justify-center mb-4">
+                                                    <span className="text-xs text-slate-500">No Logo</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="text-right">
                                             <h2 className="text-2xl font-bold text-foreground mb-2">DELIVERY CHALLAN</h2>

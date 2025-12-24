@@ -168,6 +168,23 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
   const [showPdfView, setShowPdfView] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [branding, setBranding] = useState<any>(null);
+
+  React.useEffect(() => {
+    fetchBranding();
+  }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (data.success) {
+        setBranding(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branding:", error);
+    }
+  };
 
   const handleConvertToInvoice = async () => {
     setIsConverting(true);
@@ -257,100 +274,113 @@ export default function QuoteDetailPanel({ quote, onClose, onEdit, onRefresh }: 
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     const doc = new jsPDF();
     
-    doc.setFontSize(24);
-    doc.setFont("helvetica", "bold");
-    doc.text("QUOTE", 190, 30, { align: "right" });
-    
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text(`# ${quote.quoteNumber}`, 190, 38, { align: "right" });
-    doc.text(`Total`, 190, 48, { align: "right" });
-    doc.setFont("helvetica", "bold");
-    doc.text(formatCurrency(quote.total), 190, 56, { align: "right" });
-    
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("Your Company", 20, 30);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text("123 Business Street", 20, 38);
-    doc.text("City, State 12345", 20, 44);
-    doc.text("India", 20, 50);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("QUOTE TO", 20, 70);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(quote.customerName, 20, 78);
-    const billAddress = formatAddress(quote.billingAddress);
-    billAddress.forEach((line, i) => {
-      doc.text(line, 20, 84 + (i * 5));
-    });
-    
-    doc.text(`Quote Date: ${formatDate(quote.date)}`, 120, 78);
-    doc.text(`Expiry Date: ${formatDate(quote.expiryDate)}`, 120, 84);
-    
-    doc.setDrawColor(200);
-    doc.setLineWidth(0.5);
-    doc.line(20, 110, 190, 110);
-    
-    doc.setFont("helvetica", "bold");
-    doc.text("#", 20, 118);
-    doc.text("Item", 30, 118);
-    doc.text("Qty", 100, 118);
-    doc.text("Rate", 130, 118);
-    doc.text("Amount", 190, 118, { align: "right" });
-    
-    doc.line(20, 122, 190, 122);
-    
-    let yPos = 130;
-    doc.setFont("helvetica", "normal");
-    quote.items.forEach((item, index) => {
-      doc.text(String(index + 1), 20, yPos);
-      doc.text(item.name || 'Item', 30, yPos);
-      doc.text(String(item.quantity || 1), 100, yPos);
-      doc.text(formatCurrency(item.rate || 0), 130, yPos);
-      doc.text(formatCurrency(item.amount || 0), 190, yPos, { align: "right" });
-      yPos += 8;
-    });
-    
-    yPos += 10;
-    doc.line(120, yPos, 190, yPos);
-    yPos += 8;
-    
-    doc.text("Sub Total", 120, yPos);
-    doc.text(formatCurrency(quote.subTotal), 190, yPos, { align: "right" });
-    yPos += 8;
-    
-    if (quote.cgst > 0) {
-      doc.text("CGST", 120, yPos);
-      doc.text(formatCurrency(quote.cgst), 190, yPos, { align: "right" });
-      yPos += 8;
-    }
-    if (quote.sgst > 0) {
-      doc.text("SGST", 120, yPos);
-      doc.text(formatCurrency(quote.sgst), 190, yPos, { align: "right" });
-      yPos += 8;
+    // Add logo if available
+    if (branding?.logo?.url) {
+      try {
+        const img = new Image();
+        img.onload = () => {
+          doc.addImage(img, 'PNG', 20, 15, 30, 30);
+          completePDF();
+        };
+        img.src = branding.logo.url;
+        return;
+      } catch (error) {
+        console.error("Failed to add logo:", error);
+      }
     }
     
-    doc.setFont("helvetica", "bold");
-    doc.text("Total", 120, yPos);
-    doc.text(formatCurrency(quote.total), 190, yPos, { align: "right" });
+    completePDF();
+
+    function completePDF() {
+      doc.setFontSize(24);
+      doc.setFont("helvetica", "bold");
+      doc.text("QUOTE", 190, 30, { align: "right" });
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(`# ${quote.quoteNumber}`, 190, 38, { align: "right" });
+      doc.text(`Total`, 190, 48, { align: "right" });
+      doc.setFont("helvetica", "bold");
+      doc.text(formatCurrency(quote.total), 190, 56, { align: "right" });
+      
+      // Start content lower if logo is present
+      const startY = branding?.logo?.url ? 65 : 30;
     
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 280, { align: "center" });
-    
-    doc.save(`${quote.quoteNumber}.pdf`);
-    
-    toast({
-      title: "PDF Downloaded",
-      description: `${quote.quoteNumber}.pdf has been downloaded successfully.`,
-    });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("QUOTE TO", 20, startY + 40);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(quote.customerName, 20, startY + 48);
+      const billAddress = formatAddress(quote.billingAddress);
+      billAddress.forEach((line, i) => {
+        doc.text(line, 20, startY + 54 + (i * 5));
+      });
+      
+      doc.text(`Quote Date: ${formatDate(quote.date)}`, 120, startY + 48);
+      doc.text(`Expiry Date: ${formatDate(quote.expiryDate)}`, 120, startY + 54);
+      
+      doc.setDrawColor(200);
+      doc.setLineWidth(0.5);
+      doc.line(20, startY + 70, 190, startY + 70);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("#", 20, startY + 78);
+      doc.text("Item", 30, startY + 78);
+      doc.text("Qty", 100, startY + 78);
+      doc.text("Rate", 130, startY + 78);
+      doc.text("Amount", 190, startY + 78, { align: "right" });
+      
+      doc.line(20, startY + 82, 190, startY + 82);
+      
+      let yPos = startY + 90;
+      doc.setFont("helvetica", "normal");
+      quote.items.forEach((item, index) => {
+        doc.text(String(index + 1), 20, yPos);
+        doc.text(item.name || 'Item', 30, yPos);
+        doc.text(String(item.quantity || 1), 100, yPos);
+        doc.text(formatCurrency(item.rate || 0), 130, yPos);
+        doc.text(formatCurrency(item.amount || 0), 190, yPos, { align: "right" });
+        yPos += 8;
+      });
+      
+      yPos += 10;
+      doc.line(120, yPos, 190, yPos);
+      yPos += 8;
+      
+      doc.text("Sub Total", 120, yPos);
+      doc.text(formatCurrency(quote.subTotal), 190, yPos, { align: "right" });
+      yPos += 8;
+      
+      if (quote.cgst > 0) {
+        doc.text("CGST", 120, yPos);
+        doc.text(formatCurrency(quote.cgst), 190, yPos, { align: "right" });
+        yPos += 8;
+      }
+      if (quote.sgst > 0) {
+        doc.text("SGST", 120, yPos);
+        doc.text(formatCurrency(quote.sgst), 190, yPos, { align: "right" });
+        yPos += 8;
+      }
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("Total", 120, yPos);
+      doc.text(formatCurrency(quote.total), 190, yPos, { align: "right" });
+      
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 280, { align: "center" });
+      
+      doc.save(`${quote.quoteNumber}.pdf`);
+      
+      toast({
+        title: "PDF Downloaded",
+        description: `${quote.quoteNumber}.pdf has been downloaded successfully.`,
+      });
+    }
   };
 
   const handlePrint = () => {
