@@ -522,7 +522,7 @@ function BillDetailPanel({
   onViewJournal: () => void;
   onExpectedPaymentDate: () => void;
 }) {
-  const [showPdfView, setShowPdfView] = useState(false);
+  const [showPdfView, setShowPdfView] = useState(true);
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-slate-200 overflow-hidden">

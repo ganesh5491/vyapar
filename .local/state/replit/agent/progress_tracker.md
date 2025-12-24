@@ -107,4 +107,5 @@
 [x] 107. Added signature API routes to server (POST and DELETE) (Dec 24, 2025)
 [x] 108. Updated branding type definitions to include signature field (Dec 24, 2025)
 [x] 109. Integrated signature into invoice PDF generation (Dec 24, 2025)
-[x] 110. Applied signature from settings to vendor-credits.tsx "Authorized Signature" section (Dec 24, 2025 - COMPLETE)
+[x] 110. Applied signature from settings to vendor-credits.tsx "Authorized Signature" section (Dec 24, 2025)
+[x] 111. Enabled PDF View as default for all Purchase modules (Bills, Purchase Orders, Vendor Credits, Payments Made) (Dec 24, 2025 - COMPLETE)
