@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface BrandingLogo {
   url: string;
@@ -15,8 +15,14 @@ export interface OrganizationBranding {
 }
 
 export function useBranding() {
-  return useQuery<OrganizationBranding>({
+  return useQuery({
     queryKey: ["/api/branding"],
+    queryFn: async () => {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (!data.success) throw new Error("Failed to fetch branding");
+      return data.data as OrganizationBranding;
+    },
   });
 }
 

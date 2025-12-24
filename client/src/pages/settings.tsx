@@ -14,7 +14,7 @@ export default function Settings() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
-  const { data: branding, isLoading } = useBranding();
+  const { data: branding, isLoading, refetch: refetchBranding } = useBranding();
   const [isUploading, setIsUploading] = useState(false);
 
   const handleLogoUpload = async (file: File) => {
@@ -65,7 +65,7 @@ export default function Settings() {
               title: "Success",
               description: "Logo uploaded successfully",
             });
-            queryClient.invalidateQueries({ queryKey: ["/api/branding"] });
+            await refetchBranding();
           } else {
             toast({
               title: "Error",
@@ -114,7 +114,7 @@ export default function Settings() {
           title: "Success",
           description: "Logo removed successfully",
         });
-        queryClient.invalidateQueries({ queryKey: ["/api/branding"] });
+        await refetchBranding();
       } else {
         toast({
           title: "Error",
