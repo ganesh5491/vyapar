@@ -120,12 +120,12 @@ interface Vendor {
 
 function SignatureLine() {
   const { data: brandingData } = useBranding();
-  
+
   if (brandingData?.signature?.url) {
     return (
       <div className="flex flex-col gap-2">
-        <img 
-          src={brandingData.signature.url} 
+        <img
+          src={brandingData.signature.url}
           alt="Authorized Signature"
           style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
         />
@@ -165,6 +165,8 @@ export default function VendorCredits() {
   const { data: vendorsData } = useQuery<{ success: boolean; data: Vendor[] }>({
     queryKey: ['/api/vendors'],
   });
+
+  const { data: branding } = useBranding();
 
   const vendors = vendorsData?.data || [];
 
@@ -582,8 +584,8 @@ export default function VendorCredits() {
                       <Badge
                         variant="outline"
                         className={`mt-1 text-xs ${credit.status === 'OPEN' ? 'text-blue-600 border-blue-200' :
-                            credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200' :
-                              'text-yellow-600 border-yellow-200'
+                          credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200' :
+                            'text-yellow-600 border-yellow-200'
                           }`}
                       >
                         {credit.status}
@@ -636,8 +638,8 @@ export default function VendorCredits() {
                       <Badge
                         variant="outline"
                         className={`${credit.status === 'OPEN' ? 'text-blue-600 border-blue-200 bg-blue-50' :
-                            credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200 bg-gray-50' :
-                              'text-yellow-600 border-yellow-200 bg-yellow-50'
+                          credit.status === 'CLOSED' ? 'text-gray-600 border-gray-200 bg-gray-50' :
+                            'text-yellow-600 border-yellow-200 bg-yellow-50'
                           }`}
                       >
                         {credit.status}
@@ -796,15 +798,21 @@ export default function VendorCredits() {
                       <div className="p-6 pt-12">
                         <div className="flex justify-between items-start mb-8">
                           <div>
-                            <h2 className="text-2xl font-bold text-primary mb-2">SkilltonIT</h2>
-                            <p className="text-sm text-muted-foreground">SkilltonIT</p>
-                            <p className="text-sm text-muted-foreground">Hinjewadi - Wakad road</p>
-                            <p className="text-sm text-muted-foreground">Hinjawadi</p>
-                            <p className="text-sm text-muted-foreground">Pune Maharashtra 411057</p>
-                            <p className="text-sm text-muted-foreground">India</p>
-                            <p className="text-sm text-muted-foreground">GSTIN 27AATPM4585L1ZH</p>
-                            <p className="text-sm text-muted-foreground">Sales.SkilltonIT@skilltonit.com</p>
-                            <p className="text-sm text-muted-foreground">www.skilltonit.com</p>
+                            {branding?.logo?.url ? (
+                              <img
+                                src={branding.logo.url}
+                                alt="Company Logo"
+                                className="h-12 w-auto mb-3"
+                                data-testid="img-vendor-credit-logo"
+                              />
+                            ) : (
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+                                  <span className="text-white font-bold text-sm">C</span>
+                                </div>
+                                <span className="text-lg font-bold text-primary">Company Name</span>
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
                             <h1 className="text-2xl font-bold text-muted-foreground mb-2">VENDOR CREDITS</h1>

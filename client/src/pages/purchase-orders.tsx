@@ -202,13 +202,26 @@ function PurchaseOrderPDFView({ purchaseOrder, branding }: { purchaseOrder: Purc
           )}
 
           <div className="mt-8">
-            <div className="w-32 h-32 border-2 border-blue-600 rounded-full flex items-center justify-center mx-auto">
-              <div className="text-center">
-                <p className="text-xs text-blue-600 font-medium">SKILLTONIT</p>
-                <p className="text-[8px] text-slate-500">PVT. LTD.</p>
+            {branding?.signature?.url ? (
+              <div className="flex flex-col items-center gap-2">
+                <img
+                  src={branding.signature.url}
+                  alt="Authorized Signature"
+                  style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
+                />
+                <p className="text-sm">Authorized Signature</p>
               </div>
-            </div>
-            <p className="text-center text-sm mt-2">Authorized Signature</p>
+            ) : (
+              <>
+                <div className="w-32 h-32 border-2 border-blue-600 rounded-full flex items-center justify-center mx-auto">
+                  <div className="text-center">
+                    <p className="text-xs text-blue-600 font-medium">COMPANY</p>
+                    <p className="text-[8px] text-slate-500">PVT. LTD.</p>
+                  </div>
+                </div>
+                <p className="text-center text-sm mt-2">Authorized Signature</p>
+              </>
+            )}
           </div>
         </div>
       </div>

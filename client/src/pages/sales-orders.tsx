@@ -185,7 +185,7 @@ interface SalesOrderDetailPanelProps {
   onConvertSelectedItems: () => void;
 }
 
-function SalesOrderPdfPreview({ order }: { order: SalesOrderDetail }) {
+function SalesOrderPdfPreview({ order, branding }: { order: SalesOrderDetail; branding?: any }) {
   return (
     <div id="pdf-content" className="bg-white p-8 text-black min-h-full" style={{ fontFamily: 'Arial, sans-serif' }}>
       <div className="max-w-3xl mx-auto">
@@ -195,10 +195,18 @@ function SalesOrderPdfPreview({ order }: { order: SalesOrderDetail }) {
             <p className="text-sm text-gray-600 mt-1">{order.salesOrderNumber}</p>
           </div>
           <div className="text-right">
-            <p className="font-semibold text-lg">Your Company Name</p>
-            <p className="text-sm text-gray-600">123 Business Street</p>
-            <p className="text-sm text-gray-600">Mumbai, Maharashtra 400001</p>
-            <p className="text-sm text-gray-600">GSTIN: 27XXXXX1234X1ZX</p>
+            {branding?.logo?.url ? (
+              <img
+                src={branding.logo.url}
+                alt="Company Logo"
+                className="h-12 w-auto mb-2"
+                data-testid="img-sales-order-logo"
+              />
+            ) : (
+              <>
+                <p className="font-semibold text-lg">Company Name</p>
+              </>
+            )}
           </div>
         </div>
 
@@ -323,15 +331,27 @@ function SalesOrderPdfPreview({ order }: { order: SalesOrderDetail }) {
           </div>
         )}
 
-        <div className="mt-12 pt-8 border-t border-gray-300 text-center text-sm text-gray-500">
-          <p>Thank you for your business!</p>
+        <div className="mt-12 pt-8 border-t border-gray-300">
+          {branding?.signature?.url ? (
+            <div className="flex flex-col items-center gap-2">
+              <img
+                src={branding.signature.url}
+                alt="Authorized Signature"
+                style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
+              />
+              <p className="text-xs text-gray-500">Authorized Signature</p>
+            </div>
+          ) : (
+            <p className="text-center text-sm text-gray-500">Authorized Signature ____________________</p>
+          )}
+          <p className="text-center text-sm text-gray-500 mt-4">Thank you for your business!</p>
         </div>
       </div>
     </div>
   );
 }
 
-function SalesOrderDetailPanel({ order, onClose, onEdit, onDelete, onConvertToInvoice, onConvertSelectedItems }: SalesOrderDetailPanelProps) {
+function SalesOrderDetailPanel({ order, branding, onClose, onEdit, onDelete, onConvertToInvoice, onConvertSelectedItems }: SalesOrderDetailPanelProps & { branding?: any }) {
   const [activeTab, setActiveTab] = useState("details");
   const [showPdfPreview, setShowPdfPreview] = useState(false);
 
@@ -483,7 +503,7 @@ function SalesOrderDetailPanel({ order, onClose, onEdit, onDelete, onConvertToIn
 
       {showPdfPreview ? (
         <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-800">
-          <SalesOrderPdfPreview order={order} />
+          <SalesOrderPdfPreview order={order} branding={branding} />
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
@@ -719,10 +739,24 @@ export default function SalesOrdersPage() {
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [selectedItemsForInvoice, setSelectedItemsForInvoice] = useState<string[]>([]);
+  const [branding, setBranding] = useState<any>(null);
 
   useEffect(() => {
     fetchSalesOrders();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (data.success) {
+        setBranding(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branding:", error);
+    }
+  };
 
   const fetchSalesOrders = async () => {
     try {
@@ -1188,6 +1222,7 @@ export default function SalesOrdersPage() {
         <div className="flex-1 min-w-0">
           <SalesOrderDetailPanel
             order={selectedOrder}
+            branding={branding}
             onClose={handleClosePanel}
             onEdit={handleEditOrder}
             onDelete={handleDeleteClick}

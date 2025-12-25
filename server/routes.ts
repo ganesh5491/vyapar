@@ -3762,10 +3762,16 @@ export async function registerRoutes(
       try {
         const paymentsMadeData = readPaymentsMadeData();
         console.log(`[Bills GET] Processing ${bills.length} bills with ${paymentsMadeData.paymentsMade.length} total payments`);
-        
+
         bills = bills.map((bill: any) => {
           const linkedPayments = paymentsMadeData.paymentsMade
-            .filter((pm: any) => pm.billPayments && pm.billPayments[bill.id])
+            .filter((pm: any) => {
+              // Exclude payments created via Record Payment button
+              // Check both the paymentSource field and the notes pattern
+              if (pm.paymentSource === 'record_payment') return false;
+              if (pm.notes && /^Payment for Bill #/i.test(pm.notes)) return false;
+              return pm.billPayments && pm.billPayments[bill.id];
+            })
             .map((pm: any) => {
               const billPayment = pm.billPayments[bill.id];
               const amount = typeof billPayment === 'number' ? billPayment : (billPayment?.amountPaid || 0);
@@ -3777,11 +3783,11 @@ export async function registerRoutes(
                 mode: pm.paymentMode || pm.mode
               };
             });
-          
+
           if (linkedPayments.length > 0) {
             console.log(`[Bill ${bill.billNumber}] Found ${linkedPayments.length} payments`);
           }
-          
+
           return {
             ...bill,
             paymentsMadeApplied: linkedPayments
@@ -3814,7 +3820,13 @@ export async function registerRoutes(
       try {
         const paymentsMadeData = readPaymentsMadeData();
         const linkedPayments = paymentsMadeData.paymentsMade
-          .filter((pm: any) => pm.billPayments && pm.billPayments[bill.id])
+          .filter((pm: any) => {
+            // Exclude payments created via Record Payment button
+            // Check both the paymentSource field and the notes pattern
+            if (pm.paymentSource === 'record_payment') return false;
+            if (pm.notes && /^Payment for Bill #/i.test(pm.notes)) return false;
+            return pm.billPayments && pm.billPayments[bill.id];
+          })
           .map((pm: any) => {
             const billPayment = pm.billPayments[bill.id];
             const amount = typeof billPayment === 'number' ? billPayment : (billPayment?.amountPaid || 0);
@@ -3826,9 +3838,9 @@ export async function registerRoutes(
               mode: pm.paymentMode || pm.mode
             };
           });
-        
+
         console.log(`[Bill ${bill.id}] Found ${linkedPayments.length} payments made:`, linkedPayments);
-        
+
         // Add paymentsMadeApplied to the bill response
         bill.paymentsMadeApplied = linkedPayments;
       } catch (error) {
@@ -3940,7 +3952,7 @@ export async function registerRoutes(
       const relatedPayments = paymentsMadeData.paymentsMade.filter((pm: any) => {
         return pm.billPayments && pm.billPayments[existingBill.id];
       });
-      
+
       const totalPaymentsMade = relatedPayments.reduce((sum: number, pm: any) => {
         const billPayment = pm.billPayments[existingBill.id];
         const amount = typeof billPayment === 'number' ? billPayment : (billPayment?.amountPaid || 0);
@@ -4075,7 +4087,7 @@ export async function registerRoutes(
       // Recalculate totals
       const totalPayments = bill.paymentsRecorded.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
       const totalCredits = (bill.creditsApplied || []).reduce((sum: number, c: any) => sum + (c.amount || 0), 0);
-      
+
       bill.amountPaid = totalPayments + totalCredits;
       bill.balanceDue = Math.max(0, bill.total - bill.amountPaid);
       bill.status = bill.balanceDue <= 0 ? 'PAID' : 'PARTIALLY_PAID';
@@ -4123,6 +4135,7 @@ export async function registerRoutes(
           }
         },
         paymentType: 'bill_payment',
+        paymentSource: 'record_payment', // Mark this payment as created via Record Payment
         status: 'PAID',
         createdAt: now,
         updatedAt: now
@@ -5641,7 +5654,7 @@ export async function registerRoutes(
         const totalCredits = bill.creditsApplied.reduce(
           (sum: number, c: any) => sum + (c.amount || 0), 0
         );
-        
+
         bill.amountPaid = totalPayments + totalCredits;
         bill.balanceDue = Math.max(0, bill.total - bill.amountPaid);
 
@@ -5653,7 +5666,7 @@ export async function registerRoutes(
         }
 
         bill.updatedAt = now;
-        
+
         // Add activity log
         bill.activityLogs = bill.activityLogs || [];
         bill.activityLogs.push({
@@ -5670,7 +5683,7 @@ export async function registerRoutes(
 
       // Update vendor credit balance and status
       vendorCredit.balance = (vendorCredit.balance || vendorCredit.amount) - totalCreditsToApply;
-      
+
       // CRITICAL: Status logic
       if (vendorCredit.balance <= 0) {
         vendorCredit.status = 'CLOSED';
@@ -5678,7 +5691,7 @@ export async function registerRoutes(
       } else {
         vendorCredit.status = 'OPEN';
       }
-      
+
       vendorCredit.updatedAt = now;
 
       // Save both files
@@ -5710,7 +5723,7 @@ export async function registerRoutes(
 
       // CRITICAL: Prevent deletion of vendor credits that have been applied
       const hasBeenApplied = (vendorCredit.balance !== undefined && vendorCredit.balance < vendorCredit.amount) ||
-                            vendorCredit.status === 'CLOSED';
+        vendorCredit.status === 'CLOSED';
 
       if (hasBeenApplied) {
         // Check if any bills have this credit applied
@@ -6014,11 +6027,11 @@ export async function registerRoutes(
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
-  
+
   app.use("/uploads", (req: Request, res: Response, next) => {
     try {
       const filePath = path.join(uploadsDir, req.path.slice(1));
-      
+
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ success: false, message: "File not found" });
       }
@@ -6032,7 +6045,7 @@ export async function registerRoutes(
         gif: "image/gif",
         bmp: "image/bmp"
       };
-      
+
       // Support both logos and signatures
       const pathLower = filePath.toLowerCase();
 

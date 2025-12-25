@@ -171,10 +171,10 @@ function BillPDFView({ bill, branding }: { bill: Bill; branding?: any }) {
       <div className="relative">
         <div className="absolute top-4 left-4">
           <Badge className={`border-0 px-3 py-1 text-xs font-semibold rotate-[-5deg] ${paymentStatus === 'PAID' ? 'bg-green-500 text-white' :
-              paymentStatus === 'PARTIALLY PAID' ? 'bg-amber-500 text-white' :
-                paymentStatus === 'VOID' ? 'bg-slate-500 text-white' :
-                  paymentStatus === 'OVERDUE' ? 'bg-red-500 text-white' :
-                    'bg-blue-500 text-white'
+            paymentStatus === 'PARTIALLY PAID' ? 'bg-amber-500 text-white' :
+              paymentStatus === 'VOID' ? 'bg-slate-500 text-white' :
+                paymentStatus === 'OVERDUE' ? 'bg-red-500 text-white' :
+                  'bg-blue-500 text-white'
             }`}>
             {paymentStatus}
           </Badge>
@@ -311,7 +311,18 @@ function BillPDFView({ bill, branding }: { bill: Bill; branding?: any }) {
           </div>
 
           <div className="mt-12 border-t pt-4">
-            <p className="text-sm text-slate-600">Authorized Signature ____________________</p>
+            {branding?.signature?.url ? (
+              <div className="flex flex-col gap-2">
+                <img
+                  src={branding.signature.url}
+                  alt="Authorized Signature"
+                  style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
+                />
+                <p className="text-xs text-slate-500">Authorized Signature</p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">Authorized Signature ____________________</p>
+            )}
           </div>
         </div>
       </div>
@@ -330,10 +341,10 @@ function BillDetailView({ bill }: { bill: Bill }) {
           <p className="text-slate-600">Bill# <span className="font-semibold">{bill.billNumber}</span></p>
           <Badge
             className={`mt-2 ${paymentStatus === 'PAID' ? 'bg-green-500 text-white' :
-                paymentStatus === 'PARTIALLY PAID' ? 'bg-amber-500 text-white' :
-                  paymentStatus === 'OVERDUE' ? 'bg-red-500 text-white' :
-                    paymentStatus === 'VOID' ? 'bg-slate-500 text-white' :
-                      'bg-blue-500 text-white'
+              paymentStatus === 'PARTIALLY PAID' ? 'bg-amber-500 text-white' :
+                paymentStatus === 'OVERDUE' ? 'bg-red-500 text-white' :
+                  paymentStatus === 'VOID' ? 'bg-slate-500 text-white' :
+                    'bg-blue-500 text-white'
               }`}
           >
             {paymentStatus}

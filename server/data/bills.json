@@ -1,6 +1,120 @@
 {
   "bills": [
     {
+      "id": "1766633708822",
+      "billNumber": "22",
+      "orderNumber": "PO-2025-0014",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "vendorAddress": {},
+      "billDate": "2025-12-25",
+      "dueDate": "2025-12-25",
+      "paymentTerms": "Due on Receipt",
+      "reverseCharge": false,
+      "subject": "Bill for Purchase Order #PO-2025-0014",
+      "items": [
+        {
+          "id": "item-1766633698653-0",
+          "itemName": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "account": "discount",
+          "quantity": 1,
+          "rate": 40000,
+          "tax": "gst18",
+          "taxAmount": 7200,
+          "customerDetails": "none",
+          "amount": 40000
+        }
+      ],
+      "subTotal": 40000,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 7200,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 47200,
+      "amountPaid": 9400,
+      "balanceDue": 37800,
+      "notes": "",
+      "attachments": [],
+      "status": "PARTIALLY_PAID",
+      "pdfTemplate": "Standard Template",
+      "journalEntries": [],
+      "createdAt": "2025-12-25T03:35:08.822Z",
+      "updatedAt": "2025-12-25T03:48:51.114Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-25T03:35:08.822Z",
+          "action": "created",
+          "description": "Bill created for ₹47,200",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-25T03:35:24.123Z",
+          "action": "payment",
+          "description": "Payment of ₹7,200 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "1766633762202",
+          "timestamp": "2025-12-25T03:36:02.197Z",
+          "action": "payment",
+          "description": "Payment of ₹20,000 recorded via PM-00061",
+          "user": "System"
+        },
+        {
+          "id": "4",
+          "timestamp": "2025-12-25T03:45:34.999Z",
+          "action": "payment",
+          "description": "Payment of ₹1,000 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "5",
+          "timestamp": "2025-12-25T03:48:18.472Z",
+          "action": "payment",
+          "description": "Payment of ₹500 recorded",
+          "user": "Admin User"
+        },
+        {
+          "id": "1766634531118",
+          "timestamp": "2025-12-25T03:48:51.114Z",
+          "action": "payment",
+          "description": "Payment of ₹700 recorded via PM-00064",
+          "user": "System"
+        }
+      ],
+      "paymentsRecorded": [
+        {
+          "paymentId": "direct-1766633724123",
+          "paymentNumber": "PM-00060",
+          "amount": 7200,
+          "date": "2025-12-25",
+          "mode": "Cash"
+        },
+        {
+          "paymentId": "direct-1766634334999",
+          "paymentNumber": "PM-00062",
+          "amount": 1000,
+          "date": "2025-12-25",
+          "mode": "Cash"
+        },
+        {
+          "paymentId": "direct-1766634498472",
+          "paymentNumber": "PM-00063",
+          "amount": 500,
+          "date": "2025-12-25",
+          "mode": "Cash"
+        }
+      ]
+    },
+    {
       "id": "1766563756864",
       "billNumber": "21",
       "orderNumber": "",
@@ -887,7 +1001,7 @@
       ]
     }
   ],
-  "nextBillNumber": 22,
+  "nextBillNumber": 23,
   "accounts": [
     {
       "id": "1",

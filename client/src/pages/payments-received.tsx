@@ -126,45 +126,47 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function PaymentReceiptView({ payment }: { payment: PaymentReceived }) {
-  const companyInfo = {
-    name: "SkilltonIT",
-    address: "Hinjawadi - Wakad road",
-    city: "Hinjewadi",
-    state: "Pune Maharashtra 411057",
-    country: "India",
-    gstin: "27ITRZAP3A51K1Z01",
-    email: "Sales.SkilltonIT@skilltonit.com",
-    website: "www.skilltonit.com"
+function PaymentReceiptView({ payment, branding }: { payment: PaymentReceived; branding?: any }) {
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'PAID':
+        return 'bg-green-500 text-white';
+      case 'REFUNDED':
+        return 'bg-red-500 text-white';
+      case 'DRAFT':
+        return 'bg-slate-500 text-white';
+      default:
+        return 'bg-blue-500 text-white';
+    }
   };
 
   return (
     <div className="bg-white border border-slate-200 shadow-sm max-w-3xl mx-auto">
       <div className="relative">
         <div className="absolute top-4 left-4">
-          <Badge className="bg-green-500 text-white border-0 px-3 py-1 text-xs font-semibold rotate-[-5deg]">
-            Paid
+          <Badge className={`${getStatusColor(payment.status)} border-0 px-3 py-1 text-xs font-semibold rotate-[-5deg]`}>
+            {payment.status?.toUpperCase() || 'PAID'}
           </Badge>
         </div>
 
         <div className="p-8">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">S</span>
+              {branding?.logo?.url ? (
+                <img
+                  src={branding.logo.url}
+                  alt="Company Logo"
+                  className="h-12 w-auto mb-3"
+                  data-testid="img-payment-logo"
+                />
+              ) : (
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">C</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-600">Company Name</span>
                 </div>
-                <span className="text-lg font-bold text-green-600">{companyInfo.name}</span>
-              </div>
-              <div className="text-sm text-slate-600 space-y-0.5">
-                <p>{companyInfo.address}</p>
-                <p>{companyInfo.city}</p>
-                <p>{companyInfo.state}</p>
-                <p>{companyInfo.country}</p>
-                <p>GSTIN {companyInfo.gstin}</p>
-                <p className="text-blue-600">{companyInfo.email}</p>
-                <p className="text-blue-600">{companyInfo.website}</p>
-              </div>
+              )}
             </div>
           </div>
 
@@ -222,12 +224,14 @@ function PaymentReceiptView({ payment }: { payment: PaymentReceived }) {
 
 function PaymentDetailPanel({
   payment,
+  branding,
   onClose,
   onEdit,
   onDelete,
   onRefund
 }: {
   payment: PaymentReceived;
+  branding?: any;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -320,7 +324,7 @@ function PaymentDetailPanel({
       <ScrollArea className="flex-1">
         <div className="p-4">
           {showPdfView ? (
-            <PaymentReceiptView payment={payment} />
+            <PaymentReceiptView payment={payment} branding={branding} />
           ) : (
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
@@ -1027,11 +1031,25 @@ export default function PaymentsReceived() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editPayment, setEditPayment] = useState<PaymentReceived | null>(null);
   const [selectedPayments, setSelectedPayments] = useState<string[]>([]);
+  const [branding, setBranding] = useState<any>(null);
 
   useEffect(() => {
     fetchPayments();
     fetchCustomers();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (data.success) {
+        setBranding(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branding:", error);
+    }
+  };
 
   const fetchPayments = async () => {
     try {
@@ -1316,6 +1334,7 @@ export default function PaymentsReceived() {
         <div className="w-full max-w-[600px] lg:w-[600px] flex-shrink-0 border-l border-slate-200">
           <PaymentDetailPanel
             payment={selectedPayment}
+            branding={branding}
             onClose={handleClosePanel}
             onEdit={handleEditPayment}
             onDelete={() => handleDelete(selectedPayment.id)}

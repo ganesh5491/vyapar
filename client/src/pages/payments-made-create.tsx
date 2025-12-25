@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -122,6 +122,9 @@ interface Bill {
 
 export default function PaymentsMadeCreate() {
   const [, setLocation] = useLocation();
+  const params = useParams();
+  const paymentId = params.id;
+  const isEditMode = !!paymentId;
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("bill_payment");
   const [saving, setSaving] = useState(false);
@@ -155,6 +158,14 @@ export default function PaymentsMadeCreate() {
     data: Vendor[];
   }>({
     queryKey: ["/api/vendors"],
+  });
+
+  const { data: existingPaymentData } = useQuery<{
+    success: boolean;
+    data: any;
+  }>({
+    queryKey: [`/api/payments-made/${paymentId}`],
+    enabled: isEditMode,
   });
 
   const { data: billsData, isLoading: billsLoading } = useQuery<{
@@ -199,6 +210,37 @@ export default function PaymentsMadeCreate() {
       }
     }
   }, [vendorIdFromUrl, vendorsData?.data]);
+
+  // Populate form with existing payment data in edit mode
+  useEffect(() => {
+    if (isEditMode && existingPaymentData?.data) {
+      const payment = existingPaymentData.data;
+      setFormData({
+        vendorId: payment.vendorId || "",
+        vendorName: payment.vendorName || "",
+        gstTreatment: payment.gstTreatment || "",
+        sourceOfSupply: payment.sourceOfSupply || "",
+        destinationOfSupply: payment.destinationOfSupply || "",
+        paymentNumber: payment.paymentNumber || "",
+        descriptionOfSupply: payment.descriptionOfSupply || "",
+        paymentAmount: payment.amount?.toString() || "",
+        reverseCharge: payment.reverseCharge || false,
+        tds: payment.tds || "",
+        paymentDate: payment.paymentDate || new Date().toISOString().split("T")[0],
+        paymentMode: payment.paymentMode || "cash",
+        paidThrough: payment.paidThrough || "petty_cash",
+        depositTo: payment.depositTo || "prepaid_expenses",
+        reference: payment.reference || "",
+        notes: payment.notes || "",
+        attachments: [],
+      });
+      if (payment.type === "bill_payment") {
+        setActiveTab("bill_payment");
+      } else {
+        setActiveTab("direct_expense");
+      }
+    }
+  }, [isEditMode, existingPaymentData]);
 
   useEffect(() => {
     if (nextNumberData?.data?.nextNumber) {
@@ -343,15 +385,18 @@ export default function PaymentsMadeCreate() {
         status,
       };
 
-      const response = await fetch("/api/payments-made", {
-        method: "POST",
+      const url = isEditMode ? `/api/payments-made/${paymentId}` : "/api/payments-made";
+      const method = isEditMode ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method: method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         toast({
-          title: `Payment ${status === "DRAFT" ? "saved as draft" : "recorded"} successfully`,
+          title: `Payment ${isEditMode ? 'updated' : status === "DRAFT" ? "saved as draft" : "recorded"} successfully`,
         });
         setLocation("/payments-made");
       } else {
@@ -384,7 +429,7 @@ export default function PaymentsMadeCreate() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">New Payment Made</h1>
+          <h1 className="text-xl font-semibold">{isEditMode ? 'Edit Payment Made' : 'New Payment Made'}</h1>
         </div>
       </div>
 

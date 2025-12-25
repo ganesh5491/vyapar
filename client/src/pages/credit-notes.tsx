@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  MoreHorizontal, 
-  Pencil, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
   ChevronDown,
   X,
   Send,
@@ -138,7 +138,7 @@ const getStatusBadgeStyles = (status: string) => {
   return 'bg-slate-100 text-slate-600 border-slate-200';
 };
 
-function CreditNotePdfPreview({ creditNote }: { creditNote: CreditNoteDetail }) {
+function CreditNotePdfPreview({ creditNote, branding }: { creditNote: CreditNoteDetail; branding?: any }) {
   return (
     <div id="pdf-content" className="bg-white p-8 text-black min-h-full" style={{ fontFamily: 'Arial, sans-serif' }}>
       <div className="max-w-3xl mx-auto">
@@ -150,11 +150,21 @@ function CreditNotePdfPreview({ creditNote }: { creditNote: CreditNoteDetail }) 
           )}
           <div className="flex justify-between items-start border-b-2 border-green-600 pb-4">
             <div>
-              <h1 className="text-xl font-bold text-green-700">SkilltonIT</h1>
-              <p className="text-sm text-gray-600">Hinjewadi - Wakad road</p>
-              <p className="text-sm text-gray-600">Pune Maharashtra 411057</p>
-              <p className="text-sm text-gray-600">India</p>
-              <p className="text-sm text-gray-600">GSTIN: 27A3CPA51SK1Z8</p>
+              {branding?.logo?.url ? (
+                <img
+                  src={branding.logo.url}
+                  alt="Company Logo"
+                  className="h-12 w-auto mb-3"
+                  data-testid="img-credit-note-logo"
+                />
+              ) : (
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">C</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-700">Company Name</span>
+                </div>
+              )}
             </div>
             <div className="text-right">
               <h2 className="text-2xl font-bold text-green-700">CREDIT NOTE</h2>
@@ -254,7 +264,18 @@ function CreditNotePdfPreview({ creditNote }: { creditNote: CreditNoteDetail }) 
         </div>
 
         <div className="mt-12 pt-4 text-right text-sm text-gray-500">
-          <p>Authorized Signature</p>
+          {branding?.signature?.url ? (
+            <div className="flex flex-col items-end gap-2">
+              <img
+                src={branding.signature.url}
+                alt="Authorized Signature"
+                style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
+              />
+              <p className="text-xs">Authorized Signature</p>
+            </div>
+          ) : (
+            <p>Authorized Signature ____________________</p>
+          )}
         </div>
       </div>
     </div>
@@ -263,12 +284,13 @@ function CreditNotePdfPreview({ creditNote }: { creditNote: CreditNoteDetail }) 
 
 interface CreditNoteDetailPanelProps {
   creditNote: CreditNoteDetail;
+  branding?: any;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function CreditNoteDetailPanel({ creditNote, onClose, onEdit, onDelete }: CreditNoteDetailPanelProps) {
+function CreditNoteDetailPanel({ creditNote, branding, onClose, onEdit, onDelete }: CreditNoteDetailPanelProps) {
   const [showPdfPreview, setShowPdfPreview] = useState(true);
 
   const handlePrint = () => {
@@ -324,10 +346,10 @@ function CreditNoteDetailPanel({ creditNote, onClose, onEdit, onDelete }: Credit
           <Send className="h-3.5 w-3.5" />
           Email
         </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="gap-1.5 text-blue-600" 
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-blue-600"
           onClick={() => window.location.href = `/e-way-bills?creditNoteId=${creditNote.id}`}
           data-testid="button-add-eway-bill"
         >
@@ -370,7 +392,7 @@ function CreditNoteDetailPanel({ creditNote, onClose, onEdit, onDelete }: Credit
       <div className="flex-1 overflow-auto">
         <div className="bg-slate-100 dark:bg-slate-800 p-4">
           <div className="bg-white rounded-md shadow-sm p-2">
-            <CreditNotePdfPreview creditNote={creditNote} />
+            <CreditNotePdfPreview creditNote={creditNote} branding={branding} />
           </div>
         </div>
 
@@ -387,7 +409,7 @@ function CreditNoteDetailPanel({ creditNote, onClose, onEdit, onDelete }: Credit
         <div className="p-4 border-t border-slate-200 dark:border-slate-700">
           <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">Journal</h3>
           <p className="text-xs text-slate-500 mb-2">Amount is displayed in your base currency <Badge variant="secondary">INR</Badge></p>
-          
+
           <h4 className="text-sm font-medium mb-2">Credit Note</h4>
           <table className="w-full text-xs">
             <thead>
@@ -442,10 +464,24 @@ export default function CreditNotes() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [creditNoteToDelete, setCreditNoteToDelete] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [branding, setBranding] = useState<any>(null);
 
   useEffect(() => {
     fetchCreditNotes();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (data.success) {
+        setBranding(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branding:", error);
+    }
+  };
 
   const fetchCreditNotes = async () => {
     try {
@@ -494,11 +530,11 @@ export default function CreditNotes() {
   };
 
   const filteredCreditNotes = creditNotes.filter(cn => {
-    const matchesSearch = 
+    const matchesSearch =
       cn.creditNoteNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cn.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cn.referenceNumber?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     if (activeFilter === "all") return matchesSearch;
     return matchesSearch && cn.status.toLowerCase() === activeFilter.toLowerCase();
   });
@@ -558,7 +594,7 @@ export default function CreditNotes() {
             <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
               <tr className="text-left text-xs font-medium text-slate-500 uppercase">
                 <th className="px-4 py-3 w-10">
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedIds.size === filteredCreditNotes.length && filteredCreditNotes.length > 0}
                     onCheckedChange={toggleSelectAll}
                     data-testid="checkbox-select-all"
@@ -588,14 +624,14 @@ export default function CreditNotes() {
                 </tr>
               ) : (
                 paginatedItems.map((cn) => (
-                  <tr 
-                    key={cn.id} 
+                  <tr
+                    key={cn.id}
                     className={`hover-elevate cursor-pointer ${selectedCreditNote?.id === cn.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                     onClick={() => fetchCreditNoteDetail(cn.id)}
                     data-testid={`row-credit-note-${cn.id}`}
                   >
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedIds.has(cn.id)}
                         onCheckedChange={() => toggleSelect(cn.id)}
                       />
@@ -634,6 +670,7 @@ export default function CreditNotes() {
         <div className="w-full lg:w-1/2 border-l border-slate-200 dark:border-slate-700">
           <CreditNoteDetailPanel
             creditNote={selectedCreditNote}
+            branding={branding}
             onClose={() => setSelectedCreditNote(null)}
             onEdit={() => setLocation(`/credit-notes/${selectedCreditNote.id}/edit`)}
             onDelete={() => {

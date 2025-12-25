@@ -351,7 +351,76 @@
       "unusedCredits": 0,
       "createdAt": "2025-12-22T05:15:01.048Z",
       "updatedAt": "2025-12-22T05:15:01.048Z"
+    },
+    {
+      "id": "7",
+      "salutation": "Mr.",
+      "firstName": "Vikas",
+      "lastName": "Patel",
+      "companyName": "Vikas Traders Pvt Ltd",
+      "displayName": "Vikas  Traders Pvt Ltd ",
+      "email": "accounts@vikastraders.in",
+      "workPhone": "022-45678900",
+      "mobile": "9876543210",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[MH] - Maharashtra",
+      "pan": "ABCDE1234F",
+      "expenseAccount": "Cost Of Goods Sold",
+      "msmeRegistered": false,
+      "msmeRegistrationType": "",
+      "msmeRegistrationNumber": "",
+      "currency": "INR",
+      "openingBalance": 0,
+      "paymentTerms": "Net 15",
+      "tds": "",
+      "billingAddress": {
+        "attention": "Accounts Department",
+        "countryRegion": "India",
+        "street1": "Plot No. 21, Industrial Area",
+        "street2": "MIDC Phase 2",
+        "city": "Pune",
+        "state": "[MH] - Maharashtra",
+        "pinCode": "411019",
+        "phone": "020-25678945",
+        "faxNumber": ""
+      },
+      "shippingAddress": {
+        "attention": "Accounts Department",
+        "countryRegion": "India",
+        "street1": "Plot No. 21, Industrial Area",
+        "street2": "MIDC Phase 2",
+        "city": "Pune",
+        "state": "[MH] - Maharashtra",
+        "pinCode": "411019",
+        "phone": "020-25678945",
+        "faxNumber": ""
+      },
+      "bankDetails": {
+        "accountHolderName": "Vikas Traders Pvt Ltd",
+        "bankName": "HDFC Bank",
+        "accountNumber": "50200123456789",
+        "ifscCode": "HDFC0001234",
+        "swiftCode": "CURRENT",
+        "branchName": "Pune Industrial Branch"
+      },
+      "remarks": "Preferred vendor for bulk raw material purchases. Timely payments required.",
+      "contactPersons": [
+        {
+          "id": "1766380433189",
+          "salutation": "Mr.",
+          "firstName": "Ankit",
+          "lastName": "Patel",
+          "email": "vikas@gmail.com",
+          "workPhone": "9876501234",
+          "mobile": ""
+        }
+      ],
+      "status": "active",
+      "payables": 0,
+      "unusedCredits": 0,
+      "createdAt": "2025-12-25T03:30:50.416Z",
+      "updatedAt": "2025-12-25T03:33:01.087Z"
     }
   ],
-  "nextVendorId": 7
+  "nextVendorId": 8
 }

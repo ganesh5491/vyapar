@@ -1,6 +1,79 @@
 {
   "purchaseOrders": [
     {
+      "id": "1766633692116",
+      "purchaseOrderNumber": "PO-2025-0014",
+      "referenceNumber": "",
+      "date": "2025-12-25",
+      "deliveryDate": "",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "vendorAddress": {},
+      "deliveryAddress": {
+        "attention": "",
+        "street1": "",
+        "street2": "",
+        "city": "",
+        "state": "",
+        "pinCode": "",
+        "countryRegion": "India"
+      },
+      "deliveryAddressType": "organization",
+      "paymentTerms": "Due on Receipt",
+      "shipmentPreference": "",
+      "reverseCharge": false,
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1766469453909",
+          "itemName": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "account": "discount",
+          "quantity": 1,
+          "rate": 40000,
+          "tax": "gst18",
+          "taxAmount": 7200,
+          "amount": 47200
+        }
+      ],
+      "subTotal": 40000,
+      "discountType": "percent",
+      "discountValue": 0,
+      "discountAmount": 0,
+      "taxType": "TDS",
+      "taxCategory": "",
+      "taxAmount": 7200,
+      "adjustment": 0,
+      "adjustmentDescription": "",
+      "total": 47200,
+      "notes": "",
+      "termsAndConditions": "",
+      "attachments": [],
+      "status": "ISSUED",
+      "receiveStatus": "YET TO BE RECEIVED",
+      "billedStatus": "BILLED",
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-25T03:34:52.116Z",
+      "updatedAt": "2025-12-25T03:34:58.439Z",
+      "createdBy": "Admin User",
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-25T03:34:52.116Z",
+          "action": "created",
+          "description": "Purchase Order created for ₹47,200",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-25T03:34:58.439Z",
+          "action": "converted_to_bill",
+          "description": "Purchase Order converted to Bill",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766487220655",
       "purchaseOrderNumber": "PO-2025-0013",
       "referenceNumber": "231231",
@@ -869,5 +942,5 @@
       "emailCommunications": []
     }
   ],
-  "nextPurchaseOrderNumber": 14
+  "nextPurchaseOrderNumber": 15
 }

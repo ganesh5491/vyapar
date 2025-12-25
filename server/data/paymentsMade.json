@@ -1667,7 +1667,163 @@
       "status": "PAID",
       "createdAt": "2025-12-24T06:17:10.461Z",
       "updatedAt": "2025-12-24T06:17:10.461Z"
+    },
+    {
+      "id": "pm-1766633724127",
+      "paymentNumber": "PM-00060",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 7200,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-25",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #22",
+      "billPayments": {
+        "1766633708822": {
+          "billId": "1766633708822",
+          "billNumber": "22",
+          "billAmount": 47200,
+          "amountPaid": 7200
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-25T03:35:24.123Z",
+      "updatedAt": "2025-12-25T03:35:24.123Z"
+    },
+    {
+      "id": "pm-1766633762197",
+      "paymentNumber": "PM-00061",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[MH] - Maharashtra",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentAmount": 20000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-25",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "1766633708822": {
+          "billId": "1766633708822",
+          "billNumber": "22",
+          "billAmount": 47200,
+          "amountPaid": 20000
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-25T03:36:02.197Z",
+      "updatedAt": "2025-12-25T03:36:02.197Z"
+    },
+    {
+      "id": "pm-1766634335007",
+      "paymentNumber": "PM-00062",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 1000,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-25",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #22",
+      "billPayments": {
+        "1766633708822": {
+          "billId": "1766633708822",
+          "billNumber": "22",
+          "billAmount": 47200,
+          "amountPaid": 1000
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-25T03:45:34.999Z",
+      "updatedAt": "2025-12-25T03:45:34.999Z"
+    },
+    {
+      "id": "pm-1766634498526",
+      "paymentNumber": "PM-00063",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "gstTreatment": "",
+      "sourceOfSupply": "",
+      "destinationOfSupply": "",
+      "descriptionOfSupply": "",
+      "paymentAmount": 500,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-25",
+      "paymentMode": "Cash",
+      "paidThrough": "Petty Cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "Payment for Bill #22",
+      "billPayments": {
+        "1766633708822": {
+          "billId": "1766633708822",
+          "billNumber": "22",
+          "billAmount": 47200,
+          "amountPaid": 500
+        }
+      },
+      "paymentType": "bill_payment",
+      "paymentSource": "record_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-25T03:48:18.472Z",
+      "updatedAt": "2025-12-25T03:48:18.472Z"
+    },
+    {
+      "id": "pm-1766634531114",
+      "paymentNumber": "PM-00064",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "gstTreatment": "Registered Business - Regular",
+      "sourceOfSupply": "[MH] - Maharashtra",
+      "destinationOfSupply": "[MH] - Maharashtra",
+      "descriptionOfSupply": "",
+      "paymentAmount": 700,
+      "reverseCharge": false,
+      "tds": "",
+      "paymentDate": "2025-12-25",
+      "paymentMode": "cash",
+      "paidThrough": "petty_cash",
+      "depositTo": "prepaid_expenses",
+      "reference": "",
+      "notes": "",
+      "billPayments": {
+        "1766633708822": {
+          "billId": "1766633708822",
+          "billNumber": "22",
+          "billAmount": 47200,
+          "amountPaid": 700
+        }
+      },
+      "paymentType": "bill_payment",
+      "status": "PAID",
+      "createdAt": "2025-12-25T03:48:51.114Z",
+      "updatedAt": "2025-12-25T03:48:51.114Z"
     }
   ],
-  "nextPaymentNumber": 60
+  "nextPaymentNumber": 65
 }

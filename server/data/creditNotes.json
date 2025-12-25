@@ -1,26 +1,26 @@
 {
   "creditNotes": [
     {
-      "id": "1766474190397",
-      "creditNoteNumber": "CN-00004",
+      "id": "1766634266812",
+      "creditNoteNumber": "CN-00005",
       "referenceNumber": "",
-      "date": "2025-12-23",
+      "date": "2025-12-25",
       "customerId": "13",
       "customerName": "Mr. Amit Verma",
       "invoiceId": "",
       "invoiceNumber": "",
-      "reason": "sales_return",
+      "reason": "post_sale_discount",
       "salesperson": "Sujay",
-      "subject": "Credit Note for Invoice #INV-00031",
+      "subject": "",
       "billingAddress": {
-        "street": "",
-        "city": "",
-        "state": "",
+        "street": "TechNova Towers, Level 12,  Hinjewadi IT Park, Phase 2",
+        "city": "Pune",
+        "state": "Maharashtra",
         "country": "India",
-        "pincode": ""
+        "pincode": "411057"
       },
-      "gstin": "",
-      "placeOfSupply": "",
+      "gstin": "27AABCT6789L1Z2",
+      "placeOfSupply": "27 - Maharashtra",
       "items": [
         {
           "id": "1",
@@ -28,38 +28,38 @@
           "name": "HP ProDesk Desktop",
           "description": "HP ProDesk desktop computer for office and professional use.\n",
           "account": "sales",
-          "quantity": 11,
+          "quantity": 1,
           "rate": 45000,
           "discount": 0,
           "discountType": "percentage",
           "tax": 0,
           "taxName": "none",
-          "amount": 495000
+          "amount": 45000
         }
       ],
-      "subTotal": 495000,
-      "shippingCharges": 1000,
-      "tdsType": "TCS",
+      "subTotal": 45000,
+      "shippingCharges": 0,
+      "tdsType": "TDS",
       "tdsAmount": 0,
       "cgst": 0,
       "sgst": 0,
       "igst": 0,
       "adjustment": 0,
-      "total": 496000,
-      "creditsRemaining": 496000,
+      "total": 45000,
+      "creditsRemaining": 45000,
       "customerNotes": "",
       "termsAndConditions": "",
       "status": "OPEN",
       "pdfTemplate": "Standard Template",
-      "createdAt": "2025-12-23T07:16:30.397Z",
-      "updatedAt": "2025-12-23T07:16:30.397Z",
+      "createdAt": "2025-12-25T03:44:26.812Z",
+      "updatedAt": "2025-12-25T03:44:26.812Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
           "id": "1",
-          "timestamp": "2025-12-23T07:16:30.397Z",
+          "timestamp": "2025-12-25T03:44:26.812Z",
           "action": "created",
-          "description": "Credit Note created for ₹4,96,000",
+          "description": "Credit Note created for ₹45,000",
           "user": "Admin User"
         }
       ]
@@ -278,5 +278,5 @@
       ]
     }
   ],
-  "nextCreditNoteNumber": 5
+  "nextCreditNoteNumber": 6
 }

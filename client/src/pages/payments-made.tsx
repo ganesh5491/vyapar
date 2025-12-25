@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus, Search, Filter, CreditCard, MoreHorizontal, Trash2, X, Pencil, Mail, Printer, ChevronDown } from "lucide-react";
 import { usePagination } from "@/hooks/use-pagination";
 import { TablePagination } from "@/components/table-pagination";
+import { useBranding } from "@/hooks/use-branding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -147,6 +148,8 @@ export default function PaymentsMade() {
   const { data: vendorsData } = useQuery<{ success: boolean; data: Vendor[] }>({
     queryKey: ['/api/vendors'],
   });
+
+  const { data: branding } = useBranding();
 
   const payments = paymentsData?.data || [];
   const vendors = vendorsData?.data || [];
@@ -506,21 +509,24 @@ export default function PaymentsMade() {
               <div className="p-6 border-b">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h2 className="text-xl font-bold">SkilltonIT</h2>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Hinjewadi - Wakad road<br />
-                      Hinjewadi<br />
-                      Pune Maharashtra 411057<br />
-                      India
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      GSTIN 27AZCPA5145K1ZH<br />
-                      Sales.SkilltonIT@skilltonit.com<br />
-                      www.skilltonit.com
-                    </p>
+                    {branding?.logo?.url ? (
+                      <img
+                        src={branding.logo.url}
+                        alt="Company Logo"
+                        className="h-12 w-auto mb-3"
+                        data-testid="img-payment-made-logo"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">C</span>
+                        </div>
+                        <span className="text-lg font-bold text-green-600">Company Name</span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
-                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'%3E%3Ctext x='0' y='20' font-family='Arial' font-weight='bold' font-size='16' fill='%23333'%3ESKILLTONIT%3C/text%3E%3C/svg%3E" alt="Logo" className="h-8" />
+                    {/* Right side can be used for additional info if needed */}
                   </div>
                 </div>
               </div>

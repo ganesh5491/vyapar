@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-    Plus, 
-    Download, 
-    Send, 
-    MoreHorizontal, 
-    Trash2, 
+import {
+    Plus,
+    Download,
+    Send,
+    MoreHorizontal,
+    Trash2,
     Pencil,
     MessageSquare,
     HelpCircle,
@@ -112,9 +112,9 @@ const formatDate = (dateString: string) => {
 
 const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-IN', { 
-        day: '2-digit', 
-        month: '2-digit', 
+    return date.toLocaleString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
@@ -553,8 +553,8 @@ export default function DeliveryChallans() {
                                             </td>
                                             <td className="p-3 text-sm font-medium">{challan.customerName}</td>
                                             <td className="p-3">
-                                                <Badge 
-                                                    variant="outline" 
+                                                <Badge
+                                                    variant="outline"
                                                     className={`text-xs ${getStatusColor(challan.status)}`}
                                                     data-testid={`badge-status-${challan.id}`}
                                                 >
@@ -563,8 +563,8 @@ export default function DeliveryChallans() {
                                             </td>
                                             <td className="p-3">
                                                 {challan.invoiceStatus && (
-                                                    <Badge 
-                                                        variant="outline" 
+                                                    <Badge
+                                                        variant="outline"
                                                         className={`text-xs ${getStatusColor(challan.invoiceStatus)}`}
                                                     >
                                                         {challan.invoiceStatus}
@@ -591,7 +591,7 @@ export default function DeliveryChallans() {
                                                             Convert to Invoice
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem 
+                                                        <DropdownMenuItem
                                                             className="text-destructive"
                                                             onClick={() => {
                                                                 setChallanToDelete(challan.id);
@@ -665,9 +665,9 @@ export default function DeliveryChallans() {
                             </DropdownMenuContent>
                         </DropdownMenu>
                         {!selectedChallan.invoiceStatus && (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 className="gap-1"
                                 onClick={() => handleConvertToInvoice(selectedChallan.id)}
                                 data-testid="button-convert-to-invoice"
@@ -684,7 +684,7 @@ export default function DeliveryChallans() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 {!selectedChallan.invoiceId && (
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                         onClick={() => handleConvertToInvoice(selectedChallan.id)}
                                         className="text-primary font-medium"
                                         data-testid="action-convert-invoice"
@@ -693,7 +693,7 @@ export default function DeliveryChallans() {
                                     </DropdownMenuItem>
                                 )}
                                 {selectedChallan.status === 'DELIVERED' && (
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                         onClick={() => handleStatusChange(selectedChallan.id, 'OPEN')}
                                         data-testid="action-revert-open"
                                     >
@@ -701,7 +701,7 @@ export default function DeliveryChallans() {
                                     </DropdownMenuItem>
                                 )}
                                 {selectedChallan.status === 'OPEN' && (
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                         onClick={() => handleStatusChange(selectedChallan.id, 'DELIVERED')}
                                         data-testid="action-mark-delivered"
                                     >
@@ -709,7 +709,7 @@ export default function DeliveryChallans() {
                                     </DropdownMenuItem>
                                 )}
                                 {selectedChallan.status === 'DRAFT' && (
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                         onClick={() => handleStatusChange(selectedChallan.id, 'OPEN')}
                                         data-testid="action-mark-open"
                                     >
@@ -719,7 +719,7 @@ export default function DeliveryChallans() {
                                 <DropdownMenuItem data-testid="action-eway-bill">
                                     Add e-Way Bill Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                     onClick={() => handleCloneChallan(selectedChallan.id)}
                                     data-testid="action-clone"
                                 >
@@ -727,7 +727,7 @@ export default function DeliveryChallans() {
                                     Clone
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                     className="text-destructive"
                                     onClick={() => {
                                         setChallanToDelete(selectedChallan.id);
@@ -858,7 +858,18 @@ export default function DeliveryChallans() {
                                     </div>
 
                                     <div className="mt-8 pt-8 border-t border-border/40">
-                                        <p className="text-sm">Authorized Signature ____________________</p>
+                                        {branding?.signature?.url ? (
+                                            <div className="flex flex-col gap-2">
+                                                <img
+                                                    src={branding.signature.url}
+                                                    alt="Authorized Signature"
+                                                    style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
+                                                />
+                                                <p className="text-xs text-muted-foreground">Authorized Signature</p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm">Authorized Signature ____________________</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -877,8 +888,8 @@ export default function DeliveryChallans() {
                                             Send Delivery Challan via Email
                                         </Button>
                                         {!selectedChallan.invoiceStatus && (
-                                            <Button 
-                                                variant="outline" 
+                                            <Button
+                                                variant="outline"
                                                 className="w-full justify-start gap-2"
                                                 onClick={() => handleConvertToInvoice(selectedChallan.id)}
                                                 data-testid="button-create-invoice"
