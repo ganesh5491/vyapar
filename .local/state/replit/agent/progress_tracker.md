@@ -109,3 +109,4 @@
 [x] 109. Integrated signature into invoice PDF generation (Dec 24, 2025)
 [x] 110. Applied signature from settings to vendor-credits.tsx "Authorized Signature" section (Dec 24, 2025)
 [x] 111. Enabled PDF View as default for all Purchase modules (Bills, Purchase Orders, Vendor Credits, Payments Made) (Dec 24, 2025 - COMPLETE)
+[x] 112. Session restart - verified application running (Dec 25, 2025)
