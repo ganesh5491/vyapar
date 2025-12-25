@@ -110,3 +110,8 @@
 [x] 110. Applied signature from settings to vendor-credits.tsx "Authorized Signature" section (Dec 24, 2025)
 [x] 111. Enabled PDF View as default for all Purchase modules (Bills, Purchase Orders, Vendor Credits, Payments Made) (Dec 24, 2025 - COMPLETE)
 [x] 112. Session restart - verified application running (Dec 25, 2025)
+[x] 113. Added QuotePDFView component with logo and signature branding support to estimates.tsx (Dec 25, 2025)
+[x] 114. Added PDF view toggle switch to Quotes detail panel using Switch component (Dec 25, 2025)
+[x] 115. Fetched branding data (logo and signature) from /api/branding endpoint in Estimates page (Dec 25, 2025)
+[x] 116. Confirmed Sales Orders already had SalesOrderPdfPreview with logo and signature support (Dec 25, 2025)
+[x] 117. Verified all PDF views (Quotes, Sales Orders, Bills, Invoices, Purchase Orders, etc.) have consistent layout with branding (Dec 25, 2025 - COMPLETE)
