@@ -208,8 +208,8 @@
           "taxName": "none",
           "amount": 60,
           "ordered": 1,
-          "invoicedQty": 0,
-          "invoiceStatus": "Not Invoiced"
+          "invoicedQty": 1,
+          "invoiceStatus": "Invoiced"
         },
         {
           "id": "1766056286154",
@@ -226,8 +226,8 @@
           "taxName": "none",
           "amount": 660,
           "ordered": 11,
-          "invoicedQty": 0,
-          "invoiceStatus": "Not Invoiced"
+          "invoicedQty": 11,
+          "invoiceStatus": "Invoiced"
         }
       ],
       "subTotal": 720,
@@ -241,14 +241,24 @@
       "total": 720,
       "customerNotes": "Looking forward to your business.",
       "termsAndConditions": "",
-      "orderStatus": "Confirmed",
-      "invoiceStatus": "Not Invoiced",
+      "orderStatus": "CLOSED",
+      "invoiceStatus": "Invoiced",
       "paymentStatus": "Unpaid",
       "shipmentStatus": "Pending",
-      "invoices": [],
+      "invoices": [
+        {
+          "id": "1766636627252",
+          "invoiceNumber": "INV-00040",
+          "date": "2025-12-25",
+          "dueDate": "2026-01-24",
+          "status": "pending",
+          "amount": 720,
+          "balanceDue": 720
+        }
+      ],
       "pdfTemplate": "Standard Template",
       "createdAt": "2025-12-18T11:11:42.179Z",
-      "updatedAt": "2025-12-18T11:11:42.179Z",
+      "updatedAt": "2025-12-25T04:23:47.252Z",
       "createdBy": "Admin User",
       "activityLogs": [
         {
@@ -256,6 +266,13 @@
           "timestamp": "2025-12-18T11:11:42.179Z",
           "action": "created",
           "description": "Sales Order created for ₹720",
+          "user": "Admin User"
+        },
+        {
+          "id": "2",
+          "timestamp": "2025-12-25T04:23:47.252Z",
+          "action": "invoiced",
+          "description": "Invoice INV-00040 created",
           "user": "Admin User"
         }
       ]

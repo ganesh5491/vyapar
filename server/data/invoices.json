@@ -1,6 +1,99 @@
 {
   "invoices": [
     {
+      "id": "1766636627252",
+      "invoiceNumber": "INV-00040",
+      "referenceNumber": "",
+      "date": "2025-12-25",
+      "dueDate": "2026-01-24",
+      "customerId": "6",
+      "customerName": "Ganesh kale",
+      "billingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "shippingAddress": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "country": "India",
+        "pincode": ""
+      },
+      "salesperson": "",
+      "placeOfSupply": "",
+      "paymentTerms": "Due on Receipt",
+      "items": [
+        {
+          "id": "1",
+          "itemId": "1765535400204",
+          "name": "Rice",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
+          "quantity": 1,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 60,
+          "ordered": 1,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        },
+        {
+          "id": "1766056286154",
+          "itemId": "1766056260714",
+          "name": "Rice (Copy)",
+          "description": "Bulk purchase of raw rice directly from vendors. High-grade grains with minimal impurities.",
+          "hsnSac": "1006",
+          "quantity": 11,
+          "unit": "pcs",
+          "rate": 60,
+          "discount": 0,
+          "discountType": "percentage",
+          "tax": 0,
+          "taxName": "none",
+          "amount": 660,
+          "ordered": 11,
+          "invoicedQty": 0,
+          "invoiceStatus": "Not Invoiced"
+        }
+      ],
+      "subTotal": 720,
+      "shippingCharges": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "adjustment": 0,
+      "total": 720,
+      "amountPaid": 0,
+      "balanceDue": 720,
+      "customerNotes": "",
+      "termsAndConditions": "",
+      "status": "pending",
+      "sourceType": "sales_order",
+      "sourceId": "1766056302179",
+      "sourceNumber": null,
+      "pdfTemplate": "Standard Template",
+      "createdAt": "2025-12-25T04:23:47.252Z",
+      "updatedAt": "2025-12-25T04:23:47.252Z",
+      "createdBy": "Admin User",
+      "payments": [],
+      "activityLogs": [
+        {
+          "id": "1",
+          "timestamp": "2025-12-25T04:23:47.252Z",
+          "action": "created",
+          "description": "Invoice created for ₹720",
+          "user": "Admin User"
+        }
+      ]
+    },
+    {
       "id": "1766484787877",
       "invoiceNumber": "INV-00039",
       "referenceNumber": "",
@@ -4052,5 +4145,5 @@
       ]
     }
   ],
-  "nextInvoiceNumber": 40
+  "nextInvoiceNumber": 41
 }

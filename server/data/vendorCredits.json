@@ -436,7 +436,55 @@
       "status": "OPEN",
       "createdAt": "2025-12-24T05:34:18.859Z",
       "updatedAt": "2025-12-24T06:14:17.870Z"
+    },
+    {
+      "id": "vc-1766636555005",
+      "creditNumber": "VC-00016",
+      "referenceNumber": "",
+      "vendorId": "7",
+      "vendorName": "Vikas  Traders Pvt Ltd ",
+      "orderNumber": "",
+      "date": "2025-12-25",
+      "subject": "",
+      "reverseCharge": false,
+      "taxType": "tds",
+      "tdsTcs": "",
+      "items": [
+        {
+          "id": "item-1766636543920-0",
+          "itemId": "1766469453909",
+          "itemName": "HP ProDesk Desktop",
+          "description": "HP ProDesk desktop computer for office and professional use.\n",
+          "account": "discount",
+          "quantity": 1,
+          "rate": "45000",
+          "tax": "gst_18",
+          "taxAmount": 7200,
+          "amount": 45000,
+          "billId": "1766633708822",
+          "billNumber": "22",
+          "billDate": "2025-12-25",
+          "balanceDue": 37000,
+          "billTotal": 47200,
+          "hsnSac": ""
+        }
+      ],
+      "subTotal": 45000,
+      "discountType": "percentage",
+      "discountValue": "",
+      "discountAmount": 0,
+      "cgst": 0,
+      "sgst": 0,
+      "igst": 0,
+      "tdsTcsAmount": 0,
+      "adjustment": 0,
+      "amount": 52200,
+      "balance": 52200,
+      "notes": "",
+      "status": "OPEN",
+      "createdAt": "2025-12-25T04:22:35.005Z",
+      "updatedAt": "2025-12-25T04:22:35.005Z"
     }
   ],
-  "nextCreditNumber": 16
+  "nextCreditNumber": 17
 }
