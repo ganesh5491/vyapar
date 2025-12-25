@@ -30,6 +30,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,6 +113,129 @@ const getStatusBadge = (status: string, convertedTo?: string) => {
   return <Badge variant={config.variant}>{config.label}</Badge>;
 };
 
+function QuotePDFView({ quote, branding }: { quote: Quote; branding?: any }) {
+  return (
+    <div className="bg-white border border-slate-200 shadow-sm max-w-3xl mx-auto">
+      <div className="relative">
+        <div className="p-8">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              {branding?.logo?.url ? (
+                <img src={branding.logo.url} alt="Company Logo" className="h-12 w-auto mb-3" data-testid="img-quote-logo" />
+              ) : (
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">Q</span>
+                  </div>
+                  <span className="text-lg font-bold text-blue-600">Company Name</span>
+                </div>
+              )}
+            </div>
+            <div className="text-right">
+              <h2 className="text-3xl font-bold text-slate-800 mb-1">QUOTE</h2>
+              <p className="text-slate-600">Quote# <span className="font-medium">{quote.quoteNumber}</span></p>
+              <div className="mt-2 text-sm">
+                <p className="text-slate-500">Total Amount</p>
+                <p className="text-xl font-bold">{formatCurrency(quote.total)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-slate-500 mb-2">BILL TO</h4>
+            <p className="font-semibold text-blue-600">{quote.customerName}</p>
+            {quote.billingAddress && (
+              <div className="text-sm text-slate-600">
+                {quote.billingAddress.street && <p>{quote.billingAddress.street}</p>}
+                {quote.billingAddress.city && (
+                  <p>{quote.billingAddress.city}, {quote.billingAddress.state}</p>
+                )}
+                {quote.billingAddress.pincode && <p>{quote.billingAddress.pincode}</p>}
+                {quote.billingAddress.country && <p>{quote.billingAddress.country}</p>}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end mb-4 text-sm">
+            <div className="space-y-1 text-right">
+              <p><span className="text-slate-500">Quote Date :</span> {formatDate(quote.date)}</p>
+              <p><span className="text-slate-500">Expiry Date :</span> {quote.expiryDate ? formatDate(quote.expiryDate) : '-'}</p>
+            </div>
+          </div>
+
+          <table className="w-full mb-6">
+            <thead>
+              <tr className="bg-blue-600 text-white">
+                <th className="px-3 py-2 text-left text-sm font-medium">#</th>
+                <th className="px-3 py-2 text-left text-sm font-medium">Item & Description</th>
+                <th className="px-3 py-2 text-center text-sm font-medium">Qty</th>
+                <th className="px-3 py-2 text-right text-sm font-medium">Rate</th>
+                <th className="px-3 py-2 text-right text-sm font-medium">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quote.items && quote.items.map((item, index) => (
+                <tr key={item.id || index} className="border-b border-slate-100">
+                  <td className="px-3 py-3 text-sm">{index + 1}</td>
+                  <td className="px-3 py-3">
+                    <p className="font-medium text-sm">{item.name}</p>
+                    {item.description && <p className="text-xs text-slate-500">{item.description}</p>}
+                  </td>
+                  <td className="px-3 py-3 text-center text-sm">{item.quantity.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td className="px-3 py-3 text-right text-sm">{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td className="px-3 py-3 text-right text-sm font-medium">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="flex justify-end mb-6">
+            <div className="w-64 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Sub Total</span>
+                <span>{quote.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between font-semibold border-t pt-2">
+                <span>Total</span>
+                <span>{formatCurrency(quote.total)}</span>
+              </div>
+            </div>
+          </div>
+
+          {quote.customerNotes && (
+            <div className="mb-4 p-3 bg-slate-50 rounded">
+              <p className="text-xs text-slate-500 font-semibold mb-1">CUSTOMER NOTES</p>
+              <p className="text-sm text-slate-600">{quote.customerNotes}</p>
+            </div>
+          )}
+
+          {quote.termsAndConditions && (
+            <div className="mb-4 p-3 bg-slate-50 rounded">
+              <p className="text-xs text-slate-500 font-semibold mb-1">TERMS & CONDITIONS</p>
+              <p className="text-sm text-slate-600">{quote.termsAndConditions}</p>
+            </div>
+          )}
+
+          <div className="mt-12 border-t pt-4">
+            {branding?.signature?.url ? (
+              <div className="flex flex-col gap-2">
+                <img
+                  src={branding.signature.url}
+                  alt="Authorized Signature"
+                  style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }}
+                />
+                <p className="text-xs text-slate-500">Authorized Signature</p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">Authorized Signature ____________________</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface QuoteDetailPanelProps {
   quote: Quote;
   onClose: () => void;
@@ -118,10 +243,12 @@ interface QuoteDetailPanelProps {
   onDelete: () => void;
   onConvert: (type: string) => void;
   onClone: () => void;
+  branding?: any;
 }
 
-function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert, onClone }: QuoteDetailPanelProps) {
+function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert, onClone, branding }: QuoteDetailPanelProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [showPdfView, setShowPdfView] = useState(false);
   const { toast } = useToast();
 
   return (
@@ -195,27 +322,38 @@ function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert, onClone
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center px-6 border-b border-slate-200 dark:border-slate-700">
-          <TabsList className="h-auto p-0 bg-transparent">
-            <TabsTrigger
-              value="overview"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
-              data-testid="tab-overview"
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="activity"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
-              data-testid="tab-activity"
-            >
-              Activity
-            </TabsTrigger>
-          </TabsList>
+      <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-end">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="pdf-view" className="text-sm text-slate-500">Show PDF View</Label>
+          <Switch id="pdf-view" checked={showPdfView} onCheckedChange={setShowPdfView} />
         </div>
+      </div>
 
-        <TabsContent value="overview" className="flex-1 overflow-auto mt-0">
+      <div className="flex-1 overflow-auto p-4">
+        {showPdfView ? (
+          <QuotePDFView quote={quote} branding={branding} />
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex items-center px-0 border-b border-slate-200 dark:border-slate-700">
+              <TabsList className="h-auto p-0 bg-transparent">
+                <TabsTrigger
+                  value="overview"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
+                  data-testid="tab-overview"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger
+                  value="activity"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent px-4 py-3"
+                  data-testid="tab-activity"
+                >
+                  Activity
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="overview" className="flex-1 overflow-auto mt-0">
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div>
@@ -300,9 +438,11 @@ function QuoteDetailPanel({ quote, onClose, onEdit, onDelete, onConvert, onClone
             ) : (
               <p className="text-center text-slate-500 py-8">No activity recorded</p>
             )}
-          </div>
-        </TabsContent>
-      </Tabs>
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
+      </div>
     </div>
   );
 }
@@ -318,10 +458,24 @@ export default function Estimates() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null);
+  const [branding, setBranding] = useState<any>(null);
 
   useEffect(() => {
     fetchQuotes();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await fetch("/api/branding");
+      const data = await response.json();
+      if (data.success) {
+        setBranding(data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branding:", error);
+    }
+  };
 
   const fetchQuotes = async () => {
     try {
@@ -586,6 +740,7 @@ export default function Estimates() {
         <div className="flex-1 min-w-0">
           <QuoteDetailPanel
             quote={selectedQuote}
+            branding={branding}
             onClose={handleClosePanel}
             onEdit={handleEditQuote}
             onDelete={handleDeleteClick}
